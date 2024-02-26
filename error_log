@@ -1,0 +1,5 @@
+[02-Jan-2024 22:08:01 UTC] PHP Fatal error:  A void function must not return a value in /home/cmmalawi/lab.cmmalawi.com/app/Jobs/GenerateExpiryReport.php on line 64
+[07-Feb-2024 00:07:04 UTC] PHP Fatal error:  Cannot use temporary expression in write context in /home/cmmalawi/lab.cmmalawi.com/app/Http/Controllers/ItemController.php on line 1061
+[07-Feb-2024 00:07:16 UTC] PHP Fatal error:  Cannot use temporary expression in write context in /home/cmmalawi/lab.cmmalawi.com/app/Http/Controllers/ItemController.php on line 1061
+[07-Feb-2024 00:07:31 UTC] PHP Fatal error:  Cannot use temporary expression in write context in /home/cmmalawi/lab.cmmalawi.com/app/Http/Controllers/ItemController.php on line 1061
+[09-Feb-2024 23:09:29 UTC] PHP Fatal error:  Cannot redeclare App\Http\Controllers\UserController::password() in /home/cmmalawi/lab.cmmalawi.com/app/Http/Controllers/UserController.php on line 553

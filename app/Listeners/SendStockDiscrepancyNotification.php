@@ -1,0 +1,28 @@
+<?php
+
+namespace App\Listeners;
+
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Queue\InteractsWithQueue;
+use App\Notifications\StockDiscrepancyNotification ;
+class SendStockDiscrepancyNotification
+{
+    /**
+     * Create the event listener.
+     */
+    public function __construct()
+    {
+        //
+    }
+
+    /**
+     * Handle the event.
+     */
+    public function handle($event): void
+    {
+        //
+        
+        //Notification::send($admins, new StockDiscrepancyNotification($event->user));
+
+    }
+}
