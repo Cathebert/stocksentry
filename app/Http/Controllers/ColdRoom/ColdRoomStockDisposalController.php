@@ -23,7 +23,7 @@ class ColdRoomStockDisposalController extends Controller
    {
 $data['lab_name']='Logged Into: '.$lab->lab_name;
 }
-  return view('cold.inventory.tabs.cold_stockdisposal');
+  return view('cold.inventory.tabs.cold_stockdisposal',$data);
 
     }
 }
