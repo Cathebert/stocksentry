@@ -49,31 +49,45 @@ class ForecastController extends Controller
 
             $totalRec = $totalData;
           // $totalData = DB::table('appointments')->count();
-
-          $limit = $request->input('length');
+            $limit = $request->input('length');
           $start = $request->input('start');
           $order = $columns[$request->input('order.0.column')];
           $dir = $request->input('order.0.dir');
 
            $search = $request->input('search.value');
+           $store1Id=auth()->user()->laboratory_id;
+$store2Id=0;
+            if(auth()->user()->laboratory_id!=0){
+
+          
             $terms =DB::table('inventories as t') 
               ->join('items AS s', 's.id', '=', 't.item_id')
           ->select('t.id as id','s.id as item_id','s.code','s.item_name','s.unit_issue','t.cost','t.quantity',
-          DB::raw('SUM(t.quantity) as quantity_requested'))
- 
-             ->where([['t.lab_id','=',auth()->user()->laboratory_id]])
-
-                ->where(function ($query) use ($search){
-                  return  $query->where('s.item_name', 'LIKE', "%{$search}%")
-                  ->orWhere('s.code','LIKE',"%{$search}%");
-                      
-                     
-            })
+           DB::raw('SUM(CASE WHEN t.lab_id = ? THEN t.quantity ELSE 0 END) AS lab_total'),
+        DB::raw('SUM(CASE WHEN t.lab_id = ? THEN t.quantity ELSE 0 END) AS store_total')
+    )
+    ->setBindings([$store1Id, $store2Id])
             //->offset($start)
            ->groupBy('s.item_name')
            // ->limit($limit)
             //->orderBy('s.id','asc')
             ->get(); 
+
+        }
+        else{
+$terms =DB::table('inventories as t') 
+        ->join('items AS s', 's.id', '=', 't.item_id')
+        ->select('t.id as id','s.id as item_id','s.code','s.item_name','s.unit_issue','t.cost','t.quantity',
+        DB::raw('SUM(t.quantity) AS lab_total'),
+        DB::raw('SUM(CASE WHEN t.lab_id = ? THEN t.quantity ELSE 0 END) AS store_total')
+    )
+    ->setBindings([$store2Id])
+            //->offset($start)
+           ->groupBy('s.item_name')
+           // ->limit($limit)
+            //->orderBy('s.id','asc')
+            ->get();
+        }
 
           $totalFiltered =  $totalRec ;
 //  0 => 'id',
@@ -86,12 +100,7 @@ $x=1;
            
             foreach ($terms as $term) {
 
-$in_store=DB::table('inventories as t') 
-              ->join('items AS s', 's.id', '=', 't.item_id')
-          ->select('t.id as id', 's.id as item_id','s.code','s.item_name','s.unit_issue','t.cost','t.quantity',
-          DB::raw('SUM(t.quantity) as quantity_in_store'))
- 
-             ->where([['s.id','=',$term->item_id],['t.lab_id','=',0]]);
+
 
              $nestedData['id']=$term->id;
                 $nestedData['check']="<input type='checkbox' id='$term->id' class='checkboxall' name='selected_check' value='$term->id'  onclick='selectItem(this.value)'/>";
@@ -103,8 +112,8 @@ $in_store=DB::table('inventories as t')
              
                      $nestedData['cost']= $term->cost;
                
-                 $nestedData['available']  =$term->quantity_requested; 
-                 $nestedData['in_store']  =$in_store->quantity_in_store??'';               
+                 $nestedData['available']  =$term->lab_total; 
+                 $nestedData['in_store']  =$term->store_total;               
                    $x++;
                 $data[] = $nestedData;
            }
@@ -561,7 +570,7 @@ for($i=0;$i<count($request->item_ids);$i++){
                       ->get();
         $consolidated[]=$report;
 }
-//dd( $consolidated);
+
      $spreadsheet = new Spreadsheet();
 
     
@@ -657,11 +666,11 @@ $writer = new Xlsx($spreadsheet);
 $name="consolidated_orders.xlsx";
 $writer->save(public_path('reports').'/'.$name);
 
-for($index=0;$index<count($request->item_ids);$index++){
+/*for($index=0;$index<count($request->item_ids);$index++){
 ItemOrder::where('id',$request->item_ids[$index])->update([
     'is_consolidated'=>'yes',
 ]);
-}
+}*/
 return response()->json([
     'return_url'=>route('download_order',['name'=>$name]),
     'message'=>'Orders Consolidated successfully'
@@ -874,7 +883,7 @@ $columns = array(
                     'r.lab_id',
                     'r.ordered_by',
                     'r.approved_by',
-                     DB::raw('GROUP_CONCAT(rd.id) as requisitions_ids'),
+                     DB::raw('GROUP_CONCAT(i.id) as requisitions_ids'),
                      DB::raw('SUM(rd.ordered_quantity) as quantity_requested'))
                    ->where([['r.is_approved','=','no'],['r.is_marked','=','yes']])
           //->where('t.expiry_date', '>', date('Y-m-d') )
@@ -929,34 +938,34 @@ $x=1;
       echo json_encode($json_data);
 }
 public function orderGetData(Request $request){
- 
+ //dd($request);
     $ids=explode(',',$request->id);
     
     $data = array();
  
     for($i=0;$i<count($ids); $i++){
 $record= DB::table('inventories as inv')
-                  ->join('item_order_details  as r','r.inventory_id','=','inv.id')
+                  ->join('item_order_details  as r','inv.id','=','r.inventory_id')
                   ->join('item_orders as rd','rd.id','=','r.order_id')
-                  ->join('users as u','u.id','=','rd.ordered_by')
-                  ->join('users as y','y.id','=','rd.approved_by')
+                  ->leftjoin('users as u','u.id','=','rd.ordered_by')
+                  ->leftjoin('users as y','y.id','=','rd.approved_by')
                   ->join('laboratories as l','l.id','=','rd.lab_id')
                   
                   ->select(
                     'rd.order_number',
-                     'rd.id',
-                     'rd.section_id',
+                    'rd.id',
+                    'rd.section_id',
                     'l.lab_name',
                     'u.name',
                     'u.last_name',
                     'y.name as approved_name',
                     'y.last_name as approved_lastname',
-                    'rd.created_at as requested_date',
+                    'rd.created_at',
                     'inv.cost',
-                    'r.ordered_quantity as quantity_requested'
-                    )->where('r.id',$ids[$i])
-                   
-                  ->get();
+                    'r.ordered_quantity'
+                    )->where('inv.id',$ids[$i])
+                    ->where('rd.is_marked','yes')
+                    ->where('rd.is_approved','no')->get();
                     
              
              foreach($record as $r)  { 
@@ -968,9 +977,9 @@ $record= DB::table('inventories as inv')
   $nested['last_name']=$r->last_name;
   $nested['approved_name']=$r->approved_name;
   $nested['approved_lastname']=$r->approved_lastname;
-  $nested['requested_date']=$r->requested_date;
+  $nested['requested_date']=$r->created_at;
   $nested['cost']=$r->cost;
-$nested['quantity_requested']=$r->quantity_requested;
+$nested['quantity_requested']=$r->ordered_quantity;
 $data[]= $nested;
 
 }
@@ -986,7 +995,7 @@ $data[]= $nested;
       $report =DB::table('items as t')
                   ->join('inventories as i','i.item_id','=','t.id')
                   ->join('item_order_details as rd','rd.inventory_id','=','i.id')
-                   ->leftjoin('item_orders as r','r.id','=','rd.order_id')
+                   ->join('item_orders as r','r.id','=','rd.order_id')
                   ->select(
                     'i.id as id',
                     'r.id as order_id',
@@ -1001,12 +1010,12 @@ $data[]= $nested;
                     'r.lab_id',
                     'r.ordered_by',
                     'r.approved_by',
-                     DB::raw('GROUP_CONCAT(rd.id) as ids'),
+                     DB::raw('GROUP_CONCAT(r.id) as ids'),
                      DB::raw('SUM(rd.ordered_quantity) as quantity_requested'))
                    ->where([['r.is_approved','=','no'],['r.is_marked','=','yes']])
                    ->groupBy('t.item_name')
                    ->get();
-
+//dd($report);
 $orders=ItemOrder::where([['is_approved','=','no'],['is_marked','=','yes']])->count();
      // dd($test);
                    if(count($report)==0){
@@ -1059,12 +1068,11 @@ $spreadsheet->getActiveSheet()
     ->setCellValue('A10', 'ULN')
      ->setCellValue('B10', 'CODE')
     ->setCellValue('C10', 'ITEM NAME')
-    ->setCellValue('D10', 'BATCH NUMBER')
-    ->setCellValue('E10', 'CATALOG NUMBER')
-    ->setCellValue('F10', 'HAZARDOUS')
-    ->setCellValue('G10', 'UNIT OF ISSUE')
-    ->setCellValue('H10', 'STORAGE TEMP.')
-    ->setCellValue('I10', 'QUANTITY REQUESTED')
+    ->setCellValue('D10', 'CATALOG NUMBER')
+    ->setCellValue('E10', 'HAZARDOUS')
+    ->setCellValue('F10', 'UNIT OF ISSUE')
+    ->setCellValue('G10', 'STORAGE TEMP.')
+    ->setCellValue('H10', 'QUANTITY REQUESTED')
    ;
 
 $num=11;
@@ -1077,7 +1085,7 @@ $num=11;
     $report[$x]->uln,
     $report[$x]->code,
     $report[$x]->item_name,
-    $report[$x]->batch_number,
+ 
     $report[$x]->catalog_number,
     $report[$x]->is_hazardous,
     $report[$x]->unit_issue,
@@ -1091,7 +1099,7 @@ $num++;
     $spreadsheet->getActiveSheet()->getRowDimension($x)->setOutlineLevel(1);
     $spreadsheet->getActiveSheet()->getRowDimension($x)->setVisible(false);
  $spreadsheet->getActiveSheet()->fromArray($data, null, 'A'.$num);
-   $spreadsheet->getActiveSheet()->getStyle('A'.$num.':I'.$num)->getFont()->setBold(true);
+   $spreadsheet->getActiveSheet()->getStyle('A'.$num.':H'.$num)->getFont()->setBold(true);
 
  
 
@@ -1100,21 +1108,21 @@ $num++;
  
 
 $t=$num;
- $ids=explode(',',$report[$x]->ids);
+ //$ids=explode(',',$report[$x]->ids);
     
     $data = array();
-    for($i=0;$i<count($ids); $i++){
+    //for($i=0;$i<count($ids); $i++){
 $record= DB::table('inventories as inv')
-                  ->join('item_order_details  as r','r.item_id','=','inv.id')
+                  ->join('item_order_details  as r','inv.id','=','r.inventory_id')
                   ->join('item_orders as rd','rd.id','=','r.order_id')
-                  ->join('users as u','u.id','=','rd.ordered_by')
-                  ->join('users as y','y.id','=','rd.approved_by')
+                  ->leftjoin('users as u','u.id','=','rd.ordered_by')
+                  ->leftjoin('users as y','y.id','=','rd.approved_by')
                   ->join('laboratories as l','l.id','=','rd.lab_id')
                   
                   ->select(
                     'rd.order_number',
-                     'rd.id',
-                     'rd.section_id',
+                    'rd.id',
+                    'rd.section_id',
                     'l.lab_name',
                     'u.name',
                     'u.last_name',
@@ -1123,11 +1131,11 @@ $record= DB::table('inventories as inv')
                     'rd.created_at',
                     'inv.cost',
                     'r.ordered_quantity'
-                    )->where('r.id',$ids[$i])
-                   
-                  
+                    )->where('inv.id',$report[$x]->id)
+                    ->where('rd.is_marked','yes')
                     ->where('rd.is_approved','no')->get();
                     
+   // dd($record);                
  foreach($record as $record)  { 
      if($record->section_id!=NULL){
          $section=LaboratorySection::where('id',$record->section_id)->select('section_name')->first();
@@ -1148,14 +1156,14 @@ $record= DB::table('inventories as inv')
 $t++;
 
     $spreadsheet->getActiveSheet()->fromArray($da, null, 'A'.$t);
-    $spreadsheet->getActiveSheet()->setCellValue('I'.$t,  $record->quantity_requested);
-     $spreadsheet->getActiveSheet()->getStyle('I'.$t)->getFont()->setBold(false);
+    $spreadsheet->getActiveSheet()->setCellValue('H'.$t,  $record->ordered_quantity);
+     $spreadsheet->getActiveSheet()->getStyle('H'.$t)->getFont()->setBold(false);
     
     $spreadsheet->getActiveSheet()->getRowDimension($t)->setOutlineLevel(1);
    $spreadsheet->getActiveSheet()->getRowDimension($t)->setVisible(false);
    
     }
-}
+
 $spreadsheet->getActiveSheet()->getRowDimension($t+1)->setCollapsed(true);
 $num=$t;
 }
@@ -1178,7 +1186,7 @@ $spreadsheet->getActiveSheet()->setShowSummaryBelow(false);
 
 // Create Table
 
-$table = new Table('A10:I'.$step, 'Exported');
+$table = new Table('A10:H'.$step, 'Exported');
 $spreadsheet->getActiveSheet()->setCellValue('A'.$step+3, 'Consolidated By: '.auth()->user()->name.' '.auth()->user()->last_name);
 $spreadsheet->getActiveSheet()->setCellValue('A'.$step+4, 'Consolidated Date: '.date('d,M Y',strtotime(now())));
 $spreadsheet->getActiveSheet()->setCellValue('A'.$step+5, 'Orders Affected: '.$orders);
@@ -1221,7 +1229,7 @@ try{
     ItemOrder::where('is_marked','yes')->update([
  'is_marked'=>'done',
 ]);
-  $this->saveOrdersHistory($orders,$db_name); 
+$this->saveOrdersHistory($orders,$db_name); 
   DB::commit();
 }
 catch(Exception $e){
@@ -1235,7 +1243,7 @@ return response()->download($path,$name, $headers);
 
    public function receivedOrders(Request $request){
        
- $columns=$arrayName = array(
+ $columns= array(
     0 => 'id', 
     1=>'order',
     2=>'lab',

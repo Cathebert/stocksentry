@@ -148,6 +148,7 @@
     <input type="text" class="form-control" id="item_pp" name="item_pp" value="PP01">
   </div>
 </div>
+<hr>
 
  <div class="row">
      <div class="repeater">

@@ -49,6 +49,7 @@
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <i class="fas fa-bell fa-fw"></i>
                                 <!-- Counter - Alerts -->
+                                    <!-- Counter - Alerts -->
                                 <span class="badge badge-danger badge-counter">{{auth()->user()->unreadNotifications->count()}}</span>
                             </a>
                             <!-- Dropdown - Alerts -->
@@ -74,15 +75,47 @@
                                   
                                 </a>
                                 @endif
+                                @if($notification->type=="App\Notifications\ApprovedIssueNotification")
+ <a class="dropdown-item d-flex align-items-center"  id="{{ $notification->id }}" onclick="markAsRead(this.id)">
+                                    <div class="mr-3">
+                                         <div class="icon-circle bg-warning">
+                                            <i class="fas fa-exclamation-triangle text-white"></i>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        
+                                        <div class="small text-gray-500">Stock issued with number {{ $notification->data['issue_approved'] }} status</div>
+                                        <span class="font-weight-bold">{{ $notification->data['message'] }}</span>
+                
+                                    </div>
+                                  
+                                </a>
+                                @endif
+
+                                                 @if($notification->type=="App\Notifications\PendingIssueNotification")
+ <a class="dropdown-item d-flex align-items-center"  id="{{ $notification->id }}" onclick="markAsRead(this.id)">
+                                    <div class="mr-3">
+                                         <div class="icon-circle bg-warning">
+                                            <i class="fas fa-exclamation-triangle text-white"></i>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        
+                                        <div class="small text-gray-500">Pending Stock approval with transfer number {{ $notification->data['stock_transfer_no'] }} </div>
+                                        <span class="font-weight-bold">Made by {{ $notification->data['issuerer'] }}  to {{$notification->data['lab_name']}}</span>
+                
+                                    </div>
+                                  
+                                </a>
+                                @endif               
                                   @empty
-                                    no notification
+                                   <p style="text-align:center"> No notification</p>
                                    
                                  @endforelse
                                
                                 <a class="dropdown-item text-center small text-gray-500" href="#" hidden>Show All Alerts</a>
                             </div>
                         </li>
-
                         <!-- Nav Item - Messages -->
                         <li class="nav-item dropdown no-arrow mx-1" hidden >
                             <a class="nav-link dropdown-toggle" href="#" id="messagesDropdown" role="button"
@@ -234,6 +267,29 @@ var view_notification = "{{route('notifications.show')}}"
       },
   });
                         }
+
+
+                        function markAsRead(id){
+   var view_notification = "{{route('notifications.markasread')}}"
+  $.ajax({
+      method: "GET",
+      dataType:"JSON",
+
+      url: view_notification,
+      data: {
+          id: id,
+      },
+
+      success: function (data) {
+          location.reload();
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+          // console.log(get_case_next_modal)
+          alert("Error " + errorThrown);
+      },
+  }); 
+}
+  
                      </script>
                         </li>
 

@@ -22,6 +22,8 @@ use App\Services\LogActivityService;
 use App\Models\BinCard;
 use App\Models\ReceivedItem;
 use Carbon\Carbon;
+use App\Notifications\PendingIssueNotification;
+use App\Notifications\ApprovedIssueNotification;
 use Validator;
 use DB;
 
@@ -859,7 +861,16 @@ $issueDetails->updated_at=NULL;
 $issueDetails->save();
  $number=str_pad($issue_id, 4, '0', STR_PAD_LEFT);
 }
+
+$approvers=User::where([['authority','=',2],['laboratory_id','=',auth()->user()->laboratory_id]])->get();
+$issuer=auth()->user()->name.' '.auth()->user()->last_name;
+$stock_tranfer_no=$request->form_data['siv'];
+$issued_to=Laboratory::where('id',$request->form_data['to_lab_id'])->select('lab_name')->first();
+foreach ($approvers as $user) {
+   $user->notify(new PendingIssueNotification($issuer,$issued_to->lab_name,$stock_tranfer_no));
+}
 DB::commit();
+
 $test="Request to Issue has been made pending Approval";
  return response([
 'message'=> $test,
@@ -888,6 +899,9 @@ $updateInventory=new UpdateInventoryService();
 $status=$updateInventory->UpdateInventory($data);
 
 if($status==1){
+    $issurer=Issue::where('id',$request->id)->select('siv_number','issued_by')->first();
+    $user=User::where('id',$issurer->issued_by)->first();
+    $user->notify(new ApprovedIssueNotification($issurer->siv_number));
  LogActivityService::saveToLog('Issue Approval',''.auth()->user()->name.' '.auth()->user()->last_name.' approved issue number'.$request->form_data['siv'],'low');
  return response()->json([
     'message'=>config('stocksentry.issue_approved'),

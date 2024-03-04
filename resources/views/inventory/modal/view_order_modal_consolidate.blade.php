@@ -151,7 +151,7 @@ console.log(row)
      $.ajax({
          url: more_details,
          data: {
-           id: rowData.item_id,
+           id: rowData.id,
            
          },
          dataType: "json",

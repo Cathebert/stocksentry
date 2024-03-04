@@ -419,6 +419,7 @@ catch(Exception $e){
     }
 
     public function receiveInventory(){
+          $data['users']=User::where('laboratory_id',auth()->user()->laboratory_id)->get();
            $data['suppliers']=Supplier::select('id','supplier_name')->get();
            $data['laboratories']=Laboratory::where('id',auth()->user()->laboratory_id)->select('id','lab_name')->get();
            $data['sections']=LaboratorySection::select('id','section_name')->get();
@@ -555,7 +556,7 @@ protected function validateItemInput (array $data){
     }
 
     public function ItemDetailsUpdate(Request $request){
-   
+        $data['users']=User::where('laboratory_id',auth()->user()->laboratory_id)->get();
         $data['item']=Item::where('id',$request->id)->first();
         return view('inventory.modal.receive_modal',$data);
     }
@@ -744,6 +745,13 @@ $received->po_reference=$request->po_ref;
 $received->receiving_date=date('Y-m-d', strtotime($request->receiving_date));
 $received->received_id=auth()->user()->id;
 $received->received_by=auth()->user()->name." ".auth()->user()->last_name;
+$received->checked_off_by=$request->checked_off_by;
+$received->checked_off_date=$request->check_off_date;
+$received->checked_off_comment=$request->check_off_comment;
+$received->reviewed_by=$request->reviewed_by;
+$received->reviewed_date=$request->reviewed_date;
+$received->reviewed_comment=$request->reviewer_comment;
+
 
 $received->created_at=now();
 $received->updated_at=NULL;
@@ -772,6 +780,7 @@ $bincard=new BinCardService();
 $bincard->updateReceiveCard($item_id,$temp->item_quantity);
 
 $itemchecklist=new ReceivedItemCheckList();
+$itemchecklist->grn_number=$request->grn_number;
 $itemchecklist->inventory_id=$item_id;
 $itemchecklist->item_id=$temp->item_id;
 $itemchecklist->any_expired=$temp->any_expired;
@@ -1871,5 +1880,17 @@ return response()->json([
     'error'=>false
 ]);
    
+}
+public function receivedItemCheckList(Request $request){
+    $data['suppliers']=Supplier::get();
+    $data['items']=DB::table('items as i')
+                        ->join('inventories as inv','i.id','=','inv.item_id')
+                        ->join('received_items as r','r.grn_number','=','inv.grn_number')
+                        ->join('received_item_checklist as rc','rc.grn_number','=','r.grn_number')
+                        ->join('suppliers as s','s.id','=','r.supplier_id')
+                        ->get();
+        //dd($data['items']);
+
+    return view('inventory.receive_tabs.received_status',$data);
 }
 }

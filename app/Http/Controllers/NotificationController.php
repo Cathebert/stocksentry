@@ -24,4 +24,11 @@ $items=DB::table('items as i')
         return view('notifications.show', ['notification' => $notification,'items'=>$items]);
 
     }
+public function markAsRead(Request $request){
+   $notification = auth()->user()->notifications()->findOrFail($request->id);
+        $notification->markAsRead();
+    return response()->json([
+'error'=>false
+    ]); 
+}
 }

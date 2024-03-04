@@ -39,6 +39,8 @@ use App\Http\Controllers\ColdRoom\ColdRoomStockTakeController;
 use App\Http\Controllers\ColdRoom\ColdRoomStockDisposalController;
 use App\Http\Controllers\ColdRoom\ColdRoomAdjustmentController;
 use App\Http\Controllers\ColdRoom\ColdRoomIssueController;
+
+use App\Http\Controllers\ContractController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -105,7 +107,12 @@ Route::get('/disposal-show',[InventoryController::class,'showDisposalModal'])->n
 Route::get('/disposal-list',[InventoryController::class,'disposalList'])->name('inventory.disposal_list');
 Route::get('/disposal-selected',[InventoryController::class,'selectedForDisposal'])->name('inventory.selected_dispose');
 Route::post('/run-disposal',[InventoryController::class,'runItemDisposal'])->name('inventory.run-disposal');
-
+//_______________________________Contract Management________________________________________//
+Route::get('/contract-show',[ContractController::class,'add'])->name('contract.add');
+Route::get('/contract-load',[ContractController::class,'load'])->name('contract.load');
+Route::get('/contract-add',[ContractController::class,'showModal'])->name('contract.show_modal');
+Route::post('/contract-save',[ContractController::class,'saveContract'])->name('contract.save');
+Route::post('/sub-type',[ContractController::class,'saveSubscriptionType'])->name('sub.type');
 //____________________________________Admin Stock History___________________________________//
 Route::get('/stock_view',[StockTakeController::class,'stockViewHistory'])->name('stock.view_history');
 
@@ -225,7 +232,7 @@ Route::get('/item-search',[ItemController::class, 'searchFilterItem'])->name('it
 Route::get('/item_list_download/{name}',[ItemController::class,'downloadItems'])->name('download_item_file');
 Route::post('/item_edit',[ItemController::class,'deleteItemDetails'])->name('item.item_delete');
 Route::post('/remove_all',[ItemController::class,'deleteAllEntries'])->name('item.item_delete_all');
-
+Route::get('/received-status',[ItemController::class ,'receivedItemCheckList'])->name('admin.received-status');
 //------------------------Requisitions--------------------------------->
 Route::get('/requistions',[RequisitionController::class,'show'])->name('requisition.getRequests');
 Route::get('/approved-requisitions', [RequisitionController::class,'showApproved'])->name('requests.approved');
@@ -332,6 +339,7 @@ Route::get('/lab_help',[HelpController::class,'labHelp'])->name('lab_help');
 
 //_____________________________________________Notifications___________________________//
 Route::get('/notifications', [NotificationController::class, 'show'])->name('notifications.show');
+Route::get('/markasread',[NotificationController::class,'markAsRead'])->name('notifications.markasread');
 //---------------------------- Requisitions -------------------------------------//
 Route::get('/create',[RequisitionController::class, 'create'])->name('requests.create');
 Route::get('/get-selected',[RequisitionController::class, 'getSelectedItems'])->name('requests.getSelectedItems');

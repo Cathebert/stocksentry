@@ -48,7 +48,8 @@
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <i class="fas fa-bell fa-fw"></i>
                                 <!-- Counter - Alerts -->
-                                <span class="badge badge-danger badge-counter">3+</span>
+                                    <!-- Counter - Alerts -->
+                                <span class="badge badge-danger badge-counter">{{auth()->user()->unreadNotifications->count()}}</span>
                             </a>
                             <!-- Dropdown - Alerts -->
                             <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
@@ -56,43 +57,64 @@
                                 <h6 class="dropdown-header">
                                     Alerts Center
                                 </h6>
-                                <a class="dropdown-item d-flex align-items-center" href="#">
+                                 @forelse(auth()->user()->unreadNotifications as $notification)
+                                 @if($notification->type=="App\Notifications\StockDiscrepancyNotification")
+                                <a class="dropdown-item d-flex align-items-center"  id="{{ $notification->id }}" onclick="showNotification(this.id)">
                                     <div class="mr-3">
-                                        <div class="icon-circle bg-primary">
-                                            <i class="fas fa-file-alt text-white"></i>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="small text-gray-500">December 12, 2019</div>
-                                        <span class="font-weight-bold">A new monthly report is ready to download!</span>
-                                    </div>
-                                </a>
-                                <a class="dropdown-item d-flex align-items-center" href="#">
-                                    <div class="mr-3">
-                                        <div class="icon-circle bg-success">
-                                            <i class="fas fa-donate text-white"></i>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="small text-gray-500">December 7, 2019</div>
-                                        $290.29 has been deposited into your account!
-                                    </div>
-                                </a>
-                                <a class="dropdown-item d-flex align-items-center" href="#">
-                                    <div class="mr-3">
-                                        <div class="icon-circle bg-warning">
+                                         <div class="icon-circle bg-warning">
                                             <i class="fas fa-exclamation-triangle text-white"></i>
                                         </div>
                                     </div>
                                     <div>
-                                        <div class="small text-gray-500">December 2, 2019</div>
-                                        Spending Alert: We've noticed unusually high spending for your account.
+                                        
+                                        <div class="small text-gray-500">Stock Taken on {{ $notification->data['stock_take_date'] }} has Issues</div>
+                                        <span class="font-weight-bold">{{ $notification->data['count'] }} Items needs reviewing</span>
+                
                                     </div>
+                                  
                                 </a>
-                                <a class="dropdown-item text-center small text-gray-500" href="#">Show All Alerts</a>
+                                @endif
+                                @if($notification->type=="App\Notifications\ApprovedIssueNotification")
+ <a class="dropdown-item d-flex align-items-center"  id="{{ $notification->id }}" onclick="markAsRead(this.id)">
+                                    <div class="mr-3">
+                                         <div class="icon-circle bg-warning">
+                                            <i class="fas fa-exclamation-triangle text-white"></i>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        
+                                        <div class="small text-gray-500">Stock issued with number {{ $notification->data['issue_approved'] }} status</div>
+                                        <span class="font-weight-bold">{{ $notification->data['message'] }}</span>
+                
+                                    </div>
+                                  
+                                </a>
+                                @endif
+
+                                                 @if($notification->type=="App\Notifications\PendingIssueNotification")
+ <a class="dropdown-item d-flex align-items-center"  id="{{ $notification->id }}" onclick="markAsRead(this.id)">
+                                    <div class="mr-3">
+                                         <div class="icon-circle bg-warning">
+                                            <i class="fas fa-exclamation-triangle text-white"></i>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        
+                                        <div class="small text-gray-500">Pending Stock approval with transfer number {{ $notification->data['stock_transfer_no'] }} </div>
+                                        <span class="font-weight-bold">Made by {{ $notification->data['issuerer'] }}  to {{$notification->data['lab_name']}}</span>
+                
+                                    </div>
+                                  
+                                </a>
+                                @endif               
+                                  @empty
+                                      <p style="text-align:center"> No notification</p>
+                                   
+                                 @endforelse
+                               
+                                <a class="dropdown-item text-center small text-gray-500" href="#" hidden>Show All Alerts</a>
                             </div>
                         </li>
-
                         <!-- Nav Item - Messages -->
                         <li class="nav-item dropdown no-arrow mx-1" hidden >
                             <a class="nav-link dropdown-toggle" href="#" id="messagesDropdown" role="button"
@@ -222,6 +244,51 @@ var login="{{url('/')}}"
             }
         });
                         })
+
+
+
+                        function showNotification(id){
+var view_notification = "{{route('notifications.show')}}"
+  $.ajax({
+      method: "GET",
+
+      url: view_notification,
+      data: {
+          id: id,
+      },
+
+      success: function (data) {
+          $("#show_notification").html(data);
+          $("#notif").modal("show"); // show bootstrap modal
+          $(".modal-title").text(" Stock Take Details ");
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+          // console.log(get_case_next_modal)
+          alert("Error " + errorThrown);
+      },
+  });
+                        }
+function markAsRead(id){
+   var view_notification = "{{route('notifications.markasread')}}"
+  $.ajax({
+      method: "GET",
+      dataType:"JSON",
+
+      url: view_notification,
+      data: {
+          id: id,
+      },
+
+      success: function (data) {
+          location.reload();
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+          // console.log(get_case_next_modal)
+          alert("Error " + errorThrown);
+      },
+  }); 
+}
+  
                      </script>
                         </li>
 

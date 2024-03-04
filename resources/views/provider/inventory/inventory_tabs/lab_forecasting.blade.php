@@ -60,6 +60,13 @@
   </div></div>
 
        <h5 class="card-title"><strong>Forecast</strong></h5>
+
+        @if(auth()->user()->authority==2)
+        <div class="dropdown" style="text-align:right">
+     
+    <a  type="button" href="#"  id="view_orders" class="btn btn-info">   <i class="fa fa-check"></i>Approve Orders</a>
+      </div>
+      @endif
         <div id='real_table'></div>
         <div class="table-responsive">
         <table class="table table-sm" id="forecast_table">

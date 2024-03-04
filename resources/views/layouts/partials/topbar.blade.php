@@ -65,7 +65,7 @@
                                         </div>
                                     </div>
                                     <div>
-                                        
+                                    
                                         <div class="small text-gray-500">Stock Taken on {{ $notification->data['stock_take_date'] }} has Issues</div>
                                         <span class="font-weight-bold">{{ $notification->data['count'] }} Items needs reviewing</span>
                 
@@ -73,8 +73,42 @@
                                   
                                 </a>
                                 @endif
+                                @if($notification->type=="App\Notifications\ApprovedIssueNotification")
+ <a class="dropdown-item d-flex align-items-center"  id="{{ $notification->id }}" onclick="markAsRead(this.id)">
+                                    <div class="mr-3">
+                                         <div class="icon-circle bg-warning">
+                                            <i class="fas fa-exclamation-triangle text-white"></i>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        
+                                        <div class="small text-gray-500">Stock issued with number {{ $notification->data['issue_approved'] }} status</div>
+                                        <span class="font-weight-bold">{{ $notification->data['message'] }}</span>
+                
+                                    </div>
+                                  
+                                </a>
+                                @endif
+
+                                                 @if($notification->type=="App\Notifications\PendingIssueNotification")
+ <a class="dropdown-item d-flex align-items-center"  id="{{ $notification->id }}" onclick="markAsRead(this.id)">
+                                    <div class="mr-3">
+                                         <div class="icon-circle bg-warning">
+                                            <i class="fas fa-exclamation-triangle text-white"></i>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        
+                                        <div class="small text-gray-500">Pending Stock approval with transfer number {{ $notification->data['stock_transfer_no'] }} </div>
+                                        <span class="font-weight-bold">Made by {{ $notification->data['issuerer'] }}  to {{$notification->data['lab_name']}}</span>
+                
+                                    </div>
+                                  
+                                </a>
+                                @endif               
                                   @empty
-                                    no notification
+
+                                      <p style="text-align:center"> No notification</p>
                                    
                                  @endforelse
                                
@@ -190,6 +224,7 @@ var url="{{route('logout')}}"
 var login="{{url('/')}}"
 
 
+
                            event.preventDefault();
                 
                           $.ajaxSetup({
@@ -233,6 +268,26 @@ var view_notification = "{{route('notifications.show')}}"
       },
   });
                         }
+function markAsRead(id){
+   var view_notification = "{{route('notifications.markasread')}}"
+  $.ajax({
+      method: "GET",
+      dataType:"JSON",
+
+      url: view_notification,
+      data: {
+          id: id,
+      },
+
+      success: function (data) {
+          location.reload();
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+          // console.log(get_case_next_modal)
+          alert("Error " + errorThrown);
+      },
+  }); 
+}
                      </script>
                         </li>
 

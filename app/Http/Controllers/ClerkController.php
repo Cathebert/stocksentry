@@ -32,6 +32,13 @@ class ClerkController extends Controller
    {
 $data['lab_name']='Logged Into: '.$lab->lab_name;
 }
+if($is_registered->is_registered==1){
+     $data['users'] = Auth::user();
+return view('initialization.setup',$data);
+}
+else{
     return view('clerk.layout.index',$data);
+}
+
     }
 }

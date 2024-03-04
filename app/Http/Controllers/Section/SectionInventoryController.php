@@ -132,7 +132,7 @@ $data['lab_name']='Logged Into: '.$lab->lab_name;
     }
 
     public function showSectionDisposal(){
-             $lab=Laboratory::where('id',auth()->user()->laboratory_id)->select('lab_name')->first();
+    $lab=Laboratory::where('id',auth()->user()->laboratory_id)->select('lab_name')->first();
    
    $section=LaboratorySection::where('id',auth()->user()->section_id)->select('section_name')->first();
    if($section){

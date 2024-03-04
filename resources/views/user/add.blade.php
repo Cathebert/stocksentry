@@ -82,9 +82,9 @@
 
    
   <option value="1">Store Admin</option>
-   <option value="2">Manager</option>
+  <option value="2">Manager</option>
   <option value="3">Lab User</option>
-    
+  <option value="4">ColdRoom User</option> 
    
   </select>
   </div>

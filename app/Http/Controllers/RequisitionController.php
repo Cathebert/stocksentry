@@ -10,6 +10,8 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use App\Jobs\updateStore;
 use DB;
+use App\Notifications\PendingRequsitionNotification;
+use App\Notifications\ApprovedRequestNotification;
 use App\Models\ConsolidateHistory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Worksheet\AutoFilter;
@@ -552,11 +554,20 @@ $issueDetails->updated_at=NULL;
 $issueDetails->save();
 $number=str_pad($issue_id, 4, '0', STR_PAD_LEFT);
 }
+
 DB::commit();
-$test="Request to Issue has been made, pending Approval";
+
+$approvers=User::where([['authority','=',2],['laboratory_id','=',auth()->user()->laboratory_id]])->get();
+$requested_by=auth()->user()->name.' '.auth()->user()->last_name;
+$request_no=$request->form_data['sr_number'];
+foreach($approvers as $user){
+
+  $user->notify(new PendingRequsitionNotification($request_no,$requested_by))
+}
+$test="Request  has been made, pending Approval";
   return response([
 'message'=> $test,
-'sr_number'=>'SR'.$number,
+'sr_number'=>'SR '.$number,
 'error'=>false,
 
   ]);
@@ -793,6 +804,10 @@ else{
 'approved_by'=>auth()->user()->id,
 'updated_at'=>now()
   ]);
+  $requested_by=Requisition::where('id',$request->id)->select('requested_by','sr_number')->first();
+  $user=User::where('id',auth()->user()->id)->select('name','last_name')->first();
+  $approved_by=$user->name.' '.$user->last_name;
+  $user->notify(new ApprovedRequestNotification($requested_by->sr_number,$approved_by));
   $requisition= Requisition ::where([['lab_id','=',auth()->user()->laboratory_id],['status','=','approved']])->count();
   return response()->json([
 'message'=>"Order  been  approved  successfully",

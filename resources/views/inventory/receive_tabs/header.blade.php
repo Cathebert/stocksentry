@@ -16,5 +16,7 @@
   <li  role="presentation" class="@if(Request::segment(2)=='all-received')active @ else @endif">
     <a class="nav-link @if(Request::segment(2)=='all-received')active @ else @endif" role="tab" type="button"   href="{{route('admin.all-received')}}"><strong>All Receipts </strong></a>
   </li>
-  
+  <li  role="presentation" class="@if(Request::segment(2)=='received-status')active @ else @endif">
+    <a class="nav-link @if(Request::segment(2)=='received-status')active @ else @endif" role="tab" type="button"   href="{{route('admin.received-status')}}"><strong>Received Status</strong></a>
+  </li>
 </ul>

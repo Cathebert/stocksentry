@@ -29,15 +29,28 @@
   </div>
 </div>
 <div class="table-responsive">
+  
         <table class="table table-bordered table-striped table-sm table-hover" id="item_forcast" width="100%">
     <thead class="thead-light">
     <tr>
+      @if(auth()->user()->laboratory_id!=0)
       <th scope="col">Select</th>
       <th scope="col">Item Name</th>
       <th scope="col">Code</th>
       <th scope="col">UOM</th>
       <th scope="col">On Hand</th>
       <th scope="col"> In Store</th> 
+      @else
+
+ <th scope="col">Select</th>
+      <th scope="col">Item Name</th>
+      <th scope="col">Code</th>
+      <th scope="col">UOM</th>
+      <th scope="col">In Labs</th>
+      <th scope="col">On Hand</th> 
+
+      @endif
+
         </tr>
   </thead>
   <tbody>
