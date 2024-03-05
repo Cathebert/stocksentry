@@ -155,8 +155,8 @@
                     data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
                         <h6 class="collapse-header">Contracts</h6>
-                        <a class="collapse-item" href="{{route('contract.add')}}">Add Contract</a>
-                        <a class="collapse-item" href="{{route('supplier.view')}}">All Contracts</a>
+                        <a class="collapse-item" href="{{route('contract.add')}}">Show Contract</a>
+                      
                        
                        
                     

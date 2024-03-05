@@ -113,6 +113,10 @@ Route::get('/contract-load',[ContractController::class,'load'])->name('contract.
 Route::get('/contract-add',[ContractController::class,'showModal'])->name('contract.show_modal');
 Route::post('/contract-save',[ContractController::class,'saveContract'])->name('contract.save');
 Route::post('/sub-type',[ContractController::class,'saveSubscriptionType'])->name('sub.type');
+Route::get('/view-contract',[ContractController::class,'viewContract'])->name('contract.view');
+Route::get('/update-contract',[ContractController::class,'updateContract'])->name('contract.update');
+Route::post('/keepup-contract',[ContractController::class,'keepupContract'])->name('contract.keepup');
+Route::get('/filter-contract',[ContractController::class,'filterContract'])->name('contract.filter');
 //____________________________________Admin Stock History___________________________________//
 Route::get('/stock_view',[StockTakeController::class,'stockViewHistory'])->name('stock.view_history');
 

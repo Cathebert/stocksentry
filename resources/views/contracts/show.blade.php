@@ -26,7 +26,15 @@
             </div>
         </div>
   <div class="col-sm-12">
-    
+         @if ($errors->any())
+    <div class="alert alert-danger">
+        <ul>
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif 
     <div class="card">
  
       <div class="card-body">
@@ -37,12 +45,15 @@
         <form method="post" id="form_id">
           @csrf
          <input type="hidden" id="contract_url" value="{{route('contract.load')}}"/>
-            <input type="hidden" id="shoW_modal" value="{{route('contract.show_modal')}}"/>
+        <input type="hidden" id="shoW_modal" value="{{route('contract.show_modal')}}"/>
+        <input type="hidden" id="view_contract" value="{{route('contract.view')}}"/>
+        <input type="hidden" id="update_contract" value="{{route('contract.update')}}"/>
+        <input type="hidden" id="filter" value="{{route('contract.filter')}}"/>
             <div class="row">
     <div class="col-md-3 col-sm-12 col-xs-12 form-group" >
   <div class="input-group">
   <span class="input-group-text btn btn-secondary">Contract #:</span>
-  <input type="text" aria-label="First name" class="form-control"  name="contract_name" id="contract_id">
+  <input type="text" aria-label="First name" class="form-control"  name="contract_number" id="contract_id" oninput="filterByNumber(this.value)">
   
 </div>
   </div>
@@ -52,7 +63,7 @@
   <div class="col-md-3 col-sm-12 col-xs-12 form-group" >
   <div class="input-group">
   <span class="input-group-text btn btn-secondary">Contract Name:</span>
-  <input type="text" aria-label="First name" class="form-control" name="contract_name" id="contract_id">
+  <input type="text" aria-label="First name" class="form-control" name="contract_name" id="contract_id" oninput="filterByName(this.value)">
   
 </div>
   </div>
@@ -125,13 +136,13 @@
      <th width="5%"> #</th>
          <th width="5%">Contract #</th>
           <th width="10%">Contract Name</th>
-          <th width="30%">Contract Description</th>
+          <th width="15%">Contract Description</th>
             <th width="10%">Contract Start </th>
           <th width="10%">Contract End </th>
           <th width="10%">Sub. Type</th>
             <th width="10%">Supplier</th>
            <th width="10%">Status </th>
-            <th width="10%">Action</th>
+            <th width="20%">Action</th>
 			</tr>
            
   </thead>

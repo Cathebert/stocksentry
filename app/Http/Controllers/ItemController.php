@@ -1888,6 +1888,8 @@ public function receivedItemCheckList(Request $request){
                         ->join('received_items as r','r.grn_number','=','inv.grn_number')
                         ->join('received_item_checklist as rc','rc.grn_number','=','r.grn_number')
                         ->join('suppliers as s','s.id','=','r.supplier_id')
+                        ->where('r.lab_id',auth()->user()->laboratory_id)
+                        ->orderBy
                         ->get();
         //dd($data['items']);
 

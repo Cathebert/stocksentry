@@ -115,7 +115,49 @@
     <input type="text" class="form-control" id="grn_number"  name="grn_number" >
   </div>
 </div>
+<hr>
+<div class="row">
+   <div class="col-md-3 col-sm-12 col-xs-12 form-group"  >
+    <label for="exampleInputPassword1">Checked Off By</label>
+    <select class="form-control" id="checked_off_by" name="checked_off_by" style="width: 75%">
+  @foreach($users as $user)
+    <option value="{{ $user->id }}">{{$user->name.' '.$user->last_name}}</option>
+    @endforeach
+ 
+  </select>
+  </div>
+   <div class="col-md-3 col-sm-12 col-xs-12 form-group">
+    <label for="exampleInputPassword1">Check Off Date</label>
+    <input type="date" class="form-control" id="check_off_date" name="check_off_date" value="{{ date('Y-m-d')}}">
+  </div>
+     <div class="col-md-3 col-sm-12 col-xs-12 form-group"  >
 
+       <label for="exampleFormControlTextarea1">Comment: <span class="text-danger"></span></label>
+    <textarea class="form-control"  rows="3" name="check_off_comment" id="check_off_comment" style="background-color:#fffff"></textarea>
+
+</div>
+</div>
+<div class="row">
+     <div class="col-md-3 col-sm-12 col-xs-12 form-group"  >
+    <label for="exampleInputPassword1">Reviewed By</label>
+    <select class="form-control" id="reviewed_by" name="reviewed_by" style="width: 75%">
+  @foreach($users as $user)
+    <option value="{{ $user->id }}">{{$user->name.' '.$user->last_name}}</option>
+    @endforeach
+ 
+  </select>
+  </div>
+   <div class="col-md-3 col-sm-12 col-xs-12 form-group">
+    <label for="exampleInputPassword1">Reviewed Date</label>
+    <input type="date" class="form-control" id="reviewed_date" name="reviewed_date" value="{{ date('Y-m-d')}}" >
+  </div>
+   <div class="col-md-3 col-sm-12 col-xs-12 form-group"  >
+
+       <label for="exampleFormControlTextarea1">Reviewer Comment: <span class="text-danger"></span></label>
+    <textarea class="form-control"  rows="3" name="reviewer_comment" id="reviewer_comment" style="background-color:#fffff"></textarea>
+
+</div>
+</div>
 </form>
 </div>
 <hr></br>
