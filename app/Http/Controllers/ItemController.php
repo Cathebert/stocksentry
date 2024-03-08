@@ -576,7 +576,7 @@ protected function validateItemInput (array $data){
        $temp->storage_location=NULL;
        $temp->item_pp=$request->item_pp;
        $temp->has_expiry=$request->has_expiry;
-     
+     $temp->any_damaged=$request->any_damaged;
        $temp->suitable_for_use=$request->suitable_for_use;
 
        $temp->correct_temp=$request->correct_temp;
@@ -784,6 +784,7 @@ $itemchecklist->grn_number=$request->grn_number;
 $itemchecklist->inventory_id=$item_id;
 $itemchecklist->item_id=$temp->item_id;
 $itemchecklist->any_expired=$temp->any_expired;
+$itemchecklist->any_damaged=$temp->any_damaged;
 $itemchecklist->correct_temp=$temp->correct_temp;
 $itemchecklist->suitable_for_use=$temp->suitable_for_use;
 $itemchecklist->save();
@@ -1892,5 +1893,216 @@ public function receivedItemCheckList(Request $request){
         //dd($data['items']);
 
     return view('inventory.receive_tabs.received_status',$data);
+}
+
+public function receivedCheckListLoad(Request $request){
+  $columns = array(
+            0 =>'id',
+            1=>'receiving_date',
+            2=> 'Supplier',
+            3=>'Received_by',
+            4=>'action' ,
+            5=>'checked_by',
+            6=>'reviewed_by'
+        ); 
+   $totalData = DB::table('received_items as t') 
+              ->join('suppliers AS s', 's.id', '=', 't.supplier_id')
+              ->select('t.id as id','t.grn_number','t.received_by','s.supplier_name','t.receiving_date')
+          ->where('t.lab_id','=',auth()->user()->laboratory_id)
+          ->count();
+
+
+
+            $totalRec = $totalData;
+          // $totalData = DB::table('appointments')->count();
+
+          $limit = $request->input('length');
+          $start = $request->input('start');
+          $order = $columns[$request->input('order.0.column')];
+          $dir = $request->input('order.0.dir');
+
+           $search = $request->input('search.value');
+            $terms = DB::table('received_items as t') 
+                ->join('suppliers AS s', 's.id', '=', 't.supplier_id')
+                
+               ->select('t.id as id','t.grn_number','t.received_by','t.checked_off_by','t.reviewed_by','s.supplier_name','t.receiving_date')
+         ->where('t.lab_id','=',auth()->user()->laboratory_id)
+          
+                ->where(function ($query) use ($search){
+                  return  $query->where('t.grn_number', 'LIKE', "%{$search}%")
+                  ->orWhere('s.supplier_name','LIKE',"%{$search}%");
+                      
+                     
+            })
+            //->offset($start)
+            //->limit($limit)
+            ->orderBy($order, $dir)
+            ->get();
+
+          $totalFiltered =  $totalRec ;
+//  0 => 'id',
+    
+          $data = array();
+          if (!empty($terms)) {
+$x=1;
+ 
+
+            foreach ($terms as $term) {
+
+$print=route('received.checklistprint',['id'=>$term->grn_number,'type'=>'print']);
+$download= route('received.checklistprint',['id'=>$term->grn_number,'type'=>'download']);
+$checker=User::where('id',$term->checked_off_by)->select('name','last_name')->first();
+$reviwer=User::where('id',$term->reviewed_by)->select('name','last_name')->first();
+                $nestedData['id']=$term->grn_number;
+                $nestedData['receiving_date']=$term->receiving_date;
+              $nestedData['Supplier']= $term->supplier_name;
+                 $nestedData['checked_by']= $checker->name?? "";
+                  $nestedData['reviewed_by']= $reviwer->name?? "";
+                $nestedData['Received_by']= $term->received_by;
+               
+                $nestedData['action']= "<a href='#' id='$term->grn_number' onclick=' showItemDetails(this.id)' ><i class='fa fa-eye'></i><u>View</u></a>";
+                 $nestedData['action'].='<ul class="navbar-nav"><li class="nav-item dropdown" >
+         <a class="nav-link dropdown-toggle " href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        <i class="fa fa-file"></i>   Export To
+        </a>
+         <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+          <a class="dropdown-item" href='.$download.' name="download" id='.$term->grn_number.' onclick=generatePDF(this.id,this.name)><i class="fa fa-file-pdf" aria-hidden="true"></i> PDF</a>
+        
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item"  href='.$print.' id='.$term->grn_number.' ><i class="fa fa-print" aria-hidden="true"></i> Print</a>
+        </div>
+      </li></ul>';
+               
+                   $x++;
+                $data[] = $nestedData;
+           }
+      }
+
+      $json_data = array(
+        "draw" => intval($request->input('draw')),
+        "recordsTotal" => intval($totalData),
+        "recordsFiltered" => intval($totalFiltered),
+        "data" => $data,
+    );
+
+      echo json_encode($json_data);
+          
+
+   
+}
+
+public function checkListDetails(Request $request){
+     $value = $request->id;
+$data['value']=$value;
+
+$infor=ReceivedItem::where('grn_number',$value)->select('lab_id','section_id','receiving_date','received_by','receiver_id','supplier_id','po_reference','checked_off_by','checked_off_date','checked_off_comment','reviewed_by','reviewed_date','reviewed_comment')->first();
+//dd($infor);
+$data['supplier']=Supplier::where('id',$infor->supplier_id)->select('supplier_name','address','email','phone_number')->first();
+$lab=Laboratory::where('id',$infor->lab_id)->select('lab_name')->first();
+if($infor->section_id!=0){
+   $section=LaboratorySection::where('id',$infor->section_id)->select('section_name')->first();
+   $sec=$section->section_name??'';
+   $data['lab']=$lab->lab_name.' | '.$sec;
+}
+$checker=User::where('id',$infor->reviewed_by)->select('name','last_name','signature')->first();
+$checker_first=$checker->name??'';
+$checker_last=$checker->last_name??'';
+$data['checker']=$checker_first.' '.$checker_last;
+$data['checker_date']=$infor->checked_off_date??"";
+$data['checker_comment']=$infor->checked_off_comment??"";
+$data['checker_signature']=$checker->signature??"";
+
+$reviewer=User::where('id',$infor->reviewed_by)->select('name','last_name','signature')->first();
+$reviewer_name=$reviewer->name??'';
+$reviewer_last=$reviewer->last_name??'';
+$data['reviewer']=$reviewer_name.' '.$reviewer_last;
+$data['reviewer_comment']=$infor->reviewed_comment??"";
+$data['reviewer_date']=$infor->reviewed_date??"";
+$data['reviewer_signature']=$reviewer->signature??"";
+$data['lab']=$lab->lab_name;
+$data['po_ref']=$infor->po_reference;
+$data['date_received']=date('d, M Y',strtotime($infor->receiving_date));
+$data['print_data']= DB::table('items as t') 
+              ->join('inventories AS i', 'i.item_id', '=', 't.id')
+
+              ->join('received_item_checklist AS c','i.id','=','c.inventory_id')
+             
+              ->where([['i.grn_number','=',$value],['i.lab_id','=',auth()->user()->laboratory_id]])
+              ->get();
+
+//$received=ReceivedItem::where('grn_number',$value)->select('receiver_id')->first();
+if($infor->receiver_id!=NULL){
+$user=User::where('id',$infor->receiver_id)->select('name','last_name','signature')->first();
+$data['signature']=$user->signature;
+$data['received_by']=$infor->received_by??"";
+}
+else{
+   $data['signature']='';
+}
+
+
+    return view('inventory.modal.received_checklist_details_modal',$data);
+}
+public function printReceivedChecklist($id, $type){
+    $value = $id;
+$data['value']=$value;
+
+$infor=ReceivedItem::where('grn_number',$value)->select('lab_id','section_id','receiving_date','received_by','receiver_id','supplier_id','po_reference','checked_off_by','checked_off_date','checked_off_comment','reviewed_by','reviewed_date','reviewed_comment')->first();
+//dd($infor);
+$data['supplier']=Supplier::where('id',$infor->supplier_id)->select('supplier_name','address','email','phone_number')->first();
+$lab=Laboratory::where('id',$infor->lab_id)->select('lab_name')->first();
+if($infor->section_id!=0){
+   $section=LaboratorySection::where('id',$infor->section_id)->select('section_name')->first();
+   $sec=$section->section_name??'';
+   $data['lab']=$lab->lab_name.' | '.$sec;
+}
+$checker=User::where('id',$infor->reviewed_by)->select('name','last_name','signature')->first();
+$checker_first=$checker->name??'';
+$checker_last=$checker->last_name??'';
+$data['checker']=$checker_first.' '.$checker_last;
+$data['checker_date']=date('d, M Y',strtotime($infor->checked_off_date))??"";
+$data['checker_comment']=$infor->checked_off_comment??"";
+$data['checker_signature']=$checker->signature??"";
+
+$reviewer=User::where('id',$infor->reviewed_by)->select('name','last_name','signature')->first();
+$reviewer_name=$reviewer->name??'';
+$reviewer_last=$reviewer->last_name??'';
+$data['reviewer']=$reviewer_name.' '.$reviewer_last;
+$data['reviewer_comment']=$infor->reviewed_comment??"";
+$data['reviewer_date']=date('d, M Y',strtotime($infor->reviewed_date))??"";
+$data['reviewer_signature']=$reviewer->signature??"";
+$data['lab']=$lab->lab_name;
+$data['po_ref']=$infor->po_reference;
+$data['date_received']=date('d, M Y',strtotime($infor->receiving_date));
+$data['print_data']= DB::table('items as t') 
+              ->join('inventories AS i', 'i.item_id', '=', 't.id')
+
+              ->join('received_item_checklist AS c','i.id','=','c.inventory_id')
+             
+              ->where([['i.grn_number','=',$value],['i.lab_id','=',auth()->user()->laboratory_id]])
+              ->get();
+
+//$received=ReceivedItem::where('grn_number',$value)->select('receiver_id')->first();
+if($infor->receiver_id!=NULL){
+$user=User::where('id',$infor->receiver_id)->select('name','last_name','signature')->first();
+$data['signature']=$user->signature;
+$data['received_by']=$infor->received_by??"";
+}
+else{
+   $data['signature']='';
+} 
+ if($type=="print"){
+ $pdf=PDF::loadView('pdf.received_checklist_note',$data); 
+  return $pdf->stream();
+
+ }
+
+ if($type=="download"){
+  $pdf=PDF::loadView('pdf.received_checklist_note',$data);
+                return $pdf->download('GRN_'.$value.'.pdf'); 
+
+
+   
+ }
 }
 }

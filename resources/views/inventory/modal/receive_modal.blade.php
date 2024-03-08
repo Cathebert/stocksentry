@@ -109,6 +109,16 @@
  
   </select>
   </div>
+   <div class="col-md-4 col-sm-12 col-xs-12 form-group" id="any_expired" >
+    <label for="exampleInputPassword1">Any Items Damaged? (Y/N)
+ ?</label>
+    <select class="form-control" id="any_damaged" name="any_damaged" style="width: 75%">
+   <option value="no" selected>No</option>
+    <option value="yes">Yes</option>
+    
+ 
+  </select>
+  </div>
 @if($item->store_temp =='cold chain')
     <div class="col-md-4 col-sm-12 col-xs-12 form-group" >
     <label for="exampleInputPassword1">Items received at correct temperature?</label>

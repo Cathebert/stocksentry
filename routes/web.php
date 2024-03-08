@@ -233,6 +233,10 @@ Route::get('/item_list_download/{name}',[ItemController::class,'downloadItems'])
 Route::post('/item_edit',[ItemController::class,'deleteItemDetails'])->name('item.item_delete');
 Route::post('/remove_all',[ItemController::class,'deleteAllEntries'])->name('item.item_delete_all');
 Route::get('/received-status',[ItemController::class ,'receivedItemCheckList'])->name('admin.received-status');
+Route::get('/received_checklist',[ItemController::class,'receivedCheckListLoad'])->name('received.status');
+Route::get('/received_checklist_details',[ItemController::class,'checklistDetails'])->name('received.status_view_details');
+Route::get('/received_checklist_print/{id}/{type}',[ItemController::class,'printReceivedChecklist'])->name('received.checklistprint');
+
 //------------------------Requisitions--------------------------------->
 Route::get('/requistions',[RequisitionController::class,'show'])->name('requisition.getRequests');
 Route::get('/approved-requisitions', [RequisitionController::class,'showApproved'])->name('requests.approved');

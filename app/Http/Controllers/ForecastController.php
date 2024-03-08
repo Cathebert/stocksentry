@@ -825,7 +825,13 @@ $columns = array(
             6=>'unit_issue',
             7=>'store_temp',
             8=>'total',
+
             9=>'options',
+            10=>'request',
+            11=>'cost',
+            12=>'quantity'
+
+
           
         ); 
 
@@ -834,9 +840,12 @@ $columns = array(
                   ->join('inventories as i','i.item_id','=','t.id')
                   ->join('item_order_details as rd','rd.inventory_id','=','i.id')
                   ->join('item_orders as r','r.id','=','rd.order_id')
+                  ->join('laboratories as l','l.id','=','r.lab_id')
                   ->select(
                     'i.id as id',
                     'r.id as order_id',
+                    'r.lab_id',
+                    'rd.supplier_id',
                     't.uln',
                     't.code',
                     't.item_name',
@@ -844,13 +853,17 @@ $columns = array(
                     't.catalog_number',
                     't.is_hazardous',
                     't.unit_issue',
+                    't.warehouse_size',
+                    'i.cost',
+                    'i.quantity',
                     't.store_temp',
+                    'l.lab_name',
                     'r.lab_id',
                     'r.ordered_by',
                     'r.approved_by',
                      DB::raw('SUM(rd.ordered_quantity) as quantity_requested'))
                    ->where([['r.is_approved','=','no'],['r.is_marked','=','yes']])
-                   ->groupBy('t.item_name')
+                   ->groupBy('t.item_name','r.id')
                    ->count();
            // ->where('t.expiry_date', '>', date('Y-m-d') )
          
@@ -869,9 +882,13 @@ $columns = array(
             $terms = DB::table('items as t')
                   ->join('inventories as i','i.item_id','=','t.id')
                   ->join('item_order_details as rd','rd.inventory_id','=','i.id')
-                  ->leftjoin('item_orders as r','r.id','=','rd.order_id')
+                  ->join('item_orders as r','r.id','=','rd.order_id')
+                   ->join('laboratories as l','l.id','=','r.lab_id')
                   ->select(
                     'i.id as id',
+                    'r.id as order_id',
+                    'r.lab_id',
+                    'rd.supplier_id',
                     't.uln',
                     't.code',
                     't.item_name',
@@ -879,7 +896,11 @@ $columns = array(
                     't.catalog_number',
                     't.is_hazardous',
                     't.unit_issue',
+                    't.warehouse_size',
+                    'i.cost',
+                    'i.quantity',
                     't.store_temp',
+                    'l.lab_name',
                     'r.lab_id',
                     'r.ordered_by',
                     'r.approved_by',
@@ -895,7 +916,7 @@ $columns = array(
             })
             ->offset($start)
             ->limit($limit)
-            ->groupBy('t.item_name')
+            ->groupBy('t.item_name','r.lab_id')
             ->get();
 
           $totalFiltered =  $totalRec ;
@@ -907,17 +928,21 @@ $x=1;
 
 
             foreach ($terms as $term) {
-
+$total=$term->quantity_requested*$term->cost;
  $nestedData['item_id']=$term->requisitions_ids;
-                $nestedData['id']=$term->id;
-                   $nestedData['code']=$term->code;
+                $nestedData['id']=$x;
+                
                 $nestedData['item_name']=$term->item_name;
+                 $nestedData['request']=$term->lab_name;
+                    $nestedData['code']=$term->code;
                 $nestedData['batch_number']= $term->batch_number;
                $nestedData['catalog_number']= $term->catalog_number;
                $nestedData['is_hazardous']= $term->is_hazardous;
                 $nestedData['unit_issue']= $term->unit_issue;
                 $nestedData['store_temp']= $term->store_temp;
-                 $nestedData['total']= '<strong>'.$term->quantity_requested.'</strong>';
+                 $nestedData['total']= $term->quantity_requested;
+                 $nestedData['cost']=$term->cost;
+           $nestedData['quantity']='<strong>'.$total.'</strong>';
                 /*$nestedData['options']= " <a class='btn btn-danger btn-sm'   id='$term->id' onclick='RemoveForConsolidation(this.id)' ><i class='fa fa-trash'></i> remove</a> ";/*/
       
                 
@@ -996,9 +1021,12 @@ $data[]= $nested;
                   ->join('inventories as i','i.item_id','=','t.id')
                   ->join('item_order_details as rd','rd.inventory_id','=','i.id')
                    ->join('item_orders as r','r.id','=','rd.order_id')
+                   ->join('laboratories as l','l.id','=','r.lab_id')
                   ->select(
                     'i.id as id',
                     'r.id as order_id',
+                    'r.lab_id',
+                    'rd.supplier_id',
                     't.uln',
                     't.code',
                     't.item_name',
@@ -1006,19 +1034,58 @@ $data[]= $nested;
                     't.catalog_number',
                     't.is_hazardous',
                     't.unit_issue',
+                    't.warehouse_size',
+                    'i.cost',
+                    'i.quantity',
                     't.store_temp',
+                    'l.lab_name',
                     'r.lab_id',
                     'r.ordered_by',
                     'r.approved_by',
-                     DB::raw('GROUP_CONCAT(r.id) as ids'),
-                     DB::raw('SUM(rd.ordered_quantity) as quantity_requested'))
+                     //DB::raw('GROUP_CONCAT(r.id) as ids'),
+                      DB::raw('SUM(rd.ordered_quantity) as quantity_requested'))
                    ->where([['r.is_approved','=','no'],['r.is_marked','=','yes']])
-                   ->groupBy('t.item_name')
+                   ->where('t.item_category','ambient goods')
+            ->groupBy('t.item_name','r.lab_id')
                    ->get();
-//dd($report);
+
+
+    $perishable =DB::table('items as t')
+                  ->join('inventories as i','i.item_id','=','t.id')
+                  ->join('item_order_details as rd','rd.inventory_id','=','i.id')
+                   ->join('item_orders as r','r.id','=','rd.order_id')
+                   ->join('laboratories as l','l.id','=','r.lab_id')
+                  ->select(
+                    'i.id as id',
+                    'r.id as order_id',
+                    'r.lab_id',
+                    'rd.supplier_id',
+                    't.uln',
+                    't.code',
+                    't.item_name',
+                    'i.batch_number',
+                    't.catalog_number',
+                    't.is_hazardous',
+                    't.unit_issue',
+                    't.warehouse_size',
+                    'i.cost',
+                    'i.quantity',
+                    't.store_temp',
+                    'l.lab_name',
+                    'r.lab_id',
+                    'r.ordered_by',
+                    'r.approved_by',
+                     //DB::raw('GROUP_CONCAT(r.id) as ids'),
+                   DB::raw('SUM(rd.ordered_quantity) as quantity_requested'))
+                   ->where([['r.is_approved','=','no'],['r.is_marked','=','yes']])
+                   ->where('t.item_category','perishable')
+                   ->groupBy('t.item_name','r.lab_id')
+                   ->get();
+
+
 $orders=ItemOrder::where([['is_approved','=','no'],['is_marked','=','yes']])->count();
      // dd($test);
-                   if(count($report)==0){
+                   if(count($report)==0 && count($perishable)==0){
                  return  back()->with('error',' Data was not found! ');
                    }
       /*$report = DB::table('requisitions as r')
@@ -1060,46 +1127,59 @@ $drawing->getShadow()->setDirection(45);
 $drawing->setWorksheet($spreadsheet->getActiveSheet());
 
 $spreadsheet->setActiveSheetIndex(0);
-$spreadsheet->getActiveSheet()->setCellValue('D8', 'SUPPLIER ORDERS CONSOLIDATION LIST ');
-$spreadsheet->getActiveSheet()->getStyle('D8')->getFont()->setBold(true);
+$spreadsheet->getActiveSheet()->setCellValue('D7', 'SUPPLIER ORDERS CONSOLIDATION LIST ');
+$spreadsheet->getActiveSheet()->getStyle('D7')->getFont()->setBold(true);
 
 $spreadsheet->getActiveSheet()
    
     ->setCellValue('A10', 'ULN')
-     ->setCellValue('B10', 'CODE')
-    ->setCellValue('C10', 'ITEM NAME')
-    ->setCellValue('D10', 'CATALOG NUMBER')
-    ->setCellValue('E10', 'HAZARDOUS')
-    ->setCellValue('F10', 'UNIT OF ISSUE')
-    ->setCellValue('G10', 'STORAGE TEMP.')
-    ->setCellValue('H10', 'QUANTITY REQUESTED')
+    ->setCellValue('B10','REQUESTED BY')
+     ->setCellValue('C10', 'CODE')
+      ->setCellValue('D10', 'SUPPLIER')
+      ->setCellValue('E10', 'CATALOG NUMBER')
+    ->setCellValue('F10', 'ITEM NAME')
+    ->setCellValue('G10', 'PACK SIZE')
+    ->setCellValue('H10', 'QUANTITY ORDERED')
+    ->setCellValue('I10', 'UNIT COST')
+    ->setCellValue('J10', 'TOTAL COST')
+    ->setCellValue('K10', 'HAZARDOUS')
+    ->setCellValue('L10', 'UNIT OF ISSUE')
+    ->setCellValue('M10', 'STORAGE TEMP.')
+   
    ;
 
 $num=11;
+$t=11;
   for ($x=0; $x<count($report); $x++){
-
-
+//$requester=Laboratory::where('id', $report[$x]->lab_id)->select("lab_name")->first();
+$supplier=Supplier::where('id',$report[$x]->supplier_id)->select('supplier_name')->first();
+$total=$report[$x]->quantity_requested*$report[$x]->cost;
   $data=[
 
     [
     $report[$x]->uln,
+     $report[$x]->lab_name,
     $report[$x]->code,
-    $report[$x]->item_name,
- 
+    $supplier->supplier_name,
     $report[$x]->catalog_number,
+    $report[$x]->item_name,
+    $report[$x]->warehouse_size,
+    $report[$x]->quantity_requested,
+    $report[$x]->cost,
+    $total,
     $report[$x]->is_hazardous,
     $report[$x]->unit_issue,
     $report[$x]->store_temp,
-    $report[$x]->quantity_requested,
+    
   ],
  
   ];
 
 $num++;
-    $spreadsheet->getActiveSheet()->getRowDimension($x)->setOutlineLevel(1);
-    $spreadsheet->getActiveSheet()->getRowDimension($x)->setVisible(false);
+   // $spreadsheet->getActiveSheet()->getRowDimension($x)->setOutlineLevel(1);
+   // $spreadsheet->getActiveSheet()->getRowDimension($x)->setVisible(false);
  $spreadsheet->getActiveSheet()->fromArray($data, null, 'A'.$num);
-   $spreadsheet->getActiveSheet()->getStyle('A'.$num.':H'.$num)->getFont()->setBold(true);
+   $spreadsheet->getActiveSheet()->getStyle('A'.$num.':M'.$num)->getFont()->setBold(true);
 
  
 
@@ -1107,72 +1187,56 @@ $num++;
 
  
 
-$t=$num;
- //$ids=explode(',',$report[$x]->ids);
-    
-    $data = array();
-    //for($i=0;$i<count($ids); $i++){
-$record= DB::table('inventories as inv')
-                  ->join('item_order_details  as r','inv.id','=','r.inventory_id')
-                  ->join('item_orders as rd','rd.id','=','r.order_id')
-                  ->leftjoin('users as u','u.id','=','rd.ordered_by')
-                  ->leftjoin('users as y','y.id','=','rd.approved_by')
-                  ->join('laboratories as l','l.id','=','rd.lab_id')
-                  
-                  ->select(
-                    'rd.order_number',
-                    'rd.id',
-                    'rd.section_id',
-                    'l.lab_name',
-                    'u.name',
-                    'u.last_name',
-                    'y.name as approved_name',
-                    'y.last_name as approved_lastname',
-                    'rd.created_at',
-                    'inv.cost',
-                    'r.ordered_quantity'
-                    )->where('inv.id',$report[$x]->id)
-                    ->where('rd.is_marked','yes')
-                    ->where('rd.is_approved','no')->get();
-                    
-   // dd($record);                
- foreach($record as $record)  { 
-     if($record->section_id!=NULL){
-         $section=LaboratorySection::where('id',$record->section_id)->select('section_name')->first();
-         $lab=$record->lab_name.' | '.$section->section_name;
-     }
-     else{
-       $lab=$record->lab_name;   
-     }
-  $da=[
-    [
-    'Lab Name:'.$lab,
-    'Requested By:'.$record->name,
-     'Approved By:'.$record->approved_name,
-  
-    ],
-    
-  ];
-$t++;
+//$t=$num;
 
-    $spreadsheet->getActiveSheet()->fromArray($da, null, 'A'.$t);
-    $spreadsheet->getActiveSheet()->setCellValue('H'.$t,  $record->ordered_quantity);
-     $spreadsheet->getActiveSheet()->getStyle('H'.$t)->getFont()->setBold(false);
-    
-    $spreadsheet->getActiveSheet()->getRowDimension($t)->setOutlineLevel(1);
-   $spreadsheet->getActiveSheet()->getRowDimension($t)->setVisible(false);
-   
-    }
-
-$spreadsheet->getActiveSheet()->getRowDimension($t+1)->setCollapsed(true);
-$num=$t;
 }
+$t=$num+2;
+if(count($perishable)>0){
+ $spreadsheet->getActiveSheet()->setCellValue('A'.$t, 'Perishable');   
+for ($x=0; $x<count($perishable); $x++){
+//$requester=Laboratory::where('id', $perishable[$x]->lab_id)->select("lab_name")->first();
+$supplier=Supplier::where('id',$perishable[$x]->supplier_id)->select('supplier_name')->first();
+$total=$perishable[$x]->quantity_requested*$perishable[$x]->cost;
+  $data=[
+
+    [
+    $perishable[$x]->uln,
+     $perishable[$x]->lab_name,
+    $perishable[$x]->code,
+    $supplier->supplier_name,
+    $perishable[$x]->catalog_number,
+    $perishable[$x]->item_name,
+    $perishable[$x]->warehouse_size,
+    $perishable[$x]->quantity_requested,
+    $perishable[$x]->cost,
+    $total,
+    $perishable[$x]->is_hazardous,
+    $perishable[$x]->unit_issue,
+    $perishable[$x]->store_temp,
+    
+  ],
+ 
+  ];
+
+$t++;
+    //$spreadsheet->getActiveSheet()->getRowDimension($x)->setOutlineLevel(1);
+    //$spreadsheet->getActiveSheet()->getRowDimension($x)->setVisible(false);
+ $spreadsheet->getActiveSheet()->fromArray($data, null, 'A'.$t);
+   $spreadsheet->getActiveSheet()->getStyle('A'.$t.':M'.$t)->getFont()->setBold(true);
+
+ 
 
 
+
+ 
+
+
+}
+}
 //$spreadsheet->getActiveSheet()->getRowDimension(81)->setCollapsed(true); 
 $step=$t+1;
-$spreadsheet->getActiveSheet()->getRowDimension($step)->setCollapsed(true); 
-$spreadsheet->getActiveSheet()->setShowSummaryBelow(false);
+//$spreadsheet->getActiveSheet()->getRowDimension($step)->setCollapsed(true); 
+//$spreadsheet->getActiveSheet()->setShowSummaryBelow(false);
 
 //$spreadsheet->getActiveSheet()->fromArray($data, null, 'A2');
 /*$spreadsheet->getActiveSheet()
@@ -1186,7 +1250,7 @@ $spreadsheet->getActiveSheet()->setShowSummaryBelow(false);
 
 // Create Table
 
-$table = new Table('A10:H'.$step, 'Exported');
+$table = new Table('A10:M'.$step, 'Exported');
 $spreadsheet->getActiveSheet()->setCellValue('A'.$step+3, 'Consolidated By: '.auth()->user()->name.' '.auth()->user()->last_name);
 $spreadsheet->getActiveSheet()->setCellValue('A'.$step+4, 'Consolidated Date: '.date('d,M Y',strtotime(now())));
 $spreadsheet->getActiveSheet()->setCellValue('A'.$step+5, 'Orders Affected: '.$orders);
@@ -1224,13 +1288,14 @@ $headers = [
 
 ]; 
 //Update order status
+//return response()->download($path,$name, $headers);
 try{
     DB::beginTransaction();
     ItemOrder::where('is_marked','yes')->update([
  'is_marked'=>'done',
 ]);
 $this->saveOrdersHistory($orders,$db_name); 
-  DB::commit();
+DB::commit();
 }
 catch(Exception $e){
 DB::rollback();

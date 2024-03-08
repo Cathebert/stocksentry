@@ -30,14 +30,15 @@
     <tr>
            
         <th scope="col">#</th>
+        <th scope="col">Item Name</th>
+      <th scope="col">Requested By</th>
        <th scope="col">Code</th>
-      <th scope="col">Item Name</th>
-      <th scope="col">Batch #</th>
-      <th scope="col">Catalog #</th>
        <th scope="col">Unit Issue</th>
       <th scope="col">Is Hazardous</th>
        <th scope="col">Storage Temp.</th>
-      <th scope="col">Total Requested</th>
+      <th scope="col">Quantity</th>
+      <th scope="col">Cost</th>
+      <th scope="col">Total</th>
 
   
       
@@ -75,22 +76,23 @@ var t;
  
         AutoWidth: false,
         columns: [
-             {
-            className: "dt-control",
-            orderable: false,
-            data: null,
-            defaultContent: "",
-        },
+         
            
+                {
+            data:"id"
+        },
+        
+           { data: "item_name" },
+            { data: "request" },
             { data: "code" },
-            { data: "item_name" },
-            { data: "batch_number" },
-            { data: "catalog_number" },
+           
             { data: "unit_issue" },
             { data: "is_hazardous" },
-            
             { data: "store_temp" },
             { data: "total" },
+             { data: "cost" },
+            { data: "quantity" },
+
            
          
            
@@ -111,37 +113,8 @@ var t;
             },
         ],
     });
-    t.on("click", "tbody tr", function () {
-   
-     let data = t.row(this).data();
-console.log(data)
-var tr = $(this).closest("tr");
-var row = t.row(tr);
 
-if (row.child.isShown()) {
-    row.child.hide();
-    tr.removeClass("shown");
-} else {
-    row.child(format(row.data())).show();
-    tr.addClass("shown");
-}
-  
-    // alert("You clicked on " + data["available"] + "'s row");
- });
- $("#marked_requests tbody").on("click", "td.dt-control", function () {
-    
-         var tr = $(this).closest("tr");
-         var row = t.row(tr);
-console.log(row)
-         if (row.child.isShown()) {
-             row.child.hide();
-             tr.removeClass("shown");
-         } else {
-             row.child(format(row.data())).show();
-             tr.addClass("shown");
-         }
-     
- });
+ 
 
  function format(rowData) {
     let more_details= $('#get_details').val();

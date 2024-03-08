@@ -1,5 +1,5 @@
  @extends('layouts.main')
-@section('title','Received Items')
+@section('title','Received Items Status')
 @push('style')
    
 @endpush
@@ -31,7 +31,8 @@
                <input type="hidden" class="form-control" id="inventory_received" value="{{route('item.recieved')}}">
             <input type="hidden" id="received_filters" value="{{route('items.filtered')}}"/>
             <input type="hidden" class="form-control" id="loadTable" value="{{route('item.getadded')}}">    
-         
+         <input type="hidden" id="received_status" value="{{route('received.status')}}"/>
+         <input type="hidden" id="view_received_status_details" value="{{route('received.status_view_details')}}"/>
             <div class="row">
     <div class="col-md-3 col-sm-12 col-xs-12 form-group" hidden>
   <div class="input-group">
@@ -139,36 +140,16 @@
 <thead class="thead-light">
     <tr>
        
-    
-        <th width="5%">ULN #</th>
-        <th width="10%">Item Name</th>
-          <th width="4%">Code #</th>
-          <th width="4%">Category #</th>
-         <th width="4%">Batch #</th>
-         <th width="6%">Supplied By </th>
-         <th width="4%">Pack Size</th>
-        <th width="10%">Any Expired </th>
-        <th width="10%">Received at correct Temp.</th>
-        <th width="10%">Suitable for use? (Y/N)</th>
-			</tr>
+ <th width="5%">GRN #</th>
+          <th width="20%">Received Date</th>
+          <th width="30%">Supplier</th>
+         <th width="20%">Checked By</th>
+          <th width="20%">Reviewed By</th>
+            <th width="20%">Received By</th>
+            <th width="20%">Action</th>
            
   </thead>
-     <tbody>
-        @foreach ( $items as $item)
-              <td> {{$item->uln }}  </td>
-        <td>{{$item->item_name  }}   </td>
-        <td> {{$item->code  }}  </td> 
-        <td>{{$item->catalog_number}}   </td>
-        <td>{{$item->batch_number}}   </td>
-          <td>{{$item->supplier_name}}   </td>
-        <td> {{$item->warehouse_size}}  </td>
-        <td>{{$item->any_expired}}   </td>
-        <td>{{$item->correct_temp}}   </td>
-        <td> {{$item->suitable_for_use}}  </td>  
-        @endforeach
-    
-
-</tbody>
+   
 </table>
       </div>
        </div>
@@ -188,10 +169,8 @@
             @endsection
 
     @push('js')
-       <script>
-        $(document).ready(function () {
-            $('#received_items_status').DataTable();
-        });
-    </script>
+    
+        <script src="{{asset('assets/admin/js/inventory/received_status.js') }}"></script>
+   
    
    @endpush

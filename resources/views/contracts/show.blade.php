@@ -38,6 +38,8 @@
           @csrf
          <input type="hidden" id="contract_url" value="{{route('contract.load')}}"/>
             <input type="hidden" id="shoW_modal" value="{{route('contract.show_modal')}}"/>
+
+            
             <div class="row">
     <div class="col-md-3 col-sm-12 col-xs-12 form-group" >
   <div class="input-group">
@@ -125,11 +127,13 @@
      <th width="5%"> #</th>
          <th width="5%">Contract #</th>
           <th width="10%">Contract Name</th>
-          <th width="30%">Contract Description</th>
+          <th width="15%">Contract Description</th>
             <th width="10%">Contract Start </th>
-          <th width="10%">Contract End </th>
-          <th width="10%">Sub. Type</th>
-            <th width="10%">Supplier</th>
+              <th width="5%">Frequency</th>
+               <th width="5%">Unit</th>
+          <th width="5%">Contract End </th>
+          <th width="10%">Contract Type</th>
+            <th width="5%">Supplier</th>
            <th width="10%">Status </th>
             <th width="10%">Action</th>
 			</tr>
@@ -159,6 +163,7 @@
        
 
               <script src="{{asset('assets/admin/js/inventory/contract.js') }}"></script>
- 
+ <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
+<script>dayjs().format()</script>
    
    @endpush
