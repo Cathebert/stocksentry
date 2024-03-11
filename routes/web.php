@@ -161,6 +161,10 @@ Route::get('/orders-received',[ForecastController::class,'receivedOrders'])->nam
 Route::get('/orders-consolidated',[ForecastController::class,'showOrderHistory'])->name('orders.consolidated');
 Route::get('/orders-load-consolidated',[ForecastController::class,'loadOrderHistory'])->name('consolidated.order_history');
 
+Route::get('/approve_order',[ForecastController::class,'loadOrders'])->name('forecast.load_approve');
+Route::get('/load_pending',[ForecastController::class,'loadPendingOrders'])->name('order.load_pending_approval');
+Route::post('/pending_approve',[ForecastController::class,'approvePendingOrder'])->name('forecast.mark_approved');
+
           
  //____________________________admin Reports________________________________//
 Route::get('/reports',[ReportController::class,'show'])->name('reports.show');
@@ -236,6 +240,7 @@ Route::get('/received-status',[ItemController::class ,'receivedItemCheckList'])-
 Route::get('/received_checklist',[ItemController::class,'receivedCheckListLoad'])->name('received.status');
 Route::get('/received_checklist_details',[ItemController::class,'checklistDetails'])->name('received.status_view_details');
 Route::get('/received_checklist_print/{id}/{type}',[ItemController::class,'printReceivedChecklist'])->name('received.checklistprint');
+
 
 //------------------------Requisitions--------------------------------->
 Route::get('/requistions',[RequisitionController::class,'show'])->name('requisition.getRequests');
@@ -382,6 +387,7 @@ Route::get('/lab_item_list',[LabInventoryController::class,'itemList'])->name('l
 Route::get('/load_item_list',[LabInventoryController::class,'loadItemList'])->name('lab_item.load');
 Route::get('/new-receipt',[LabInventoryController::class, 'receiveInventory'])->name('lab.new_receipt');
 Route::get('/all_receipts',[LabInventoryController::class, 'allReceivedInventory'])->name('lab.all_received');
+Route::get('/lab-received-checklist',[LabInventoryController::class,'checkReceived'])->name('lab.received-checklist');
 
 //__________________________________sections______________________________________________________________//
 Route::get('/show-sections',[ProviderController::class, 'showSections'])->name('sections.show');
@@ -497,6 +503,7 @@ Route::get('/section_all_receipts',[SectionInventoryController::class, 'allRecei
 Route::get('/section_load_received',[SectionInventoryController::class,'loadReceivedItems'])->name('section.all_recieved_items');
 Route::get('/section_filter',[SectionInventoryController::class,'getSectionReceivedFiltered'])->name('section.items-filtered');
 Route::get('/section_search-item',[SectionInventoryController::class,'searchItem'])->name('inventory.section_search');
+Route::get('/section-received-checklist',[SectionInventoryController::class,'getReceivedChecklist'])->name('section.received-checklist');
 
 //______________________________StockTake_____________________________________________________//
 Route::get('/section_stock',[SectionInventoryController::class, 'loadSectionStockTake'])->name('section_inventory.stocktake');
@@ -530,4 +537,7 @@ Route::get('/cold-disposal',[ColdRoomStockDisposalController::class,'showColdRoo
 Route::get('/cold-adjustment',[ColdRoomAdjustmentController::class,'showAdjustment'])->name('cold.showstock-adjustment');
 Route::get('/cold_issue',[ColdRoomIssueController::class, 'showColdIssue'])->name('cold.issue');
 Route::get('/cold_receive_issued',[ColdRoomIssueController::class,'showColdRoomReceived'])->name('cold.received_issued');
+Route::get('/cold_new-receipt',[ColdRoomIssueController::class,'showNewReceipt'])->name('cold.new_receipt');
+Route::get('/cold-received',[ColdRoomIssueController::class,'showColdAllReceived'])->name('cold.all-received');
+Route::get('/cold-received-status',[ColdRoomIssueController::class,'showReceivedCheckList'])->name('cold.received-checklist');
 });

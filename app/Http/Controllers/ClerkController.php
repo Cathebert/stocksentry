@@ -8,6 +8,7 @@ use App\Models\Requisition;
 use App\Models\LaboratorySection;
 use App\Models\Laboratory;
 use DB;
+use Illuminate\Support\Facades\Auth;
 class ClerkController extends Controller
 {
     //
@@ -32,6 +33,7 @@ class ClerkController extends Controller
    {
 $data['lab_name']='Logged Into: '.$lab->lab_name;
 }
+ $is_registered=User::where('id',auth()->user()->id)->select('is_registered')->first();
 if($is_registered->is_registered==1){
      $data['users'] = Auth::user();
 return view('initialization.setup',$data);

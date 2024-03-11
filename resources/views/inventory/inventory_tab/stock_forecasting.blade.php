@@ -34,6 +34,9 @@
         <input type="hidden" id="load_ajusted" value="{{route('forecast.load')}}"/>
         <input type="hidden" id="run_forecast" value="{{route('forecast.generate')}}"/>
         <input type="hidden" id="order_url" value="{{route('forecast.order')}}"/>
+        <input type="hidden" id="load_approve" value="{{route('forecast.load_approve')}}"/>
+        <input type="hidden" id="mark_approved" value="{{route('forecast.mark_approved')}}"/>
+        <input type="hidden" id="vieworder" value="{{route('order.show')}}"/>
        
  <div class="row" >
  <form class="form-inline"  id="form_forecast">
@@ -65,7 +68,7 @@
        @if(auth()->user()->authority==1)
         <div class="dropdown" style="text-align:right">
      
-    <a  type="button" href="#"  id="view_orders" class="btn btn-info">   <i class="fa fa-check"></i>Approve Orders</a>
+    <a  type="button" href="#"  id="approve_orders" class="btn btn-info">   <i class="fa fa-check"></i>Approve Orders</a>
       </div>
       @endif
         <div id='real_table'></div>

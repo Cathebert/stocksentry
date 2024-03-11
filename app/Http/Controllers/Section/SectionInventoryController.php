@@ -830,4 +830,17 @@ $x=1;
       echo json_encode($json_data);
     }
 
+    public function getReceivedChecklist(Request $request){
+    $data['suppliers']=Supplier::get();
+    $data['items']=DB::table('items as i')
+                        ->join('inventories as inv','i.id','=','inv.item_id')
+                        ->join('received_items as r','r.grn_number','=','inv.grn_number')
+                        ->join('received_item_checklist as rc','rc.grn_number','=','r.grn_number')
+                        ->join('suppliers as s','s.id','=','r.supplier_id')
+                        ->get();
+        //dd($data['items']);
+
+    return view('clerk.receive.tabs.section_receive_checklist',$data);
+
+}
 }

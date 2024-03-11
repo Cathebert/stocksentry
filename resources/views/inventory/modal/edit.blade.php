@@ -118,7 +118,7 @@
    @foreach ($laboratories as $laboratory)
        <option value="{{$laboratory->id}}" {{(!empty($item->laboratory_id) && $item->laboratory_id ==$laboratory->id) ? "Selected" : "" }}>{{$laboratory->lab_name}}</option>
    @endforeach
-  
+   <option value="999" {{(!empty($item->laboratory_id) && $item->laboratory_id ==999) ? "Selected" : "" }}>Other</option>
   </select>
 </div>
 

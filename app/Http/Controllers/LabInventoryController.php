@@ -612,6 +612,7 @@ $data['lab_name']='Logged Into: '.$lab->lab_name;
     }
 
      public function receiveInventory(Request $request){
+      $data['users']=User::where('laboratory_id',auth()->user()->laboratory_id)->get();
           $data['suppliers']=Supplier::select('id','supplier_name')->get();
            $data['laboratories']=Laboratory::select('id','lab_name')->where('id',auth()->user()->laboratory_id)->get();
           // $data['sections']=LaboratorySection::select('id','section_name')->get();
@@ -665,4 +666,17 @@ $data['lab_name']='Logged Into: '.$lab->lab_name;
         
         return view('provider.receive.receive_tabs.lab_received_receipts',$data);
     }
+
+public function checkReceived(Request $request){
+    $data['suppliers']=Supplier::get();
+    $data['items']=DB::table('items as i')
+                        ->join('inventories as inv','i.id','=','inv.item_id')
+                        ->join('received_items as r','r.grn_number','=','inv.grn_number')
+                        ->join('received_item_checklist as rc','rc.grn_number','=','r.grn_number')
+                        ->join('suppliers as s','s.id','=','r.supplier_id')
+                        ->get();
+        //dd($data['items']);
+
+    return view('provider.receive.receive_tabs.lab_received_checklist',$data);
+}
 }

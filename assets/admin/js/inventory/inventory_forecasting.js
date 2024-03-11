@@ -287,3 +287,152 @@ value:value
     });
 
 }
+
+$("#approve_orders").on('click',function(){
+    let load_approve=$('#load_approve').val();
+   $.ajax({
+       method: "GET",
+       url: load_approve,
+       success: function (data) {
+           // $('#boot').click();
+           $("#view_item_datails").html(data);
+           $("#inforg").modal("show"); // show bootstrap modal
+           $(".modal-title").text("Approve Orders");
+       },
+       error: function (jqXHR, textStatus, errorThrown) {
+           // console.log(get_case_next_modal)
+           alert("Error " + textStatus);
+       },
+   });
+      });  
+function approveOrder(id){
+ const order_approved = $("#mark_approved").val();
+ $.ajaxSetup({
+     headers: {
+         "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
+     },
+ });
+ $.ajax({
+     method: "POST",
+     dataType: "JSON",
+     url: order_approved,
+     data: {
+         id: id,
+     },
+     success: function (data) {
+         if (data.error == false) {
+             toastr.options = {
+                 closeButton: true,
+                 debug: false,
+                 newestOnTop: false,
+                 progressBar: false,
+                 positionClass: "toast-top-right",
+                 preventDuplicates: false,
+                 onclick: null,
+                 showDuration: "300",
+                 hideDuration: "1000",
+                 timeOut: "5000",
+                 extendedTimeOut: "1000",
+                 showEasing: "swing",
+                 hideEasing: "linear",
+                 showMethod: "fadeIn",
+                 hideMethod: "fadeOut",
+             };
+             toastr["success"](data.message);
+
+           reloadOrders();
+
+           
+         } else {
+             toastr.options = {
+                 closeButton: true,
+                 debug: false,
+                 newestOnTop: false,
+                 progressBar: false,
+                 positionClass: "toast-top-right",
+                 preventDuplicates: false,
+                 onclick: null,
+                 showDuration: "300",
+                 hideDuration: "1000",
+                 timeOut: "5000",
+                 extendedTimeOut: "1000",
+                 showEasing: "swing",
+                 hideEasing: "linear",
+                 showMethod: "fadeIn",
+                 hideMethod: "fadeOut",
+             };
+             toastr["error"](data.message);
+         }
+         // Welcome notification
+         // Welcome notification
+     },
+ });   
+}
+function reloadOrders(){
+    var p;
+
+    var approval_issues = $("#orders_approvals").val();
+    p = $("#orders_approvals_items").DataTable({
+        processing: true,
+        serverSide: true,
+        destroy:true,
+        paging: true,
+        info: true,
+        lengthMenu: [5, 10, 15],
+        responsive: true,
+        order: [[0, "desc"]],
+        oLanguage: {
+            sProcessing:
+                "<div class='loader-container'><div id='loader'></div></div>",
+        },
+        ajax: {
+            url: approval_issues,
+            dataType: "json",
+            type: "GET",
+        },
+
+        AutoWidth: false,
+        columns: [
+            { data: "id", width: "3%" },
+            { data: "order_no", width: "15%" },
+            { data: "order_date", width: "10%" },
+            { data: "order_by", width: "20%" },
+            { data: "status", width: "10%" },
+            { data: "action", width: "30%" },
+        ],
+        //Set column definition initialisation properties.
+        columnDefs: [
+            {
+                targets: [-1], //last column
+                orderable: false, //set not orderable
+            },
+            {
+                targets: [-2], //last column
+                orderable: false, //set not orderable
+            },
+            {
+                targets: [-3], //last column
+                orderable: false, //set not orderable
+            },
+        ],
+    });
+}
+
+function viewOrder(id){
+    let vieworder=$('#vieworder').val();
+ $.ajax({
+     method: "GET",
+     url: vieworder,
+     data: { id: id },
+     success: function (data) {
+         // $('#boot').click();
+         $("#view_item_datails").html(data);
+         $("#inforg").modal("show"); // show bootstrap modal
+         $(".modal-title").text(" Order Details");
+     },
+     error: function (jqXHR, textStatus, errorThrown) {
+         // console.log(get_case_next_modal)
+         alert("Error " + textStatus);
+     },
+ });
+}

@@ -511,7 +511,7 @@ public function loadOrderDetails(Request $request){
             ->offset($start)
            //->groupBy('s.item_name')
             ->limit($limit)
-            ->orderBy('iod.id','desc')
+            ->orderBy('i.item_name','desc')
             ->get(); 
 
           $totalFiltered =  $totalRec ;
@@ -1517,6 +1517,105 @@ return response()->download($path,$name, $headers);
 
 }
     
+public function loadOrders(){
+    return view('inventory.modal.orders_approval');
+}
+public function loadPendingOrders(Request $request){
+     
+  $columns = array(
+            0 =>'id',
+            1=>'order_no',
+            2=>'order_date',
+            3=>'order_by',
+            4=>'status',
+            5=>'action',
+          
+        ); 
+
+         $totalData = DB::table('item_orders')
+         // ->where('status','=','approved')
+           // ->where('t.expiry_date', '>', date('Y-m-d') )
+          ->count();
 
 
+
+            $totalRec = $totalData;
+          // $totalData = DB::table('appointments')->count();
+
+          $limit = $request->input('length');
+          $start = $request->input('start');
+          $order = $columns[$request->input('order.0.column')];
+          $dir = $request->input('order.0.dir');
+
+           $search = $request->input('search.value');
+
+            $terms = DB::table('item_orders') 
+         
+          //->where('t.expiry_date', '>', date('Y-m-d') )
+                ->where(function ($query) use ($search){
+                  return  $query->where('ordered_by', 'LIKE', "%{$search}%");
+                 
+                      
+                     
+            })
+            ->offset($start)
+            ->limit($limit)
+            ->orderBy('id','desc')
+            ->get();
+
+          $totalFiltered =  $totalRec ;
+
+
+
+
+        $data = array();
+          if (!empty($terms)) {
+$x=1;
+
+
+            foreach ($terms as $term) {
+
+
+
+                $nestedData['id']=$x;
+                $nestedData['order_no']=$term->order_number;
+                $nestedData['order_date']= date('d,M Y',strtotime($term->created_at));
+             $nestedData['order_by']= $term->ordered_by;
+              $nestedData['status']= $term->is_delivered;
+              if($term->is_approved=='no'){
+                $nestedData['action']= "<a class='btn btn-info btn-sm' id='$term->id' onclick='viewOrder(this.id)'><i class='fa fa-eye'></i> View</a> | <a class='btn btn-success btn-sm' id='$term->id' onclick='approveOrder(this.id)'><i class='fa fa-check'></i> Approve</a> ";
+    }
+    else{
+       $nestedData['action']= "<a class='btn btn-info btn-sm' id='$term->id' onclick='viewOrder(this.id)'><i class='fa fa-eye'></i> View</a> 
+       | <span class='badge badge-success'><i class='fa fa-check'></i> Approved</span>";  
+    }
+               
+                   $x++;
+             
+                $data[] = $nestedData;
+           }
+      }
+
+      $json_data = array(
+        "draw" => intval($request->input('draw')),
+        "recordsTotal" => intval($totalData),
+        "recordsFiltered" => intval($totalFiltered),
+        "data" => $data,
+    );
+
+      echo json_encode($json_data);
+
+  
+}
+public function approvePendingOrder(Request $request){
+    ItemOrder::where('id',$request->id)->update([
+        'is_approved'=>'yes'
+    ]
+    );
+
+    return response()->json([
+        'message'=>"Order approved successfully",
+        'error'=>false
+    ]);
+}
 }

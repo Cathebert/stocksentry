@@ -37,7 +37,7 @@
                 <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
                         <h6 class="collapse-header">Stock Management</h6>
-                        <a class="collapse-item" href="{{ route('section.new_receipt') }}" hidden >Receive Stock</a>
+                        <a class="collapse-item" href="{{ route('cold.new_receipt') }}"  >Receive Stock</a>
                         <a class="collapse-item" href="{{route('cold.issue')}}">Issue Stock</a>
                           
                            <hr>

@@ -77,7 +77,7 @@
      @foreach ($laboratory as $lab)
        <option value="{{$lab->id}}">{{$lab->lab_name}}</option>
    @endforeach
-  
+   <option value="999">Other</option>
   </select>
 </div>
 </div>

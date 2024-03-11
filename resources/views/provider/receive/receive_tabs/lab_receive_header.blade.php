@@ -17,7 +17,9 @@
   <li  role="presentation" class="@if(Request::segment(2)=='all_receipts')active @ else @endif">
     <a class="nav-link @if(Request::segment(2)=='all_receipts')active @ else @endif" role="tab" type="button"   href="{{route('lab.all_received')}}"><strong>All Receipts</strong></a>
   </li>
- 
+   <li  role="presentation" class="@if(Request::segment(2)=='lab-received-checklist')active @ else @endif">
+    <a class="nav-link @if(Request::segment(2)=='lab-received-checklist')active @ else @endif" role="tab" type="button"   href="{{route('lab.received-checklist')}}"><strong>Received Checklist</strong></a>
+  </li>
  
 
 </ul>
