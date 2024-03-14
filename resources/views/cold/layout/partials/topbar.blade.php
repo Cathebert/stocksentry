@@ -172,12 +172,12 @@
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <span class="mr-2 d-none d-lg-inline text-gray-600 small">{{auth()->user()->name??"User"}}</span>
                                 <img class="img-profile rounded-circle"
-                                   src="{{ (!empty(auth()->user()->profile_img)) ? url('/public/uploads/profile_images/' . auth()->user()->profile_img) : asset('assets/img/undraw_profile.svg') }}" height="50px" width="50px">
+                                   src="{{ (!empty(auth()->user()->profile_img)) ? url('/public/upload/profile/' . auth()->user()->profile_img) : asset('assets/img/undraw_profile.svg') }}" height="50px" width="50px">
                             </a>
                             <!-- Dropdown - User Information -->
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
                                 aria-labelledby="userDropdown">
-                                <a class="dropdown-item" href="#">
+                                <a class="dropdown-item" href="{{route('cold.profile')}}">
                                     <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
                                     Profile
                                 </a>

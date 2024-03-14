@@ -540,4 +540,7 @@ Route::get('/cold_receive_issued',[ColdRoomIssueController::class,'showColdRoomR
 Route::get('/cold_new-receipt',[ColdRoomIssueController::class,'showNewReceipt'])->name('cold.new_receipt');
 Route::get('/cold-received',[ColdRoomIssueController::class,'showColdAllReceived'])->name('cold.all-received');
 Route::get('/cold-received-status',[ColdRoomIssueController::class,'showReceivedCheckList'])->name('cold.received-checklist');
+Route::get('/cold_profile',[ColdRoomController::class,'coldProfile'])->name('cold.profile');
+Route::get('/cold_signature',[ColdRoomController::class,'coldSignature'])->name('cold.signature');
+Route::get('/cold_password',[ColdRoomController::class,'coldPassword'])->name('cold.password');
 });

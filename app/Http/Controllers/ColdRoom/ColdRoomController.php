@@ -9,6 +9,7 @@ use App\Models\LaboratorySection;
 use App\Models\Laboratory;
 use App\Http\Controllers\Controller;
 use DB;
+use Illuminate\Support\Facades\Auth;
 class ColdRoomController extends Controller
 {
     //
@@ -37,4 +38,56 @@ $data['lab_name']='Logged Into: '.$lab->lab_name;
 
         return view('cold.show',$data);
     }
+
+    public function coldProfile(){
+         $lab=Laboratory::where('id',auth()->user()->laboratory_id)->select('lab_name')->first();
+   
+   $section=LaboratorySection::where('id',auth()->user()->section_id)->select('section_name')->first();
+   if($section){
+     $data['lab_name']='Logged Into: '.$lab->lab_name.' / '.$section->section_name;  
+   }
+   else
+   {
+$data['lab_name']='Logged Into: '.$lab->lab_name;
+}
+     
+        $data['users'] = Auth::user();
+        return view('cold.user.profile',$data);
+    }
+
+    public function coldSignature(){
+
+         $lab=Laboratory::where('id',auth()->user()->laboratory_id)->select('lab_name')->first();
+   
+   $section=LaboratorySection::where('id',auth()->user()->section_id)->select('section_name')->first();
+   if($section){
+     $data['lab_name']='Logged Into: '.$lab->lab_name.' / '.$section->section_name;  
+   }
+   else
+   {
+$data['lab_name']='Logged Into: '.$lab->lab_name;
+}
+     
+        $data['users'] = Auth::user();
+
+        return view('cold.user.signature',$data);
+    }
+
+public function coldPassword(){
+     $lab=Laboratory::where('id',auth()->user()->laboratory_id)->select('lab_name')->first();
+   
+   $section=LaboratorySection::where('id',auth()->user()->section_id)->select('section_name')->first();
+   if($section){
+     $data['lab_name']='Logged Into: '.$lab->lab_name.' / '.$section->section_name;  
+   }
+   else
+   {
+$data['lab_name']='Logged Into: '.$lab->lab_name;
+}
+     
+        $data['users'] = Auth::user();
+
+        return view('cold.user.password.change-password',$data);
+
+}
 }

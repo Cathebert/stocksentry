@@ -4,7 +4,7 @@
             <!-- Sidebar - Brand -->
             <a class="sidebar-brand d-flex align-items-center justify-content-center" href="{{route('cold.home')}}">
                  <img class="img-profile rounded-circle"
-                                    src="{{ (!empty(auth()->user()->profile_img)) ? url('/public/uploads/profile_images/' . auth()->user()->profile_img) : asset('assets/img/undraw_profile.svg') }}" height="50px" width="50px">
+                                    src="{{ (!empty(auth()->user()->profile_img)) ? url('/public/upload/profile/' . auth()->user()->profile_img) : asset('assets/img/undraw_profile.svg') }}" height="50px" width="50px">
               
                 <div class="sidebar-brand-text mx-3">{{auth()->user()->name??"User"}} </div>
             </a>

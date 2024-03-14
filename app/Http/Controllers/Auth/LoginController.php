@@ -82,6 +82,7 @@ case 4:
 
       protected function adminLogin(Request $request)
     {
+          $errors = [$this->username() => trans('auth.failed')];
        $this->validate($request,[
             'username'=>'required',
             'password'=>'required| min:8'
@@ -90,9 +91,17 @@ case 4:
           LogActivityService::saveToLog('Logged in','Member with username  '.auth()->user()->username.' logged in of system.','low');
            $this->redirectTo();
         }
-        return back()->withInput($request->only('username'));
-    }
+         return $this->sendFailedLoginResponse($request);
+        
 
+        //return back()->withInput($request->only('username'));
+    }
+ protected function sendFailedLoginResponse(Request $request)
+    {
+        return redirect()->back()->withInput($request->only('username', 'remember'))->withErrors([
+            'username' => 'These credentials do not match our records.',
+        ]);
+    }
     public function logout(Request $request){
          LogActivityService::saveToLog('Logged out','Member with username  '.auth()->user()->name.' '.auth()->user()->last_name.' logged out of system.','low');
          Auth::logout();
