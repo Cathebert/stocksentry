@@ -25,7 +25,7 @@
           @csrf
           <input type="hidden" class="form-control" id="post_url" value="{{route('user.create')}}">
      <input type="hidden" id="get_sections" value="{{route('lab.sections')}}"/>
- 
+ <input type="hidden" id="check" name="check" value="0"/>
         
 <script type="text/javascript">
 
@@ -78,51 +78,54 @@
   <div class="col-md-4 col-sm-12 col-xs-12 form-group" id='not_coldroom'>
 
     <label for="exampleInputPassword1">User Role</label>
-    <select class="form-control" id="user_role" name="user_type" style="width: 75%" >
+    <select class="form-control" id="user_role" name="user_type" style="width: 75%">
 
    
-  <option value="1">Store Admin</option>
+  <option value="1" >Store Admin</option>
   <option value="2">Manager</option>
   <option value="3">Lab User</option>
-  <option value="4">ColdRoom User</option> 
+ 
    
   </select>
   </div>
-
-
-  <div class="col-md-4 col-sm-12 col-xs-12 form-group" id='cold_room' hidden>
+  <div class="col-md-4 col-sm-12 col-xs-12 form-group" id='my_lab' hidden>
 
     <label for="exampleInputPassword1">User Role</label>
-    <select class="form-control" id="user_role" name="user_type" style="width: 75%" >
+    <select class="form-control" id="user_role" name="lab_type" style="width: 75%">
 
    
   
  
-   <option value="4"> ColdRoom User</option>
-  
+  <option value="2">Manager</option>
+  <option value="3">Lab User</option>
    
   </select>
   </div>
+
+
+<div class="col-md-4 col-sm-12 col-xs-12 form-group" id='coldroom' hidden>
+
+    <label for="exampleInputPassword1">User Role</label>
+    <select class="form-control" id="user_role" name="cold_type" style="width: 75%">
+
+   
+  
+ 
+  <option value="4">ColdRoom Manager</option> 
+    <option value="3">ColdRoom User</option> 
+  </select>
+  </div>
+
+
+ 
+  
+   
+ 
   <div class="col-md-4 col-sm-12 col-xs-12 form-group">
     <label for="exampleInputPassword1">Position</label>
     <input type="text" class="form-control" id="user_position" name="user_position">
   </div>
-    @if(auth()->user()->authority==2)
-   <div class="col-md-4 col-sm-12 col-xs-12 form-group">
-
-    <label for="exampleInputPassword1">User Role</label>
-    <select class="form-control" id="user_role" name="user_type" style="width: 75%" >
-
-   
-  
-   <option value="2"> Manager</option>
-  <option value="3">User</option>
     
-   
-  </select>
-  </div>
-  @endif
-
 
 
 

@@ -174,17 +174,26 @@
      const receive_from = $("#lab_id").val();
      const get_sections = $("#get_sections").val();
      if(value==99){
-        $('#not_coldroom').hide();
-        document.getElementById('not_coldroom').hidden=true;
-        $("#cold_room").show();
-         document.getElementById("cold_room").hidden = false;
+    document.getElementById("not_coldroom").hidden = true;  
+ document.getElementById("coldroom").hidden = false;
+   document.getElementById("my_lab").hidden = true;
+  $("#check").val(1);
      }
-     else{
-         $("#not_coldroom").show();
-        document.getElementById("not_coldroom").hidden =false;
-        $("#cold_room").show();
-        document.getElementById("cold_room").hidden = true;
-     }
+  
+if(value>0 && value<99){
+ document.getElementById("my_lab").hidden = false;
+ document.getElementById("not_coldroom").hidden = true;
+  document.getElementById("coldroom").hidden = true;  
+    $("#check").val(2);  
+}
+
+if(value==0){
+  document.getElementById("not_coldroom").hidden = false; 
+  document.getElementById("my_lab").hidden = true; 
+  document.getElementById("coldroom").hidden = true; 
+    $("#check").val(0);   
+}
+   
      $.ajax({
          method: "GET",
          dataType: "json",
@@ -212,3 +221,4 @@
     let first = name.charAt(0);
     $('#username').val(first+""+lname);
    }
+   

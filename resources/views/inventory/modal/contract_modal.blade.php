@@ -80,7 +80,10 @@
   </select>
   </div>
 
-
+<div class="col-md-4 col-sm-12 col-xs-12 form-group" id="contractor">
+    <label for="exampleInputPassword1">Contractor</label>
+    <input type="text" class="form-control" id="contractor_name" name="contractor_name" >
+  </div>
 
 
 </div>

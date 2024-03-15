@@ -41,7 +41,7 @@ $data['lab_name']='Logged Into: '.$lab->lab_name;
     }
 
     public function createModerator(Request  $request){
-      // dd($request);
+       dd($request);
         $data=$request->all();
 $is_valid=$this->validator($data);
 $hashed=$this->passwordGenerator(8,"0123456789abcdefghjkmnopqrstuvwxyzABCDEFGHJKLMNOPQRSTUVWXYZ!@#$%^&*");
@@ -53,6 +53,21 @@ if($is_valid->passes()){
 try{
     $check_user=$request->username.''.$request->extension;
     //dd($check_user);
+    switch($request->check){
+        case 0:
+        $authority=$request->user_type;
+        break;
+
+    case 1:
+    $authority=$request->cold_type;
+
+    break;
+
+    case 2:
+        $authority=$request->lab_type;
+
+        break;
+    }
 $status=$this->checkIfUserExists($check_user);
 if($status==false){
 $user= new User();
@@ -63,7 +78,7 @@ $user= new User();
     $user->section_id=$request->section_id;
     $user->occupation=$request->user_position;
     $user->type=$request->user_type;
-    $user->authority=$request->user_type;
+    $user->authority=$authority;
     $user->is_registered=1;
     $user->email=$request->email;
     $user->password=$password;
