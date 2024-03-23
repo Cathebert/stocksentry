@@ -112,7 +112,7 @@
   
  
   <option value="4">ColdRoom Manager</option> 
-    <option value="3">ColdRoom User</option> 
+    <option value="4">ColdRoom User</option> 
   </select>
   </div>
 

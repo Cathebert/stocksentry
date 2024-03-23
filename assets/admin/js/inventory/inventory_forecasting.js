@@ -221,7 +221,7 @@ else{
         processing: true,
         serverSide: true,
         destroy: true,
-        paging: false,
+        paging: true,
         select: true,
         info: false,
         lengthMenu: [10, 20, 50],

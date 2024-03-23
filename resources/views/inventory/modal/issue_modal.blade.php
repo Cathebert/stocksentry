@@ -160,19 +160,72 @@
                                 </tbody><!-- end tbody -->
                             </table><!-- end table -->
                         </div><!-- end table responsive -->
-                        <div class="d-print-none mt-4">
-                            <div class="float-start">
-                               <span><strong>Issued By: </strong> {{$issued_by}}</span>
+</div>
+<hr>
+                          <table class="table-borderless">
+                                <thead>
+                                    <tr>
+                                        <th>Issued By</th>
+                                          <th>Signature</th> 
+</tr>
+</thead>
+                            <tr>
+                                <td>
+                                   {{$issued_by}}
+                                </td>
+
                             
-                            </div>
-                             <div class="float-end">
-                           @if($signature!=NULL)
- <span><strong>Signature:</strong></span><img src="{{ url('/').'/public/signatures/'.$signature }}" width="100px" height="100px"/>
-                          
-                            @endif
-                            </div>
-                        </div>
-                    </div>
+                             <td>
+                                 <img src="{{ url('/').'/public/upload/signatures/'.$signature}}" width="40px" height="40px"/>
+                                </td>
+                                <tr>
+                            </table>
+
+                        <!--approver---->
+                        @if($approver!=NULL)
+                        <table class="table-borderless">
+                                <thead>
+                                    <tr>
+                                        <th>Approved By</th>
+                                          <th>Signature</th> 
+</tr>
+</thead>
+                            <tr>
+                                <td>
+                                   {{$approver}}
+                                </td>
+
+                            
+                             <td>
+                                 <img src="{{ url('/').'/public/upload/signatures/'.$approver_sign}}" width="40px" height="40px"/>
+                                </td>
+                                <tr>
+                            </table>
+@endif
+
+@if($receiver!=NULL)
+  <table class="table-borderless">
+                                <thead>
+                                    <tr>
+                                        <th>Received By</th>
+                                          <th>Signature</th> 
+</tr>
+</thead>
+                            <tr>
+                                <td>
+                                   {{$receiver}}
+                                </td>
+
+                            
+                             <td>
+                                 <img src="{{ url('/').'/public/upload/signatures/'.$receiver_sign}}" width="40px" height="40px"/>
+                                </td>
+                                <tr>
+                            </table>
+
+@endif
+                   </div>
+                   </div> 
                 </div>
             </div>
         </div><!-- end col -->

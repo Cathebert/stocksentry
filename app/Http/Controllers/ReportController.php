@@ -1083,12 +1083,14 @@ break;
                   ->select(
                     'l.lab_name',
                     'u.section_id',
+                    'u.consumption_id',
                     'rd.consumed_quantity',
                     'r.batch_number'
                 )
-                  ->where('t.id',$request->id)
-                   ->groupBy('r.batch_number')
+                  ->where('r.id',$request->id)
+                   ->groupBy('u.batch_number')
                    ->get();
+
                }
 $x=1;
          $data= array();

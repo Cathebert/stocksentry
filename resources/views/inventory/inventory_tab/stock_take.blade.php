@@ -45,7 +45,8 @@
       <input type="hidden" class="form-control" id="inventory_taking" value="{{route('inventory.stock')}}"> 
          <input type="hidden" class="form-control" id="inventory_save_all" value="{{route('stock.saveall')}}"> 
 <input type="hidden" id="expected" value="{{$count}}"/>
-
+<input type="hidden" id="item_locate" value="{{route('stock.item_location')}}"/>
+<input type="hidden" id="download_item" value="{{route('stock.download_item_selected')}}"/>
  
             
             <div class="row">
@@ -89,17 +90,20 @@
   </div>   
 
 
-    <div class="col-md-4 col-sm-4 col-xs-12 form-group" hidden>
+    <div class="col-md-4 col-sm-4 col-xs-12 form-group">
    <div class="input-group mb-3">
   <div class="input-group-prepend">
-    <span class="input-group-text btn btn-secondary">Inventory  Area</span>
+    <span class="input-group-text btn btn-secondary">Item List</span>
   </div>
-  <select class="custom-select" id="inputGroupSelect03" aria-label="Example select with button addon">
+  <select class="custom-select" id="items_list" aria-label="Example select with button addon" onchange="getItems(this.value)">
 
-@foreach ($area as $section )
-      <option value="{{$section->id}}">{{$section->section_name}}</option>
-@endforeach
+  <option value="-1"></option>
+  <option value="0">Store</option>
+  <option value="999">Other</option>
   </select>
+   <div class="input-group-prepend">
+<button type="button" class="btn btn-primary" onclick="downloadItemSelected()"><i class="fa fa-download"></i></button>
+  </div>
 </div>
   </div> 
                            <div class="col-md-8 col-sm-4 col-xs-12 form-group" >
@@ -124,6 +128,8 @@
 
    
     });
+
+    
      
 });
 </script>

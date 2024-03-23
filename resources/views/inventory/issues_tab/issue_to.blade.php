@@ -209,8 +209,8 @@
  <div class="modal" tabindex="-1" id="inforg" role="dialog" >
   <div class="modal-dialog modal-xl" role="document" >
     <div class="modal-content" id="view_item_datails">
-
-          
+</div>
+    </div>      
 </div>
             @endsection
 

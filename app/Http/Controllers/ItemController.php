@@ -926,7 +926,15 @@ $value = $request->id;
        $data['approved_by']='';
          $data['approver_sign']='';   
      }
-      
+     if($info->received_by!=NULL){
+     $receiver=User::where('id',$info->received_by)->select('name','last_name','signature')->first();
+    $data['receiver']=$receiver->name." ".$receiver->last_name;
+    $data['receiver_sign']=$receiver->signature;
+} 
+else{
+   $data['receiver']=NULL; 
+    $data['receiver_sign']=NULL;
+}   
       //
       
       $from_lab=Laboratory::where('id',$info->from_lab_id)->select('lab_name')->first();

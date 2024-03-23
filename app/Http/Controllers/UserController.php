@@ -11,6 +11,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use App\Notifications\WelcomeEmailNotification;
+use App\Notifications\PasswordResetNotification;
 use DB;
 class UserController extends Controller
 {
@@ -41,7 +42,7 @@ $data['lab_name']='Logged Into: '.$lab->lab_name;
     }
 
     public function createModerator(Request  $request){
-       dd($request);
+      
         $data=$request->all();
 $is_valid=$this->validator($data);
 $hashed=$this->passwordGenerator(8,"0123456789abcdefghjkmnopqrstuvwxyzABCDEFGHJKLMNOPQRSTUVWXYZ!@#$%^&*");
@@ -258,8 +259,92 @@ $data['lab_name']='Logged Into: '.$labs->lab_name;
 $data['lab_name']='Logged Into: '.$lab->lab_name;
 }
         // Pass the $has_section variable to the view
-        return view('user.view',$data);
+        return view('user.view_user_list',$data);
     }
+public function loadUsers(Request $request){
+    $columns = array(
+            0=>'id',
+            1=>'username',
+            2=>'name',
+            3=>'last_name',
+            4=>'email',
+            5=>'phone',
+            6=>'lab',
+            7=>'location',
+            8=>'options'
+        );
+
+    $totalData = User::with('laboratory')->count();
+    
+
+
+
+            $totalRec = $totalData;
+          // $totalData = DB::table('appointments')->count();
+
+          $limit = $request->input('length');
+          $start = $request->input('start');
+          $order = $columns[$request->input('order.0.column')];
+          $dir = $request->input('order.0.dir');
+
+           $search = $request->input('search.value');
+
+            $terms = User::with('laboratory')
+         
+          //->where('t.expiry_date', '>', date('Y-m-d') )
+                ->where(function ($query) use ($search){
+                  return  $query->where('name', 'LIKE', "%{$search}%");
+                 
+                      
+                     
+            })
+            ->offset($start)
+            ->limit($limit)
+            ->orderBy('id','desc')
+            ->get();
+
+          $totalFiltered =  $totalRec ;
+
+
+
+
+        $data = array();
+          if (!empty($terms)) {
+$x=1;
+ 
+
+            foreach ($terms as $term) {
+
+
+
+                $nestedData['id']=$x;
+                $nestedData['username']=$term->username;
+                $nestedData['name']= $term->name;
+                $nestedData['last_name']= $term->last_name;
+                $nestedData['email']= $term->email;
+                $nestedData['phone']= $term->phone_number??"Unavailable";
+                $nestedData['lab']= optional($term->laboratory)->lab_name;
+                $nestedData['location']= optional($term->laboratory)->lab_location;
+                $nestedData['options']= " <a class='btn btn-info btn-sm' id='$term->id' onclick='editUser(this.id)'><i class='fa fa-edit'></i>Edit</a> | <a class='btn btn-warning btn-sm' id='$term->id' onclick='resetPassword(this.id)'><i class='fa fa-lock'></i>Reset</a> | <a class='btn btn-danger btn-sm' id='$term->id' onclick='deleteUser(this.id)'><i class='fa fa-trash'></i>Delete</a>";
+    
+               
+                   $x++;
+             
+                $data[] = $nestedData;
+           }
+      }
+
+      $json_data = array(
+        "draw" => intval($request->input('draw')),
+        "recordsTotal" => intval($totalData),
+        "recordsFiltered" => intval($totalFiltered),
+        "data" => $data,
+    );
+
+      echo json_encode($json_data);
+
+
+}
     
 public function showLabUsers(){
     $data['users'] = User::with('laboratory')->where('laboratory_id', auth()->user()->laboratory_id)->get();
@@ -293,38 +378,72 @@ $data['lab_name']='Logged Into: '.$lab->lab_name;
         // Pass the $has_section variable to the view
         return view('provider.user.view',$data);  
 }
-    public function destroy(User $user)
+    public function destroy(Request $request)
     {
         
-        $user->delete();
-
-        return redirect()->route('user.view')->with('success', 'User deleted successfully.');
+        User::find($request->id)->delete();
+return response()->json([
+    'message'=>'User deleted successfully',
+    'error'=>false,
+]);
+        
     }
-    
+    public function resetPassword(Request $request){
+       $default="12345678";
+$password=Hash::make("12345678");
+User::where('id',$request->id)->update([
+    'password'=>$password
+]);
+$user=User::find($request->id);
+$user->notify(new PasswordResetNotification($default,$user->name.' '.$user->last_name));
+return response()->json([
+    'message'=>'password has been reset to. '.$default,
+    'error'=>false,
+]);
+    }
     public function labUserDelete(User $user){
         $user->delete();
 
         return redirect()->route('lab-user.view')->with('success', 'User deleted successfully.');  
     }
-
-    public function update(Request $request, User $user)
+    public function editUser(Request $request)
     {
-        
-        // Validate the request data
-        $validatedData = $request->validate([
-            'name' => 'required|string',
-            'last_name' => 'required|string',
-            'email' => 'required|email|unique:users,email,' . $user->id,
-            'phone_number' => 'required|string|max:10',
-            'occupation' => 'required|string',
-            'type' => 'nullable|in:1,2,3,4',
-            'laboratory_id' => 'nullable_if:user_type,1,2|exists:laboratories,id',
-           // 'section_id' => 'nullable_if:user_type,4|exists:laboratory_sections,id',
-            // ... add more validation rules as needed ...
-        ]);
+             $data['labs'] = Laboratory::get();
+     
+$data['user']=User::with('laboratory')->where('id', $request->id)->first();
+$data['id']=$request->id;
+return view('user.modal.edit',$data);
+    }
 
-        // Update the user using the validated data
-        $user->update($validatedData);
+    public function update(Request $request)
+    {
+       
+       switch($request->check){
+        case 0:
+        $authority=$request->user_type;
+        break;
+
+    case 1:
+    $authority=$request->cold_type;
+
+    break;
+
+    case 2:
+        $authority=$request->lab_type;
+
+        break;
+    }
+    User::where('id',$request->id)->update([
+        'name'=>$request->first_name,
+       'last_name'=>$request->last_name,
+       'laboratory_id'=>$request->lab_id,
+       'occupation'=>$request->user_position,
+       'type'=>$request->user_type,
+      'authority'=>$authority,
+     'email'=>$request->email,
+    'phone_number'=>$request->phone_number,
+    'updated_at'=>NULL,
+    ]);
 
         return redirect()->route('user.view')->with('success', 'User updated successfully.');
     }

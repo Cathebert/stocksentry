@@ -115,7 +115,9 @@ Route::post('/contract-save',[ContractController::class,'saveContract'])->name('
 Route::post('/sub-type',[ContractController::class,'saveSubscriptionType'])->name('sub.type');
 //____________________________________Admin Stock History___________________________________//
 Route::get('/stock_view',[StockTakeController::class,'stockViewHistory'])->name('stock.view_history');
-
+Route::get('/stocktake_items',[StockTakeController::class,'itemsLoadSelected'])->name('stock.item_location');
+Route::get('/download_selected_item',[StockTakeController::class,'downloadItemsSelected'])->name('stock.download_item_selected');
+Route::get('/download_items/{id}',[StockTakeController::class,'download'])->name('stock_download');
 //------------------------------------Requisitions----------------------------------------//
 Route::get('/view-approved',[RequisitionController::class, 'viewApprovedRequest'])->name('requests.view-approved');
 Route::post('/save-approve',[RequisitionController::class, 'updateApproved'])->name('requisition.save-approved');
@@ -254,8 +256,10 @@ Route::get('/supplier',[SupplierController::class,'addSupplier'])->name('supplie
 Route::post('/create-supplier',[SupplierController::class, 'createSupplier'])->name('supplier.create');
 
 Route::get('/suppliers',[SupplierController::class,'view'])->name('supplier.view');  
-Route::post('/supplier/{user}', [SupplierController::class, 'destroy'])->name('supplier.destroy');
-Route::put('/supplier/{supplier}', [SupplierController::class, 'update'])->name('supplier.update');
+Route::get('/load_suppliers',[SupplierController::class,'loadAllSuppliers'])->name('supplier.load');
+Route::post('/supplier-delete', [SupplierController::class, 'destroy'])->name('supplier.destroy');
+Route::get('/supplier_edit', [SupplierController::class, 'editSupplier'])->name('supplier.edit');
+Route::post('/supplier_update', [SupplierController::class, 'update'])->name('supplier.update');
 
 //--------------------------Laboratory--------------------------------------->
 Route::get('/laboratory',[LaboratoryController::class,'addLaboratory'])->name('lab.add');
@@ -274,10 +278,12 @@ Route::get('/receiver',[UserController::class, 'getReceiver'])->name('user.recei
 Route::get('/check-email',[UserController::class,'checkEmailExist'])->name('checkEmailExists');
 
 //
-Route::get('/users',[UserController::class,'view'])->name('user.view');  
-Route::post('/users/{user}', [UserController::class, 'destroy'])->name('user.destroy');
-Route::put('/users/{user}', [UserController::class, 'update'])->name('user.update');
-
+Route::get('/users',[UserController::class,'view'])->name('user.view');
+Route::get('/load_user',[UserController::class,'loadUsers'])->name('user.load');
+Route::get('/edit_user',[UserController::class,'editUser'])->name('user.edit');
+Route::post('/user_delete', [UserController::class, 'destroy'])->name('user.destroy');
+Route::post('/user_update', [UserController::class, 'update'])->name('user.update');
+Route::post('/user_reset',[UserController::class,'resetPassword'])->name('user.reset');
 });
 Route::group(['prefix'=>'General','middleware'=>'auth'],function(){
 Route::get('/profile',[UserController::class,'profileView'])->name('userprofile');
@@ -330,7 +336,6 @@ Route::post('/stocktake_cancel',[StockTakeController::class,'cancelStockTaken'])
 
 
 
-
 //___________________________inventory__________________________________________________________//
 
 Route::get('/inventory_search',[InventoryController::class, 'searchItem'])->name('inventory.search');
@@ -367,6 +372,7 @@ Route::get('/requistion_data',[RequisitionController::class,'requisitionGetData'
 Route::get('/consolidation-history',[RequisitionController::class,'showConsolidationHistory'])->name('consolidate.history');
 Route::get('/consolidate-load-history',[RequisitionController::class,'loadHistory'])->name('consolidated.load_history');
 Route::get('/consolidated_document/{id}',[RequisitionController::class,'downloadConsolidatedDocument'])->name('consolidated.document');
+Route::post('/requisition_remove',[RequisitionController::class,'removeRequisition'])->name('requisition.remove');
 
 
 });
@@ -409,6 +415,7 @@ Route::get('/signature',[UserController::class,'labSignature'])->name('lab.signa
 Route::post('/initialize',[UserController::class,'InitializeUser'])->name('initializeUserDetails');
 //_________________________________suppier_list_____________________________________//
 Route::get('/lab-suppliers',[SupplierController::class,'labViewSupplier'])->name('lab_supplier.show');
+
 //___________________________________________stock_take___________________________________//
 Route::get('/lab-selected_stock_location',[LabInventoryController::class,'getSelectedStockLocation'])->name('stock.getselected_location');
 Route::get('/lab_view_stock',[StockTakeController::class,'labViewStockTaken'])->name('lab_stock.view_history');

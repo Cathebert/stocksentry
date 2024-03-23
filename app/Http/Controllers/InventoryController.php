@@ -1060,9 +1060,9 @@ return response()->json([
 }
 public function viewIssue(Request $request){
     
-  $issues=Issue::select('siv_number','approve_status','issued_by','from_lab_id','to_lab_id','issuing_date')->where('id',$request->id)->first();
+  $issues=Issue::select('siv_number','approve_status','issued_by','received_by','approved_by','from_lab_id','to_lab_id','issuing_date')->where('id',$request->id)->first();
   //dd($issues);
-$user=User::where('id',$issues->issued_by)->select('name','last_name','signature')->first();
+
 $from_lab=Laboratory::where('id',$issues->from_lab_id)->select('lab_name')->first();
 $to_lab= Laboratory::where('id',$issues->to_lab_id)->select('lab_name')->first();
 $data['from_lab']= $from_lab->lab_name;
@@ -1070,8 +1070,36 @@ $data['to_lab']= $to_lab->lab_name;
 $data['issuing_date']=date('d, M Y',strtotime($issues->issuing_date));
 $data['siv']=$issues->siv_number;
 $data['status']=$issues->approve_status;
-$data['issued_by']=$user->name.' '.$user->last_name;
-$data['signature']=$user->signature??NULL;
+
+if($issues->issued_by!=NULL){
+   $user=User::where('id',$issues->issued_by)->select('name','last_name','signature')->first();
+   
+    $data['issued_by']=$user->name.' '.$user->last_name;
+$data['signature']=$user->signature;
+
+}
+else{
+      $data['issued_by']=NULL; 
+     $data['signature']=NULL;
+}
+if($issues->approved_by!=NULL){
+    $approver=User::where('id',$issues->approved_by)->select('name','last_name','signature')->first();
+    $data['approver']=$approver->name." ".$approver->last_name;
+    $data['approver_sign']=$approver->signature;
+}
+else{
+     $data['approver']=NULL; 
+      $data['approver_sign']=NULL;
+}
+if($issues->received_by!=NULL){
+ $receiver=User::where('id',$issues->received_by)->select('name','last_name','signature')->first();
+    $data['receiver']=$receiver->name." ".$receiver->last_name;
+    $data['receiver_sign']=$receiver->signature;
+} 
+else{
+   $data['receiver']=NULL; 
+    $data['receiver_sign']=NULL;
+}  
 
 /* $data['print_data']= DB::table('items as t') 
               ->join('inventories AS i', 'i.item_id', '=', 't.id')

@@ -718,6 +718,13 @@ $x=1;
             foreach ($terms as $term) {
 //$route=route('siv-details',['siv'=>$term->id]);
 $user=User::where('id',$term->issued_by)->select('name','last_name','id')->first();
+if($term->approved_by!=NULL){
+    $approver=User::where('id',$term->approved_by)->select('name','last_name')->first();
+    $approver_name=$approver->name." ".$approver->lab_name;
+}
+else{
+    $approver_name="";
+}
 $from_lab=Laboratory::where('id',$term->from_lab_id)->select('lab_name')->first();
 $from_section_id=LaboratorySection::where('id',$term->from_section_id)->select('section_name')->first();
 $to_lab=Laboratory::where('id',$term->to_lab)->select('lab_name')->first();

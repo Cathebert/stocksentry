@@ -94,8 +94,101 @@ $data['lab_name']='Logged Into: '.$labs->lab_name;
    {
 $data['lab_name']='Logged Into: '.$lab->lab_name;
 }
-        return view('supplier.view',$data);
+        return view('supplier.supplier_list',$data);
     }
+public function loadAllSuppliers(Request $request){
+    
+  $columns = array(
+            0=>'id',
+            1=>'name',
+            4=>'email',
+            5=>'phone_number',
+            6=>'expiry',
+            7=>'action',
+            8=>'address'
+           
+        );
+
+    $totalData =Supplier::count();
+    
+
+
+
+            $totalRec = $totalData;
+          // $totalData = DB::table('appointments')->count();
+
+          $limit = $request->input('length');
+          $start = $request->input('start');
+          $order = $columns[$request->input('order.0.column')];
+          $dir = $request->input('order.0.dir');
+
+           $search = $request->input('search.value');
+
+            $terms = Supplier::where(function ($query) use ($search){
+                  return  $query->where('supplier_name', 'LIKE', "%{$search}%");
+                 
+                      
+                     
+            })
+            ->offset($start)
+            ->limit($limit)
+            ->orderBy('id','desc')
+            ->get();
+
+          $totalFiltered =  $totalRec ;
+
+
+
+
+        $data = array();
+          if (!empty($terms)) {
+$x=1;
+ 
+
+            foreach ($terms as $term) {
+
+
+
+                $nestedData['id']=$x;
+                $nestedData['name']=$term->supplier_name;
+                 $nestedData['address']=$term->address;
+                $nestedData['email']= $term->email;
+                $nestedData['phone_number']= $term->phone_number;
+                if($term->contract_expiry!=NULL){
+                $nestedData['expiry']=date('d,M Y',strtotime($term->contract_expiry));
+        }
+        else{
+             $nestedData['expiry']="Not Set";
+        }
+                
+                $nestedData['action']= " <a class='btn btn-info btn-sm' id='$term->id' onclick='editSupplier(this.id)'><i class='fa fa-edit'></i>Edit</a> | <a class='btn btn-danger btn-sm' id='$term->id' onclick='deleteSupplier(this.id)'><i class='fa fa-trash'></i>Delete</a>";
+    
+               
+                   $x++;
+             
+                $data[] = $nestedData;
+           }
+      }
+
+      $json_data = array(
+        "draw" => intval($request->input('draw')),
+        "recordsTotal" => intval($totalData),
+        "recordsFiltered" => intval($totalFiltered),
+        "data" => $data,
+    );
+
+      echo json_encode($json_data);  
+}
+
+public function editSupplier(Request $request)
+    {
+             $data['labs'] = Laboratory::get();
+     
+$data['supplier']=Supplier::where('id', $request->id)->first();
+$data['id']=$request->id;
+return view('supplier.modal.edit',$data);
+    }
+
 public function labViewSupplier(){
     $data['suppliers']=Supplier::all();
          $lab=Laboratory::where('id',auth()->user()->laboratory_id)->select('lab_name')->first();
@@ -113,32 +206,44 @@ $data['lab_name']='Logged Into: '.$lab->lab_name;
 
     return view('provider.supplier.supplier_list',$data);
 }
-    public function update(Request $request, Supplier $supplier)
+    public function update(Request $request)
     {
+        
+        
         // Validate the request data
         $validatedData = $request->validate([
             'supplier_name' => 'required|string',
-            'contact_person' => 'required|string',
-            'address' => 'required|string',
+           // 'contact_person' => 'required|string',
+            
             'email' => 'required|email',
-            'phone_number' => 'nullable|string',
-            'contract_expiry' => 'nullable|date',
+            
             // ... add more validation rules as needed ...
         ]);
         
-        // Update the supplier using the validated data
-        $supplier->update($validatedData);
+        // Update the supplier 
+        Supplier::where('id',$request->id)->update([
+            'supplier_name'=>$request->supplier_name,
+
+            'address'=>$request->address,
+            'email'=>$request->email,
+            'phone_number'=>$request->phone_number,
+            'contract_expiry'=>$request->expiry,
+        ]);
+        //$supplier->update($validatedData);
 
         return redirect()->back()->with('success', 'Supplier updated successfully.');
         
     }
 
-    public function destroy(Supplier $supplier ,$id)
+    public function destroy(Request $request)
     {
    
-        $supplier->find($id)->delete();
+        Supplier::find($request->id)->delete();
 
-        return redirect()->back()->with('success', 'Supplier deleted successfully.');
+        return response()->json([
+            'message'=>'Supplier deleted successfully.',
+            'error'=>false
+        ]);
     }
 
 

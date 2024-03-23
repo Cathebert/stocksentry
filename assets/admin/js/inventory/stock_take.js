@@ -511,7 +511,6 @@ function SelectArea(value){
 }
 
 function LoadTable(){
-    
     toke = $("#inventories_taking").DataTable({
     processing: true,
     serverSide: true,
@@ -562,4 +561,87 @@ function LoadTable(){
     ],
 });
 
+}
+function getItems(value){
+    if(value==-1){
+        LoadTable() 
+    }
+    let location = $("#item_locate").val();
+
+    stoke = $("#inventories_taking").DataTable({
+        processing: true,
+        serverSide: true,
+        paging: true,
+        destroy: true,
+        scrollCollapse: true,
+        // scrollY: "200px",
+        info: true,
+
+        lengthMenu: [10, 20, 50],
+        responsive: true,
+        order: [[0, "desc"]],
+        oLanguage: {
+            sProcessing:
+                "<div class='loader-container'><div id='loader'></div></div>",
+        },
+        ajax: {
+            url: location,
+            dataType: "json",
+            type: "GET",
+            data: {
+                id: value,
+            },
+        },
+
+        AutoWidth: true,
+        columns: [
+            { data: "id", width: "3%" },
+            { data: "name", width: "30%" },
+            { data: "code" },
+            { data: "batch_number" },
+            { data: "unit" },
+            { data: "consumed" },
+            { data: "status" },
+        ],
+        //Set column definition initialisation properties.
+        columnDefs: [
+            {
+                targets: [-1], //last column
+                orderable: false, //set not orderable
+            },
+            {
+                targets: [-2], //last column
+                orderable: false, //set not orderable
+            },
+            {
+                targets: [-3], //last column
+                orderable: false, //set not orderable
+            },
+        ],
+    });
+ 
+
+}
+function downloadItemSelected(){
+    let download = $("#download_item").val();
+    let value = $("#items_list").val();
+      $.ajax({
+          method: "GET",
+         
+          url: download,
+          data: {
+              
+             id: value,
+              
+          },
+
+          success: function (data) {
+              console.log(data)
+              window.location=data.url;
+          },
+          error: function (jqXHR, textStatus, errorThrown) {
+              // console.log(get_case_next_modal)
+              alert("Error " + errorThrown);
+          },
+      });   
 }

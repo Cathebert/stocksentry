@@ -143,7 +143,7 @@ $nestedData['item_id']=$term->id;
  $report= DB::table('items as t') 
               ->join('inventories AS s', 's.item_id', '=', 't.id')
           //->select('t.id as id','s.item_name','t.batch_number','t.cost')
-             ->where('s.lab_id','=',auth()->user()->laboratory_id)->get();
+             ->where('t.lab_id','=',auth()->user()->laboratory_id)->get();
      $spreadsheet = new Spreadsheet();
 
     $spreadsheet->getActiveSheet()->getDefaultColumnDimension()->setWidth(100, 'pt');
@@ -703,4 +703,244 @@ $data['lab_name']='Logged Into: '.$lab->lab_name;
     'error'=>false,
   ]);
     }
+
+public function itemsLoadSelected(Request $request){
+
+         $columns = array(
+            0 =>'id',
+            1=>'code',
+            2=>'batch_number',
+            3=>'brand',
+            4=>'name',
+            5=>'unit',
+            6=>'consumed',
+            7=>'status'
+           
+        ); 
+   $totalData = DB::table('inventories as t') 
+              ->join('items AS s', 's.id', '=', 't.item_id')
+              ->select('t.id as id','s.code','s.brand','s.item_description','t.quantity','t.batch_number','t.cost','s.item_name','t.expiry_date')
+          ->where('s.laboratory_id','=',$request->id)
+          
+          ->count();
+
+
+
+            $totalRec = $totalData;
+          // $totalData = DB::table('appointments')->count();
+
+          $limit = $request->input('length');
+          $start = $request->input('start');
+          $order = $columns[$request->input('order.0.column')];
+          $dir = $request->input('order.0.dir');
+
+           $search = $request->input('search.value');
+            $terms = DB::table('inventories as t') 
+              ->join('items AS s', 's.id', '=', 't.item_id')
+              ->select('t.id as id','s.code','s.brand','s.item_description','t.item_id','t.quantity','t.batch_number','t.cost','s.unit_issue','s.item_name','t.expiry_date')
+         ->where('s.laboratory_id','=',$request->id)
+          
+          //->where('t.expiry_date', '>', date('Y-m-d') )
+                ->where(function ($query) use ($search){
+                  return  $query->where('s.code', 'LIKE', "%{$search}%")
+                  ->orWhere('s.brand','LIKE',"%{$search}%")
+                   ->orWhere('t.batch_number','LIKE',"%{$search}%")
+                  ->orWhere('s.item_name','LIKE',"%{$search}%") ;
+                      
+                     
+            })
+            ->offset($start)
+            ->limit($limit)
+            ->orderBy('s.item_name','asc')
+            ->get();
+
+          $totalFiltered =  $totalRec ;
+//  0 => 'id',
+    
+          $data = array();
+          if (!empty($terms)) {
+$x=1;
+  
+
+            foreach ($terms as $term) {
+
+
+$nestedData['item_id']=$term->id;
+                $nestedData['id']="<input type='checkbox' id='se_$term->id' name='selected_check' onclick='AddIdToList(this.id)'/>";
+                  $nestedData['batch_number']=$term->batch_number;
+                    $nestedData['brand']= $term->brand;
+                $nestedData['code']=$term->code;
+             
+                 $nestedData['name']= $term->item_name;
+                  $nestedData['unit']= $term->unit_issue;
+               
+                 $nestedData['consumed'] = "<input type='number'  size='5' id='s_$term->id' min='0' class='form-control' placeholder='Enter Here' name='$term->id' onchange='getPhysicalCount(this.id,this.name)'/>";
+                  $nestedData['status']="<button class='btn btn-outline-primary' id='$term->id' onclick='saveConsumed(this.id)'> <i class='fa fa-save' arial-hidden='true' id='fa_$term->id'></i></button>";
+                   
+     
+                   $x++;
+                $data[] = $nestedData;
+           }
+      }
+
+      $json_data = array(
+        "draw" => intval($request->input('draw')),
+        "recordsTotal" => intval($totalData),
+        "recordsFiltered" => intval($totalFiltered),
+        "data" => $data,
+    );
+
+      echo json_encode($json_data);
+
+}
+function downloadItemsSelected(Request $request){
+
+return response()->json([
+  'url'=>route('stock_download',['id'=>$request->id]),
+]);
+
+ 
+}
+function download(Request $request, $id){
+  $report= DB::table('items as t') 
+              ->join('inventories AS s', 's.item_id', '=', 't.id')
+          //->select('t.id as id','s.item_name','t.batch_number','t.cost')
+             ->where('s.lab_id','=',$id)->get();
+     $spreadsheet = new Spreadsheet();
+
+    $spreadsheet->getActiveSheet()->getDefaultColumnDimension()->setWidth(100, 'pt');
+    $spreadsheet->getActiveSheet()->getColumnDimension('A')->setAutoSize(true);
+    $spreadsheet->getActiveSheet()->mergeCells('D6:E6');
+$spreadsheet->getProperties()->setCreator('cathebert muyila')
+    ->setLastModifiedBy('cathebert muyila')
+    ->setTitle('PhpSpreadsheet Table Test Document')
+    ->setSubject('PhpSpreadsheet Table Test Document')
+    ->setDescription('Test document for PhpSpreadsheet, generated using PHP classes.')
+    ->setKeywords('office PhpSpreadsheet php')
+    ->setCategory('Table');
+
+// Create the worksheet
+
+  $drawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
+ $image = file_get_contents(url('/').'/assets/icon/logo_black.png');
+$imageName = 'logo.png';
+$temp_image=tempnam(sys_get_temp_dir(), $imageName);
+file_put_contents($temp_image, $image);
+$drawing->setName('Logo');
+$drawing->setDescription('Logo');
+$drawing->setPath($temp_image); 
+$drawing->setHeight(70);
+$drawing->setCoordinates('C2');
+$drawing->setOffsetX(110);
+
+
+$drawing->getShadow()->setDirection(45);
+$drawing->setWorksheet($spreadsheet->getActiveSheet());
+
+$spreadsheet->setActiveSheetIndex(0);
+$spreadsheet->getActiveSheet()->setCellValue('E8', 'INVENTORY LIST ');
+$spreadsheet->getActiveSheet()->getStyle('E8')->getFont()->setBold(true);
+
+$spreadsheet->getActiveSheet()
+   ->setCellValue('A10', 'ULN')
+     ->setCellValue('B10', 'CODE')
+    ->setCellValue('C10', 'ITEM NAME')
+    ->setCellValue('D10', 'BATCH NUMBER')
+    ->setCellValue('E10', 'CATALOG NUMBER')
+    ->setCellValue('F10', 'HAZARDOUS')
+    ->setCellValue('G10', 'UNIT OF ISSUE')
+    ->setCellValue('H10', 'STORAGE TEMP.')
+    ->setCellValue('I10', 'QUANTITY AVAILABLE')
+ ;
+
+$num=11;
+  for ($x=0; $x<count($report); $x++){
+
+
+  $data=[
+
+    [
+    $report[$x]->uln,
+    $report[$x]->code,
+    $report[$x]->item_name,
+    $report[$x]->batch_number,
+    $report[$x]->catalog_number,
+    $report[$x]->is_hazardous,
+    $report[$x]->unit_issue,
+    $report[$x]->store_temp,
+    '',
+  ],
+ 
+  ];
+
+$num++;
+   // $spreadsheet->getActiveSheet()->getRowDimension($x)->setOutlineLevel(1);
+  //  $spreadsheet->getActiveSheet()->getRowDimension($x)->setVisible(false);
+ $spreadsheet->getActiveSheet()->fromArray($data, null, 'A'.$num);
+   $spreadsheet->getActiveSheet()->getStyle('A'.$num.':I'.$num)->getFont()->setBold(true);
+
+ 
+
+
+}
+
+
+//$spreadsheet->getActiveSheet()->getRowDimension(81)->setCollapsed(true); 
+$step=$num+1;
+//$spreadsheet->getActiveSheet()->getRowDimension($step)->setCollapsed(true); 
+//$spreadsheet->getActiveSheet()->setShowSummaryBelow(false);
+
+//$spreadsheet->getActiveSheet()->fromArray($data, null, 'A2');
+/*$spreadsheet->getActiveSheet()
+    ->setCellValue('A'.$step, 'Total');
+  $spreadsheet->getActiveSheet()->getStyle('A'.$step)->getFont()->setBold(true);
+    $spreadsheet->getActiveSheet()
+    ->setCellValue('H'.$step, $overall_total);
+    $spreadsheet->getActiveSheet()->getStyle('H'.$step)->getNumberFormat()
+    ->setFormatCode('#,##0.00');
+    $spreadsheet->getActiveSheet()->getStyle('H'.$step)->getFont()->setBold(true);*/
+
+// Create Table
+
+$table = new Table('A10:I'.$step, 'Exported');
+// Create Columns
+
+// Create Table Style
+
+$tableStyle = new TableStyle();
+$tableStyle->setTheme(TableStyle::TABLE_STYLE_MEDIUM2);
+$tableStyle->setShowRowStripes(true);
+$tableStyle->setShowColumnStripes(true);
+//$tableStyle->setShowFirstColumn(true);
+//$tableStyle->setShowLastColumn(true);
+$table->setStyle($tableStyle);
+
+// Add Table to Worksheet
+
+$spreadsheet->getActiveSheet()->addTable($table);
+
+
+
+
+// Save
+
+$writer = new Xlsx($spreadsheet);
+$db_name='consolidated_orders_'.date('d_M_Y').'.xlsx';
+$writer->save(public_path('reports').'/'.$db_name);
+$path=public_path('reports').'/'.$db_name;
+$name='inventory_list.xlsx';
+
+$headers = [
+  'Content-type' => 'application/vnd.ms-excel', 
+  'Content-Disposition' => sprintf('attachment; filename="%s"', $name),
+  'Content-Length' => strlen($path)
+
+]; 
+//Update Requsition status
+//Requisition::where('is_marked','yes')->update([
+ //'is_marked'=>'done',
+//]);
+//$this->saveConsolidationHistory($orders,$db_name);
+return response()->download($path,$name, $headers);
+}
 }

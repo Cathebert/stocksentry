@@ -133,6 +133,17 @@
                     <div><img src="{{ url('/').'/public/upload/signatures/'.$approver_sign }}" width="50px" height="50px"/></div>
                     @endif
                 </td>
+@endif
+                 
+                   @if($receiver!='')
+                      
+                       <td class="w-half" >
+                    <div><h4>Received  By:{{$receiver}}</h4></div>
+                     @if ($receiver_sign!='')
+                    <div>Signature:</div>
+                    <div><img src="{{ url('/').'/public/upload/signatures/'.$receiver_sign }}" width="50px" height="50px"/></div>
+                    @endif
+                </td>
                 @endif
                 </tr>
                 </table>
