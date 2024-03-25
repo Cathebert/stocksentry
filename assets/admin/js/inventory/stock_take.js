@@ -511,7 +511,7 @@ function SelectArea(value){
 }
 
 function LoadTable(){
-    toke = $("#inventories_taking").DataTable({
+    stoke = $("#inventories_taking").DataTable({
     processing: true,
     serverSide: true,
     paging: true,
@@ -562,7 +562,14 @@ function LoadTable(){
 });
 
 }
-function getItems(value){
+function getItems(value,name){
+var selected = $("#items_list option:selected")
+    .toArray()
+    .map((item) => item.value);
+   if(selected.length==0){
+    LoadTable(); 
+   }
+    
     if(value==-1){
         LoadTable() 
     }
@@ -590,6 +597,7 @@ function getItems(value){
             type: "GET",
             data: {
                 id: value,
+                values:selected
             },
         },
 
@@ -624,14 +632,20 @@ function getItems(value){
 }
 function downloadItemSelected(){
     let download = $("#download_item").val();
-    let value = $("#items_list").val();
+    let value = $("#items_list option:selected")
+        .toArray()
+        .map((item) => item.value);
+        if (value.length == 0) {
+            return;
+        }
+    //let value = $("#items_list").val();
       $.ajax({
           method: "GET",
          
           url: download,
           data: {
               
-             id: value,
+             ids: value,
               
           },
 

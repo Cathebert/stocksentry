@@ -1,7 +1,8 @@
  @extends('layouts.main')
 @section('title','Inventory')
 @push('style')
-   
+    <link href="{{asset('assets/admin/vendors/select2/dist/css/select2.min.css') }}" rel="stylesheet">
+
 @endpush
 @section('content')
 
@@ -90,22 +91,7 @@
   </div>   
 
 
-    <div class="col-md-4 col-sm-4 col-xs-12 form-group">
-   <div class="input-group mb-3">
-  <div class="input-group-prepend">
-    <span class="input-group-text btn btn-secondary">Item List</span>
-  </div>
-  <select class="custom-select" id="items_list" aria-label="Example select with button addon" onchange="getItems(this.value)">
-
-  <option value="-1"></option>
-  <option value="0">Store</option>
-  <option value="999">Other</option>
-  </select>
-   <div class="input-group-prepend">
-<button type="button" class="btn btn-primary" onclick="downloadItemSelected()"><i class="fa fa-download"></i></button>
-  </div>
-</div>
-  </div> 
+    
                            <div class="col-md-8 col-sm-4 col-xs-12 form-group" >
                                 <label for="fullname">Employees Involved <span class="text-danger"></span></label>
                                 <select class="form-control" id="employees" style="width: 50%" name="employee_involved[]" multiple >
@@ -128,8 +114,7 @@
 
    
     });
-
-    
+ 
      
 });
 </script>
@@ -162,7 +147,38 @@
 
       
 
-       
+ 
+  <div class="col-sm-12">
+     <br>
+    <div class="card">
+ <div class="card-body">
+<form class="form-inline" method="get" id="download_item" action="{{route('stock.download_item_selected')}}" >
+  <label class="my-1 mr-2" for="download_item">Lab(s) </label>
+  <select class="custom-select my-1 mr-sm-2" id="items_list" onchange="getItems(this.value,this.name)" style="width: 70%"  name="labs[]" multiple>
+<option value="-1"></option>
+  @foreach ( $labs as $lab)
+     <option value="{{ $lab->id }}">{{$lab->lab_name}}</option>
+  @endforeach
+  <option value="999">Other</option>
+  </select>
+  
+ 
+
+  
+&nbsp;&nbsp;
+  <button type="submit" class="btn btn-primary my-1" id="submit"><i class="fa fa-download"></i></button>
+</form>
+</div>
+ </div>
+ </div>
+<script type="text/javascript">
+    $(document).ready(function() {
+  $('#items_list').select2({
+ placeholder: 'Select lab(s)',
+      allowClear: true,
+     });
+     });
+</script>   
 </br>
  
         <!---- table start ---->
@@ -198,7 +214,7 @@
   </div>
             @endsection
  @push('js')
-   
+  <script src="{{asset('assets/admin/vendors/select2/dist/js/select2.full.min.js') }}"></script>
    <script src="{{asset('assets/admin/js/inventory/stock_take.js')}}"> </script>
   
 @endpush

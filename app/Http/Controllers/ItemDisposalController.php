@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Services\BinCardService;
 use App\Models\Laboratory;
 use App\Models\LaboratorySection;
+use App\Notifications\DisposalNotification;
 use DB;
 class ItemDisposalController extends Controller
 {
@@ -81,6 +82,13 @@ return response()->json([
 ]);
 }
 else{
+$approvers=User::where([['authority','=',2],['laboratory_id','=',auth()->user()->laboratory_id]])->get();
+$disposed_by=auth()->user()->name.' '.auth()->user()->last_name;
+
+foreach($approvers as $user){
+
+  $user->notify(new DisposalNotification($disposed_by))
+}
  return response()->json([
     'message'=>config('stocksentry.disposal.created'),
     'error' =>false
@@ -266,7 +274,7 @@ $sig=$user_approver->signature;
    $data['date']    =   date('d,M Y',strtotime($disposal->disposal_date));
    $data['disposed_by'] = $user->name.' '.$user->last_name;
    $data['signature']   = $user->signature;
-  $data['approved_by'] = $name;
+   $data['approved_by'] = $name;
    $data['approver_sign']=$user_approver->signature??"";
    $data['disposal_lab']=$lab_name;
    $data['disposal_details']=DB::table('items as t')

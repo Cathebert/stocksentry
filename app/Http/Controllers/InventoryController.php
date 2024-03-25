@@ -596,6 +596,7 @@ public function showStockTake(Request $request){
    {
 $data['lab_name']='Logged Into: '.$lab->lab_name;
 }
+$data['labs']=Laboratory::get();
         return view('inventory.inventory_tab.stock_take',$data);
 }
 public function showStockAdjustment(Request $request){
