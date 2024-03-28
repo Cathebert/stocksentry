@@ -12,7 +12,7 @@ t = $("#expiry_table").DataTable({
   
     info: true,
 
-    lengthMenu: [10, 15, 20],
+    lengthMenu: [10, 20, 50],
     responsive: true,
     order: [[0, "desc"]],
     oLanguage: {
@@ -88,7 +88,7 @@ t = $("#expiry_table").DataTable({
 
     info: true,
 
-    lengthMenu: [10, 15, 20],
+    lengthMenu: [10, 20, 50],
     responsive: true,
     order: [[0, "desc"]],
     oLanguage: {

@@ -13,7 +13,8 @@ use App\Models\Inventory;
 use App\Models\Adjustment;
 use App\Models\BinCard;
 use App\Models\User;
-
+use App\Notifications\AdjustmentCreatedNotification;
+use App\Notifications\AdjustmentApprovedNotification;
 use App\Services\BinCardService;
 class ConsumptionController extends Controller
 {
@@ -320,9 +321,9 @@ $consumption->save();
 $consumption_id=$consumption->id;
 
 for($i=0;$i<count($request->ids);$i++){
-    $consump_details=new ConsumptionDetail();
- $consump_details->consumption_id=$consumption_id;
- $consump_details->consumption_type_id=$period;
+$consump_details=new ConsumptionDetail();
+  $consump_details->consumption_id=$consumption_id;
+  $consump_details->consumption_type_id=$period;
   $consump_details->lab_id=auth()->user()->laboratory_id;
   $consump_details->section_id=auth()->user()->section_id;
   $consump_details->item_id=$request->ids[$i];
@@ -604,6 +605,8 @@ $bincard->updateItemAdjustment($adjst->item_id,$adjst->quantity,$adjst->type);
     'updated_at'=>now(),
  ]);
 DB::commit();
+$user=User::where('id',$adjst->adjusted_by)->first(); 
+$user->notify(new AdjustmentApprovedNotification());
  return response()->json([
 'message'=>config('stocksentry.adjustment.adjustment_success'),
 'error'=>false,
@@ -682,7 +685,13 @@ $adjustment->save();
 
                 'updated_at'=>now(),
             ]);**/
-  
+  $approvers=User::where([['authority','=',2],['laboratory_id','=',auth()->user()->laboratory_id]])->get();
+$disposed_by=auth()->user()->name.' '.auth()->user()->last_name;
+
+foreach($approvers as $user){
+
+  $user->notify(new AdjustmentCreatedNotification())
+}
  DB::commit();
  return response()->json([
 'message'=>"Your adjustment is pending approval ",

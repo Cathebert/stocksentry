@@ -60,9 +60,8 @@
     <span class="input-group-text"><i class="fa fa-home" aria-hidden="true"></i></span>
   </div>
   <select class="custom-select" id="period" name="lab" onchange="getSelected()">
-    <option value="99" selected> All</option>
+    <option value="-1" selected> All</option>
       @foreach ($laboratories as $lab)
-   
        <option value="{{$lab->id}}">{{$lab->lab_name}}</option>
    @endforeach
 </select>
@@ -75,11 +74,11 @@
   <span class="input-group-text">Expiry Days Range:</span> 
    <span class="input-group-text"><i class="fa fa-sort-numeric-asc" aria-hidden="true"></i></span>
   <select class="custom-select" id="days_range" name="period" onchange="getSelectedRange()">
-   <option value="99" selected>All</option>
+   <option value="-1" selected>All</option>
    
     <option value="2"> >1 to < 30 days</option>
       <option value="3" > > 30  to < 60 days </option>
-        <option value="2"> > 60  to < 90 days</option>
+        <option value="4"> > 60  to < 90 days</option>
      
 </select>
 </div>

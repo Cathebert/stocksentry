@@ -12,6 +12,7 @@ use App\Jobs\updateStore;
 use DB;
 use App\Notifications\PendingRequsitionNotification;
 use App\Notifications\ApprovedRequestNotification;
+use App\Notifications\StoreRequestNotification;
 use App\Models\ConsolidateHistory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Worksheet\AutoFilter;
@@ -804,11 +805,17 @@ else{
 'approved_by'=>auth()->user()->id,
 'updated_at'=>now()
   ]);
+  $lab=Laboratory::where('id',auth()->user()->laboratory_id)->first();
   $requested_by=Requisition::where('id',$request->id)->select('requested_by','sr_number')->first();
   $user=User::where('id',auth()->user()->id)->select('name','last_name')->first();
   $approved_by=$user->name.' '.$user->last_name;
   $user->notify(new ApprovedRequestNotification($requested_by->sr_number,$approved_by));
-  $requisition= Requisition ::where([['lab_id','=',auth()->user()->laboratory_id],['status','=','approved']])->count();
+  $store_users=User::where([['laboratory_id','=',0],['authority','=',1]])->get();
+
+  for($store_users as $user){
+    $user->notify(new StoreRequestNotification($requested_by->sr_number,$approved_by,$lab->lab_name));
+  }
+  $requisition= Requisition::where([['lab_id','=',auth()->user()->laboratory_id],['status','=','approved']])->count();
   return response()->json([
 'message'=>"Order  been  approved  successfully",
 'count'=>$requisition,

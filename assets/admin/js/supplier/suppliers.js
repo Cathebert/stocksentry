@@ -87,7 +87,7 @@ function deleteSupplier(id) {
     var delete_user = $("#delete_supplier").val();
     $.confirm({
         title: "Confirm!",
-        content: "Do you really  want to delete this supplier. Any transaction associated with this supplier will be removed?!",
+        content: "Do you really  want to delete this supplier.?!",
         buttons: {
             Oky: {
                 btnClass: "btn-danger",
