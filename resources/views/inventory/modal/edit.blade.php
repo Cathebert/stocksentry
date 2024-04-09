@@ -59,6 +59,10 @@
     <label for="exampleInputPassword1">Warehouse pack Size</label>
     <input type="text" class="form-control" id="warehouse_size" name="warehouse_size" value="{{$item->warehouse_size}}" required>
   </div>
+    <div class="col-md-4 col-sm-12 col-xs-12 form-group">
+    <label for="exampleInputPassword1">Location</label>
+    <input type="text" class="form-control" id="location" name="location" value="{{$item->location}}" >
+  </div>
    <div class="col-md-4 col-sm-12 col-xs-12 form-group">
     <label for="exampleInputPassword1">Catalog Number</label>
     <input type="text" class="form-control" id="cat_number" name="cat_number"  value="{{$item->catalog_number}}">

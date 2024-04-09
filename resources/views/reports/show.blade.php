@@ -20,13 +20,14 @@
   <a href="#" class="list-group-item list-group-item-action active">
    Inventory
   </a>
-  <a href="{{route('report.expiry')}}" class="list-group-item list-group-item-action">Expiry Report</a>
+   <a href="{{route('report.expired')}}" class="list-group-item list-group-item-action">Expired Items Report</a>
+  <a href="{{route('report.expiry')}}" class="list-group-item list-group-item-action">About To Expiry Report</a>
  
   <a href="{{route('report.consumption')}}" class="list-group-item list-group-item-action">Consumption Usage Report</a>
   <a href="{{route('report.stock-level')}}" class="list-group-item list-group-item-action">Stock Levels Report</a>
     <a href="{{route('reports.item_out_of_stock')}}" class="list-group-item list-group-item-action">Items out of Stock</a>
      <a href="#" class="list-group-item list-group-item-action" hidden>Variance Report</a>
-     <a href="#" class="list-group-item list-group-item-action">Stock Disposal Summary</a>
+     <a href="{{ route('report.stock-disposal') }}" class="list-group-item list-group-item-action">Stock Disposal Summary</a>
    
 </div>
 
@@ -58,8 +59,8 @@
   <a href="#" class="list-group-item list-group-item-action active">
     Activity
   </a>
-  <a href="#" class="list-group-item list-group-item-action">System Mails</a>
-  <a href="#" class="list-group-item list-group-item-action">Activity Logs</a>
+  <a href="{{route('system_mails')}}" class="list-group-item list-group-item-action">System Mails</a>
+  <a href="{{route('logs')}}" class="list-group-item list-group-item-action">Activity Logs</a>
 
 </div>
 
@@ -68,10 +69,10 @@
 
   <div class="list-group">
   <a href="#" class="list-group-item list-group-item-action active">
-    General
+    Automation
   </a>
-  <a href="#" class="list-group-item list-group-item-action">Supplier Report</a>
-  <a href="#" class="list-group-item list-group-item-action">ABC classification</a>
+  <a href="{{route('scheduled.show')}}" class="list-group-item list-group-item-action">View/Schedule Reports</a>
+ 
  
 </div>
 

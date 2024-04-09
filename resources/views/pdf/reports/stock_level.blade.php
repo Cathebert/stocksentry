@@ -23,19 +23,17 @@
     </div>
 
     <div class="margin-top">
-         <span class="heading4" style="text-align: center;"><strong>Expired Items List</strong></span> <br> 
+         <span class="heading4" style="text-align: center;"><strong>Stock Levels</strong></span> <br> 
         <table class="products">
             <tr>
                 <th>Sr.</th>
                 <th>Item Name</th>
                    <th>Code #</th>
-                <th>Batch #</th>
-              
-                 <th>Expiry Date</th>
-                 <th>Location</th>
-                  <th>Cost</th>
-                   <th>Quantity</th>
-                    <th>Estimated Loss</th>
+             
+                 <th>Minimum</th>
+                  <th>Maximum</th>
+                   <th>Available</th>
+                  
             </tr>
                           @php $i=1;
                   $Total=0;
@@ -55,13 +53,7 @@
              
                  
                         
-                    @php
-                  
-                    
-                          $sub=$dat->cost*$dat->quantity;
-                                          $Total=$Total+$sub;
-                                         
-                    @endphp
+                   
                     
                     <td>
                         {{ $i }}
@@ -73,27 +65,21 @@
                        <td>
                       {{$dat->code?? '' }}
                     </td>
-                     <td>
-                      {{$dat->batch_number?? '' }}
-                    </td>
                     
                     
+                  
                      <td>
-                     {{ $dat->expiry_date }}
+                     {{ $dat->minimum_level }}
                     </td>
-                     <td>
-                     {{ $dat->lab_name }}
+                      <td>
+                     {{ $dat->maximum_level }}
                     </td>
-                     <td>
-                   {{ $dat->cost }}
-                    </td>
+                  
                     
                       <td>
-                 {{ $dat->quantity}}
+                 {{ $dat->stock_on_hand}}
                     </td>
-                          <td>
-                {{ $dat->quantity*$dat->cost }}
-                    </td>
+                       
                          </tr>
                             @php $i++; @endphp
                     @endforeach
@@ -102,9 +88,7 @@
         </table>
     </div>
  
-    <div class="total">
-        Total: {{number_format($Total,2)  }}
-    </div>
+    
     <hr>
 
     <div class="footer margin-top" >

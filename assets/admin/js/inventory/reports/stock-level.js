@@ -8,7 +8,7 @@ let t="";
      paging: true,
      select: true,
      info: true,
-     lengthMenu: [5, 10, 100],
+     lengthMenu: [10, 20, 50],
      responsive: true,
 
      order: [[0, "desc"]],

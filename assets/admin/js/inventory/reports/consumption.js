@@ -12,7 +12,7 @@ p = $("#consumption_table").DataTable({
     destroy: true,
     info: true,
 
-    lengthMenu: [10, 15, 20],
+    lengthMenu: [10, 20, 50],
     responsive: true,
     order: [[0, "desc"]],
     oLanguage: {
@@ -128,10 +128,11 @@ p = $("#consumption_table").DataTable({
 
      return div;
  }
+ function getSelectedLab(value){
+    getData();
+ }
  function getSelected(value){
-    if(value==99){
-
-    }
+   
     if(value==10){
         document.getElementById('custom').hidden=false;
         $('#start').focus();
@@ -139,7 +140,7 @@ p = $("#consumption_table").DataTable({
     }
     else{
          document.getElementById("custom").hidden = true;
-getData(value)
+getData()
  }
  }
  function getLastDate(){
@@ -150,11 +151,11 @@ getData(value)
        $("#start").focus(); 
        return;
     }
-getCustom(period,start,end);
+getData();
  }
-function getData(id){
+function getData(){
     var filter = $("#filter").val();
-    
+    let form_data = $("#expiry_form").serialize();
 p = $("#consumption_table").DataTable({
      processing: true,
      serverSide: true,
@@ -163,7 +164,7 @@ p = $("#consumption_table").DataTable({
      destroy:true,
      info: true,
 
-     lengthMenu: [10, 15, 20],
+     lengthMenu: [10, 20, 50],
      responsive: true,
      order: [[0, "desc"]],
      oLanguage: {
@@ -175,7 +176,7 @@ p = $("#consumption_table").DataTable({
          dataType: "json",
          type: "GET",
          data: {
-             value: id,
+             form_data
          },
      },
 
@@ -294,11 +295,36 @@ function changeFrequency(value){
     $('#report_download').on('click',function(e){
         e.preventDefault();
         let pe=$('#period').val();
-      runReport('download',pe)
+      runReport('download')
         
     })
-function runReport(type,period){
+   ;
+      $("#report_download_excel").on("click", function (e) {
+          e.preventDefault();
+         let download_url = $("#generate_report").val();
+         let form_data = $("#expiry_form").serialize();
+          $.ajax({
+              method: "GET",
+
+              url: download_url,
+              data: {
+                  form_data,
+                  type: "excel",
+              },
+
+              success: function (data) {
+                  window.location = data.url;
+                  // show bootstrap modal
+              },
+              error: function (jqXHR, textStatus, errorThrown) {
+                  // console.log(get_case_next_modal)
+                  alert("Error " + errorThrown);
+              },
+          });
+      });
+function runReport(type){
       let download = $("#generate_report").val();
+ let form_data = $("#expiry_form").serialize();
      $.ajax({
          method: "GET",
         dataType:"JSON",
@@ -306,7 +332,7 @@ function runReport(type,period){
          data: {
            
              type: type,
-             period:period
+            form_data
          },
 
          success: function (data) {

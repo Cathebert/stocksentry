@@ -143,3 +143,79 @@ t = $("#expiry_table").DataTable({
     ],
 });
 }
+$("#download").on("click", function (e) {
+    e.preventDefault();
+    var download_url=$('#download_url').val();
+    var expiry_form = $("#expiry_form").serialize();
+    console.log(expiry_form);
+    $.ajax({
+        method: "GET",
+
+        url: download_url,
+        data: {
+          expiry_form,
+          type:'download'
+        
+        },
+
+        success: function (data) {
+    
+            window.location=data.url
+            // show bootstrap modal
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            // console.log(get_case_next_modal)
+            alert("Error " + errorThrown);
+        },
+    });
+});
+
+$("#excel").on("click", function (e) {
+    e.preventDefault();
+    var download_url = $("#download_url").val();
+    var expiry_form = $("#expiry_form").serialize();
+    console.log(expiry_form);
+    $.ajax({
+        method: "GET",
+
+        url: download_url,
+        data: {
+            expiry_form,
+            type:'excel'
+        },
+
+        success: function (data) {
+            window.location = data.url;
+            // show bootstrap modal
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            // console.log(get_case_next_modal)
+            alert("Error " + errorThrown);
+        },
+    });
+});
+
+$("#print").on("click", function (e) {
+    e.preventDefault();
+    var download_url = $("#download_url").val();
+    var expiry_form = $("#expiry_form").serialize();
+    console.log(expiry_form);
+    $.ajax({
+        method: "GET",
+
+        url: download_url,
+        data: {
+            expiry_form,
+            type: "print",
+        },
+
+        success: function (data) {
+            window.location = data.url;
+            // show bootstrap modal
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            // console.log(get_case_next_modal)
+            alert("Error " + errorThrown);
+        },
+    });
+});

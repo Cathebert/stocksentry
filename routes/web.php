@@ -39,8 +39,11 @@ use App\Http\Controllers\ColdRoom\ColdRoomStockTakeController;
 use App\Http\Controllers\ColdRoom\ColdRoomStockDisposalController;
 use App\Http\Controllers\ColdRoom\ColdRoomAdjustmentController;
 use App\Http\Controllers\ColdRoom\ColdRoomIssueController;
-
+use App\Http\Controllers\DisposalReportController;
 use App\Http\Controllers\ContractController;
+use App\Http\Controllers\ExpiredItemController;
+use App\Http\Controllers\SystemMailController;
+use App\Http\Controllers\ScheduleReportController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -124,10 +127,19 @@ Route::post('/save-approve',[RequisitionController::class, 'updateApproved'])->n
 Route::get('/filter',[RequisitionController::class, 'searchRequisition'])->name('requisition.filter');
 Route::post('/mark',[RequisitionController::class,'markToConsolidate'])->name('requisition.mark');
 Route::post('/remove',[RequisitionController::class,'removeToConsolidate'])->name('requisition.remove');
+Route::get('system_mails',[SystemMailController::class,'show'])->name('system_mails');
+Route::get('load_system',[SystemMailController::class,'load'])->name('mail.load');
+
+//_____________________schedule reports______________________//
+Route::get('scheduled_reports',[ScheduleReportController::class,'show'])->name('scheduled.show');
+Route::get('scheduled_load',[ScheduleReportController::class,'load'])->name('scheduled.load');
+Route::post('save_scheduled',[ScheduleReportController::class,'save'])->name('scheduled.save');
+Route::post('deactivate_schedule',[ScheduleReportController::class,'deactivate'])->name('scheduled.deactivate');
 
 
         //__________________________________Stats______________________________________//
 Route::get('/inventory-health',[StatsController::class,'showInventoryHealth'])->name('stats.pie');
+Route::get('/lab-inventory-health',[StatsController::class,'showLabInventoryHealth'])->name('labstats.pie');
 Route::get('/inventory-top_used',[StatsController::class,'showTopUsedItems'])->name('stats.area');
 Route::get('/inventory-health-modal',[StatsController::class, 'showHealthModal']) ->name('stats.detail_modal');  
 Route::get('/inventory-health-table',[StatsController::class, 'showHealthTable'])->name('stats.table');
@@ -170,10 +182,20 @@ Route::post('/pending_approve',[ForecastController::class,'approvePendingOrder']
           
  //____________________________admin Reports________________________________//
 Route::get('/reports',[ReportController::class,'show'])->name('reports.show');
+Route::get('/expired-report',[ExpiredItemController::class, 'showExpiredItemsReport'])->name('report.expired');
+Route::get('loadbylab',[ExpiredItemController::class,'loadExpiredByLab'])->name('report.expiredbylab');
+Route::get('/expired-by-period',[ExpiredItemController::class,'loadExpiredItemByPeriod'])->name('report.expiredbyperiod');
+Route::get('/expired-by-range', [ExpiredItemController::class,'loadExpiredItemByRange'])->name('report.expiredbyrange');
+Route::get('/load_expired_item',[ExpiredItemController::class,'loadExpiredItemsReport'])->name('report.expired_table');
+Route::get('/download_expired',[ExpiredItemController::class,'downloadExpired'])->name('report.expired_download');
+Route::get('/get_expired_file/{name}',[ExpiredItemController::class,'getExpiredFile'])->name('report.get_expired_download');
+Route::get('/expired_excel_download/{name}',[ExpiredItemController::class,'getExpiredExcelFile'])->name('report.expired_download-excel');
 Route::get('/expiry-report',[ReportController::class, 'showExpiryReport'])->name('report.expiry');
 Route::get('/expiry-table',[ReportController::class, 'loadExpiryTable'])->name('report.expiry_table');
 Route::post('/schedule-report/{type}',[ReportController::class, 'scheduleReport'])->name('report.schedule_report');
 Route::get('/download-report',[ReportController::class, 'downloadReport'])->name('report.download');
+Route::get('/expiry_download/',[ReportController::class,'expiryDownload'])->name('report.expiry_download');
+Route::get('/expiry_download-excel/{name}',[ReportController::class,'expiryDownloadExcel'])->name('report.expiry_download-excel');
 Route::get('/issue-report',[ReportController::class, 'showIssueReport'])->name('issue.report');
 Route::get('/issue-table',[ReportController::class, 'loadIssueTable'])->name('report.issue_table');
 Route::get('/consumption-report',[ReportController::class,'showConsumptionReport'])->name('report.consumption');
@@ -183,6 +205,13 @@ Route::get('/consumption-filter',[ReportController::class,'filterConsumption'])-
 Route::get('/change-frequency',[ReportController::class,'changeFrequency'])->name('change_frequency');
 Route::get('/download-consumption-report',[ReportController::class, 'downloadConsumptionReport'])->name('report.consumptiondownload');
 Route::get('/red/{name}',[ReportController::class,'download'])->name('redirect_download');
+Route::get('/consumed-excel/{name}',[ReportController::class,'excelDownload'])->name('report.consumed_download-excel');
+Route::get('/stock_level_download/{name}',[ReportController::class,'stockLevelDownload'])->name('report.stock_level_download');
+//disposal
+Route::get('/disposal',[DisposalReportController::class,'showDisposal'])->name('report.stock-disposal');
+Route::get('/load_disposal',[DisposalReportController::class,'loadDisposal'])->name('report.disposed_table');
+Route::get('/loaddisposebylab',[DisposalReportController::class,'loadByLab'])->name('report.disposedbylab');
+Route::get('/loaddisposebyrange',[DisposalReportController::class,'loadByRange'])->name('report.disposedbyrange');
 //_______requsition
  Route::get('/requisition-report',[ReportController::class,'showRequisitionReport'])->name('requisition.report');
  Route::get('/load-requisition-list',[ReportController::class,'loadRequisitionReport'])->name('report.load-requisition');

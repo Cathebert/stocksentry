@@ -7,94 +7,11 @@
   <ol class="breadcrumb">
     <li class="breadcrumb-item"><a href="{{route('admin.home')}}">Home</a></li>
     <li class="breadcrumb-item"><a href="{{route('reports.show')}}">Reports</a></li>
-    <li class="breadcrumb-item active" aria-current="page">About to Expire</li>
+    <li class="breadcrumb-item active" aria-current="page">Expired Items</li>
   </ol>
 </nav>
    <!-- Page Heading -->
-   
-                    <div class="d-sm-flex align-items-center justify-content-between mb-4">
-                        <h1 class="h3 mb-0 text-gray-800">About To Expire Report</h1>
-                         <div class="dropdow" style="text-align:right" >
-  <button  role="button" data-toggle="modal" data-target="#exampleModal">
-  <i class="fa fa-clock"> Schedule</i>
-</button>
-
-</div>
-
-                    </div>
-<div class="dropdown" style="text-align:right" >
-  <button class="dropdown-toggle btn btn-outline-primary btn-sm" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-  <i class="fa fa-upload"> Export As</i>
-</button>
-
-  <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-  
-    <a class="dropdown-item" href="{{route('report.download',['action'=>'download'])}}" id="download"><i class="fa fa-download"></i> PDF File</a>
-    <a class="dropdown-item" href="{{route('report.download',['action'=>'excel'])}}" id="excel"><i class="fa fa-share"></i>  Excel file</a>
-    <hr>
-
-
-  </div>
-</div>
-                   <div class="row" >
-      <div class="col-sm-12">
-    
-    <div class="card">
- 
-      <div class="card-body">
-        
-        <h5 class="card-title"> <strong>Filters </strong></h5>
-<form method="post" id="expiry_form">
-          @csrf
-          
-               <input type="hidden" class="form-control" id="expiry_report" value="{{route('report.expiry_table')}}">
-  <input type="hidden" class="form-control" id="download_url" value="{{route('report.download',['action'=>'download'])}}"/>
-
- 
-            
-            <div class="row">
-    <div class="col-md-4 col-sm-12 col-xs-12 form-group"  >
-<div class="input-group mb-3">
-  <div class="input-group-prepend">
-    <label class="input-group-text" for="period">Location</label>
-    <span class="input-group-text"><i class="fa fa-home" aria-hidden="true"></i></span>
-  </div>
-  <select class="custom-select" id="period" name="lab" onchange="getSelected()">
-    <option value="-1" selected> All</option>
-      @foreach ($laboratories as $lab)
-       <option value="{{$lab->id}}">{{$lab->lab_name}}</option>
-   @endforeach
-</select>
-
-</div>
-  </div>
-  
-     <div class="col-md-6 col-sm-12 col-xs-12 form-group" >
-  <div class="input-group">
-  <span class="input-group-text">Expiry Days Range:</span> 
-   <span class="input-group-text"><i class="fa fa-sort-numeric-asc" aria-hidden="true"></i></span>
-  <select class="custom-select" id="days_range" name="period" onchange="getSelectedRange()">
-   <option value="-1" selected>All</option>
-   
-    <option value="2"> >1 to < 30 days</option>
-      <option value="3" > > 30  to < 60 days </option>
-        <option value="4"> > 60  to < 90 days</option>
-     
-</select>
-</div>
-
-  </div>
-
-</form>
-
-
-
-
-
-      </div>
-
-<!-- Content Row -->
-                    <div class="row">
+    <div class="row">
 
                         <!-- Earnings (Monthly) Card Example -->
                         <div class="col-xl-3 col-md-4 mb-4">
@@ -103,7 +20,7 @@
                                     <div class="row no-gutters align-items-center">
                                         <div class="col mr-2">
                                             <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                                Quantity Expiring</div>
+                                                Quantity Expired</div>
                                             <div class="h5 mb-0 font-weight-bold text-gray-800"><a  style="text-decoration:none" id="quantity"> {{$quantity??'0' }} </a></div>
                                         </div>
                                         <div class="col-auto">
@@ -123,7 +40,7 @@
                                     <div class="row no-gutters align-items-center">
                                         <div class="col mr-2">
                                             <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
-                                                Value of Expiring quantity</div>
+                                                Value of Expired quantity</div>
                                             <div class="h5 mb-0 font-weight-bold text-gray-800" id="value">{{ $value??"0" }}</div>
                                         </div>
                                         <div class="col-auto">
@@ -134,6 +51,113 @@
                             </div>
                         </div>
 
+                    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                        <h1 class="h3 mb-0 text-gray-800"> Expired Item Report</h1>
+                         <div class="dropdow" style="text-align:right" >
+  <button  role="button" data-toggle="modal" data-target="#exampleModal" hidden>
+  <i class="fa fa-clock"> Schedule</i>
+</button>
+
+</div>
+ <div class="col-md-3 col-sm-12 col-xs-12 form-group" >
+  <div class="dropdown" style="text-align:right">
+  <button class="dropdown-toggle btn btn-outline-primary btn-sm" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+  <i class="fa fa-upload">Export As</i>
+</button>
+
+  <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+  
+    <a class="dropdown-item" href="{{route('report.download',['action'=>'download'])}}"  id="download_expired"><i class="fa fa-download"></i> PDF File</a>
+    <a class="dropdown-item" href="{{route('report.download',['action'=>'excel'])}}" id="download_expired_excel"><i class="fa fa-share"></i>  Excel file</a>
+    <hr>
+    
+   
+  </div>
+</div>
+</div>
+
+                    </div>
+                    
+
+                   <div class="row" >
+      <div class="col-sm-12">
+    
+    <div class="card">
+ 
+      <div class="card-body">
+        
+        <h5 class="card-title"> <strong>Filters </strong></h5>
+<form method="post" id="expiry_form">
+          @csrf
+          
+               <input type="hidden" class="form-control" id="expiry_report" value="{{route('report.expired_table')}}">
+              <input type="hidden" class="form-control" id="filterbyperiod" value="{{route('report.expiredbyperiod')}}"/>
+              <input type="hidden" class="form-control" id="filter_by_lab" value="{{route('report.expiredbylab')}}"/>
+              <input type="hidden" class="form-control" id="filter_by_range" value="{{route('report.expiredbyrange')}}"/>
+ <input type="hidden" class="form-control" id="download_url" value="{{route('report.expired_download',['action'=>'download'])}}"/>
+            
+            <div class="row">
+    <div class="col-md-4 col-sm-12 col-xs-12 form-group"  >
+<div class="input-group mb-3">
+  <div class="input-group-prepend">
+    <label class="input-group-text" for="period">Location</label>
+    <span class="input-group-text"><i class="fa fa-home" aria-hidden="true"></i></span>
+  </div>
+  <select class="custom-select" id="period" name="lab" onchange="getSelected(this.value)">
+    <option value="-1" selected> All</option>
+      @foreach ($laboratories as $lab)
+       <option value="{{$lab->id}}">{{$lab->lab_name}}</option>
+   @endforeach
+</select>
+
+</div>
+  </div>
+  
+     <div class="col-md-6 col-sm-12 col-xs-12 form-group"  >
+  <div class="input-group">
+  <span class="input-group-text">Period:</span> 
+   <span class="input-group-text"><i class="fa fa-sort-numeric-asc" aria-hidden="true"></i></span>
+  <select class="custom-select" id="days_range" name="period" onchange="getSelectedRange(this.value)">
+   <option value="-1" selected>All</option>
+  <option value="0" > Today</option>
+    <option value="1">Yesterday</option>
+    <option value="2">This Week</option>
+    <option value="3">This Month</option>
+    <option value="4">This Quarter</option>
+    <option value="5">This Year</option>
+    <option value="6">Previous Week</option>
+    <option value="7">Previous Month</option>
+    <option value="8">Previous Quarter</option>
+    <option value="9">Previous Year</option>
+      <option value="10">Custom</option>
+</select>
+</div>
+
+  </div>
+   <!----custom field---->
+ <div class="col-md-4 col-sm-12 col-xs-12 form-group" id="custom" hidden>
+<div class="input-group mb-3">
+  <div class="input-group-prepend">
+    <span class="input-group-text">Custom</span>
+    <span class="input-group-text"><i class="fa fa-calendar" aria-hidden="true"></i></span>
+  </div>
+  <input type="date" class="form-control" aria-label="start" name="start" id="start" placeholder="start">
+   <span class="input-group-text">-</span>
+   <input type="date" class="form-control" aria-label="start" name="end" id="end" onchange="getLastDate()">
+</div>
+
+</div>
+  <!----end--->
+</form>
+
+
+
+
+
+      </div>
+
+<!-- Content Row -->
+                   
 
                                 <!---- table start ---->
                <div class="table-responsive">
@@ -174,7 +198,7 @@
         </button><br>
          
       </div>
-          <span >Report Name: <i>Inventory About to Expire_{{date('Y-m-d')}}</i></span>
+          <span >Report Name: <i> Expired_Item_{{date('Y-m-d')}}</i></span>
       <div class="modal-body">
  <form method="post"  action="{{route('report.schedule_report',['type'=>'expiry'])}}" id="schedule_report_form" name="schedule_report_form">
   @csrf
@@ -262,6 +286,6 @@
             @endsection
 
  @push('js')
-       <script src="{{asset('assets/admin/js/inventory/reports/expiry.js')}}"> </script>
+       <script src="{{asset('assets/admin/js/inventory/reports/expired.js')}}"> </script>
   
 @endpush

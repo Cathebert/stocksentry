@@ -23,7 +23,7 @@
     </div>
 
     <div class="margin-top">
-         <span class="heading4" style="text-align: center;"><strong>Expired Items List</strong></span> <br> 
+         <span class="heading4" style="text-align: center;"><strong>Stock Levels</strong></span> <br> 
         <table class="products">
             <tr>
                 <th>Sr.</th>
@@ -35,7 +35,7 @@
                  <th>Location</th>
                   <th>Cost</th>
                    <th>Quantity</th>
-                    <th>Estimated Loss</th>
+                    <th>Total</th>
             </tr>
                           @php $i=1;
                   $Total=0;

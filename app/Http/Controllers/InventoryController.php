@@ -567,7 +567,7 @@ $x=1;
               ->join('items AS s', 's.id', '=', 't.item_id')
           ->select('t.id as id','s.item_name')
           ->groupBy('s.id')
-             ->where([['t.lab_id','=',auth()->user()->laboratory_id]])
+             ->where([['t.lab_id','=',auth()->user()->laboratory_id],['t.expiry_date','>',$date]])
           ->paginate(15);
       $lab=Laboratory::where('id',auth()->user()->laboratory_id)->select('lab_name')->first();
    

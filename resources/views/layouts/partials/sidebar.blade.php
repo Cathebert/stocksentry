@@ -171,7 +171,7 @@
             </li>
 
             <!-- Nav Item - Tables -->
-            <li class="nav-item" hidden >
+            <li class="nav-item"  >
                 <a class="nav-link" href="#">
                     <i class="fas fa-fw fa-cogs"></i>
                     <span>Settings</span></a>

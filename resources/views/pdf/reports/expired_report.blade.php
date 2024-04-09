@@ -35,7 +35,7 @@
                  <th>Location</th>
                   <th>Cost</th>
                    <th>Quantity</th>
-                    <th>Estimated Loss</th>
+                    <th>Loss</th>
             </tr>
                           @php $i=1;
                   $Total=0;

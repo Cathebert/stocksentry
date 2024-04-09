@@ -28,11 +28,10 @@
 
   <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
   
-    <a class="dropdown-item" href="" ><i class="fa fa-download"></i> PDF File</a>
-    <a class="dropdown-item" href=""><i class="fa fa-share"></i>  Excel file</a>
+    <a class="dropdown-item" href="{{route('report.stock_level_download',['name'=>'pdf'])}}" ><i class="fa fa-download"></i> PDF File</a>
+    <a class="dropdown-item" href="{{route('report.stock_level_download',['name'=>'excel'])}}" id="download_excel"><i class="fa fa-share"></i>  Excel file</a>
     <hr>
-    <a class="dropdown-item" href=""><i class="fa fa-print"></i> Print Report </a>
-     <a class="dropdown-item" href="#"><i class="fa fa-envelope"></i> Mail To</a>
+   
   </div>
 </div>
 <div class="row" >

@@ -119,7 +119,7 @@
              
                  
                         
-                    @foreach ($items as $info )
+                    @for ($x=0; $x<count($items); $x++ )
                         
                   
               
@@ -127,21 +127,21 @@
                             <td align="center"
                                 style="border-right: 1px solid #000;border-bottom: 1px solid #000;font-size: 9pt;">{{$i}}</td>
                             <td align="left"
-                                style="border-right: 1px solid #000;border-bottom: 1px solid #000;font-size: 9pt;"><strong>{{$info->item_name?? '' }}</strong></td>
+                                style="border-right: 1px solid #000;border-bottom: 1px solid #000;font-size: 9pt;"><strong>{{$items[$x]->item_name?? '' }}</strong></td>
                         
                             <td align="center"
-                                style="border-right: 1px solid #000;border-bottom: 1px solid #000;font-size: 9pt;"><strong>{{ $info->catalog_number}}</strong></td>
+                                style="border-right: 1px solid #000;border-bottom: 1px solid #000;font-size: 9pt;"><strong>{{ $items[$x]->catalog_number}}</strong></td>
                                   <td align="center"
-                                style="border-right: 1px solid #000;border-bottom: 1px solid #000;font-size: 9pt;"><strong>{{ $info->unit_issue}}</strong></td>
+                                style="border-right: 1px solid #000;border-bottom: 1px solid #000;font-size: 9pt;"><strong>{{ $items[$x]->unit_issue}}</strong></td>
                                 
                                <td align="center"
-                                style="border-right: 1px solid #000;border-bottom: 1px solid #000;font-size: 9pt;"><strong>{{ $info->consumed_quantity}}</strong></td>
+                                style="border-right: 1px solid #000;border-bottom: 1px solid #000;font-size: 9pt;"><strong>{{ $items[$x]->consumed_quantity}}</strong></td>
                                 
                         </tr>        
                         
                         @php $i++; @endphp
                        
-                   @if(!empty($consumed)&& count($consumed)>3)
+                   @if(!empty($consumed)&& count($consumed)>0)
                     @foreach($consumed as $consum)
 <tr>
                             <td align="left"
@@ -160,7 +160,7 @@
                        </tr>       
                     @endforeach
    @endif
-                  @endforeach
+                  @endfor
                 @endif
     <tr>
                    
