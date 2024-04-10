@@ -8,12 +8,12 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+
 use App\Models\ScheduleReport;
-use App\Models\Consumption;
-use App\Models\ConsumptionDetails;
 use App\Models\EmailReceipient;
 use App\Models\SystemMail;
-use App\Models\Notification\ConsumptionNotification;
+use App\Models\User;
+use App\Notifications\StockLevelNotification;
 use Carbon\Carbon;
 use PDF;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -21,14 +21,14 @@ use PhpOffice\PhpSpreadsheet\Worksheet\AutoFilter;
 use PhpOffice\PhpSpreadsheet\Worksheet\Table;
 use PhpOffice\PhpSpreadsheet\Worksheet\Table\TableStyle;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
-class ConsumptionJob implements ShouldQueue
+class StockLevelJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     /**
      * Create a new job instance.
      */
-    protected $report_id;
+     protected $report_id;
     public function __construct($report_id)
     {
         $this->report_id=$report_id;
@@ -39,44 +39,39 @@ class ConsumptionJob implements ShouldQueue
      */
     public function handle(): void
     {
-$report=ScheduleReport::where('id',$this->report_id)->first(); 
+       $report=ScheduleReport::where('id',$this->report_id)->first(); 
 $lab_id = $report->lab_id;
 $start = $report->start_date;
 $end   =   date('Y-m-d');
-
-$terms =DB::table('items as t') 
-              ->join('inventories AS l', 'l.item_id', '=', 't.id')
-              ->join('consumption_details as c','c.item_id','=','l.id')
-              ->select(
-                 't.id as item_id',
-                'l.id as id',
-                't.item_name',
-                'l.batch_number',
-                't.catalog_number',
-                'unit_issue',
-                DB::raw('SUM(c.consumed_quantity) as consumed_quantity'))
-              ->whereBetween('c.created_at',[$start,$end])
-              ->where('c.lab_id',$lab_id)
-              ->orderBy('t.item_name','asc')
-            ->groupBy('t.item_name')
-                 ->get();
-                 foreach($terms as $term){
- $consum=DB::table('items as t')
-                  ->join('inventories  as r','r.item_id','=','t.id')
-                  ->join('consumption_details as rd','rd.item_id','=','r.id')
-                  ->join('consumptions as u','u.id','=','rd.consumption_id')
-                  ->join('laboratories as l','l.id','=','u.lab_id')
+        $terms = DB::table('items as t')
+                  ->join('inventories as i','i.item_id','=','t.id')
                   ->select(
-                    'l.lab_name',
-                    'u.section_id',
-                    'rd.consumed_quantity',
-                    'r.batch_number'
-                )
-                  ->where('t.id',$term->item_id)
-                   ->get();
+                    't.id as id',
+                    't.uln',
+                    't.code',
+                    't.item_name',
+                    'i.batch_number',
+                    't.catalog_number',
+                    't.place_of_purchase',
+                    't.unit_issue',
+                    't.minimum_level',
+                    't.maximum_level',
+                    'i.quantity',
+                     DB::raw('SUM(i.quantity) as stock_on_hand'))
+                  ->where('i.lab_id',$lab_id)
+                  ->groupBy('t.id','t.item_name')
+                ->get();
 
-    if(count($terms)>0){
-        $spreadsheet = new Spreadsheet();
+        switch($report->attach_as){
+            case 1:
+    $name="scheduled_stock_level.pdf";
+    $path=public_path('reports').'/'.$name;
+    
+    $pdf=PDF::loadView('pdf.reports.stock_level',['info'=>$terms])->save($path)
+             break;
+
+            case 2:
+   $spreadsheet = new Spreadsheet();
 
      $spreadsheet->getActiveSheet()->getDefaultColumnDimension()->setWidth(100, 'pt');
     $spreadsheet->getActiveSheet()->getColumnDimension('A')->setAutoSize(true);
@@ -97,7 +92,7 @@ $drawing->getShadow()->setDirection(45);
 $drawing->setWorksheet($spreadsheet->getActiveSheet());
 
 $spreadsheet->setActiveSheetIndex(0);
-$spreadsheet->getActiveSheet()->setCellValue('B7', ' Consumed List ');
+$spreadsheet->getActiveSheet()->setCellValue('B7', ' Stock Level ');
 $spreadsheet->getActiveSheet()->getStyle('B7')->getFont()->setBold(true);
      
 $spreadsheet->getProperties()->setCreator('cathebert muyila')
@@ -110,14 +105,17 @@ $spreadsheet->getProperties()->setCreator('cathebert muyila')
 
 // Create the worksheet
 
-    
-
+  
+                
 $spreadsheet->setActiveSheetIndex(0);
 $spreadsheet->getActiveSheet()
-    ->setCellValue('A8', 'Name')
-    ->setCellValue('B8', 'Catalog Number')
-    ->setCellValue('C8', 'Unit Issue')
-    ->setCellValue('D8', 'Total Consumed');
+    ->setCellValue('A8', 'ULN')
+    ->setCellValue('B8', 'Name')
+    ->setCellValue('C8', 'Code')
+    ->setCellValue('D8', 'Unit');
+    ->setCellValue('E8', 'Minimum');
+    ->setCellValue('F8', 'Maximum');
+    ->setCellValue('G8', 'Available');
 
 $num=9;
 $total=0;
@@ -128,11 +126,13 @@ $overall_total=0;
   $dat=[
 
     [
+ $terms[$x]->uln,
     $terms[$x]->item_name,
-  
-  $terms[$x]->catalog_number,
+  $terms[$x]->code,
   $terms[$x]->unit_issue,
-  $terms[$x]->consumed_quantity,
+  $terms[$x]->minimum_level,
+  $terms[$x]->maximum_level,
+  $terms[$x]->quantity,
    
 
 ]
@@ -149,7 +149,7 @@ $step=$num+1;
 
 // Create Table
 
-$table = new Table('A8:D'.$num, 'Expired_Data');
+$table = new Table('A8:G'.$num, 'Expired_Data');
 
 // Create Columns
 
@@ -172,24 +172,20 @@ $spreadsheet->getActiveSheet()->addTable($table);
 // Save
 
 $writer = new Xlsx($spreadsheet);
-$writer->save(public_path('reports').'/consumption_scheduled.xlsx');
-$path=public_path('reports').'/consumption_scheduled.xlsx';
-$name='consumption_scheduled.xlsx';
-$headers = [
-  'Content-type' => 'application/vnd.ms-excel', 
-  'Content-Disposition' => sprintf('attachment; filename="%s"', $name),
-  'Content-Length' => strlen($path)
-
-];
+$writer->save(public_path('reports').'/scheduled_stock_level.xlsx');
+$path=public_path('reports').'/scheduled_stock_level.xlsx';
+$name='scheduled_stock_level.xlsx';
+            break;
 $receivers=EmailReceipient::where('report_id',$this->report_id)->select('user_id')->get();
 if(!empty($receivers)){
     foreach($receivers as $user){
-        $user->notify(new ConsumptionNotification($path));
+        $notifier=User::find($user->user_id);
+        $notifier->notify(new StockLevelNotification($path,$end));
     }
 $mail=new SystemMail();
 $mail->lab_id=$lab_id;
-$mail->subject="Consumption Report";
-$mail->type="Consumption";
+$mail->subject="Stock Level Report";
+$mail->type="Stock Level";
 $mail->date=now();
 $mail->save();
 }
@@ -200,15 +196,7 @@ ScheduleReport::where('id',$this->report_id)->update([
 
 
 }
-else{
-  $receivers=EmailReceipient::where('report_id',$this->report_id)->select('user_id')->get();
-if(!empty($receivers)){
-    foreach($receivers as $user){
-        $user->notify(new NoConsumptionNotification());
-    }  
-}
-}
-
-
+        
+                  
     }
 }

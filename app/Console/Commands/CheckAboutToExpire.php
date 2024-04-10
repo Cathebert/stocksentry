@@ -59,6 +59,8 @@ $pdf->save($path);
  $system_mail->lab_id=NULL;
  $system_mail->subject='About To Expire Notification';
  $system_mail->type="About To Expire";
- 
+ $system_mail->date=now();
+ $system_mail->save();
+
     }
 }

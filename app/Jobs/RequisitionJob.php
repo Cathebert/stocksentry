@@ -8,20 +8,21 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+
 use App\Models\ScheduleReport;
-use App\Models\Consumption;
-use App\Models\ConsumptionDetails;
 use App\Models\EmailReceipient;
 use App\Models\SystemMail;
-use App\Models\Notification\ConsumptionNotification;
+use App\Notifications\RequisitionNotification;
 use Carbon\Carbon;
+use App\Models\ItemOrder;
+use App\Models\User;
 use PDF;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Worksheet\AutoFilter;
 use PhpOffice\PhpSpreadsheet\Worksheet\Table;
 use PhpOffice\PhpSpreadsheet\Worksheet\Table\TableStyle;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
-class ConsumptionJob implements ShouldQueue
+class RequisitionJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -39,44 +40,26 @@ class ConsumptionJob implements ShouldQueue
      */
     public function handle(): void
     {
-$report=ScheduleReport::where('id',$this->report_id)->first(); 
+        $report=ScheduleReport::where('id',$this->report_id)->first(); 
 $lab_id = $report->lab_id;
 $start = $report->start_date;
 $end   =   date('Y-m-d');
-
-$terms =DB::table('items as t') 
-              ->join('inventories AS l', 'l.item_id', '=', 't.id')
-              ->join('consumption_details as c','c.item_id','=','l.id')
-              ->select(
-                 't.id as item_id',
-                'l.id as id',
-                't.item_name',
-                'l.batch_number',
-                't.catalog_number',
-                'unit_issue',
-                DB::raw('SUM(c.consumed_quantity) as consumed_quantity'))
-              ->whereBetween('c.created_at',[$start,$end])
-              ->where('c.lab_id',$lab_id)
-              ->orderBy('t.item_name','asc')
-            ->groupBy('t.item_name')
-                 ->get();
-                 foreach($terms as $term){
- $consum=DB::table('items as t')
-                  ->join('inventories  as r','r.item_id','=','t.id')
-                  ->join('consumption_details as rd','rd.item_id','=','r.id')
-                  ->join('consumptions as u','u.id','=','rd.consumption_id')
-                  ->join('laboratories as l','l.id','=','u.lab_id')
-                  ->select(
-                    'l.lab_name',
-                    'u.section_id',
-                    'rd.consumed_quantity',
-                    'r.batch_number'
-                )
-                  ->where('t.id',$term->item_id)
-                   ->get();
-
-    if(count($terms)>0){
-        $spreadsheet = new Spreadsheet();
+$terms=DB::table('item_orders as i')
+                ->join('users as u','u.id','i.ordered_by')
+                ->where('lab_id',$lab_id)
+                ->select('i.order_number','is_consolidated','i.is_approved','i.is_delivered','u.name','u.last_name')
+                     ->whereBetween('created_at',[$start,$end])->get();
+if(count($terms)>0){ 
+    switch ($report->attach_as) {
+        case 1:
+           $name="requisition_level.pdf";
+    $path=public_path('reports').'/'.$name;
+    
+    $pdf=PDF::loadView('pdf.reports.requisition',['info'=>$terms])->save($path)
+            break;
+        
+       case 2:
+     $spreadsheet = new Spreadsheet();
 
      $spreadsheet->getActiveSheet()->getDefaultColumnDimension()->setWidth(100, 'pt');
     $spreadsheet->getActiveSheet()->getColumnDimension('A')->setAutoSize(true);
@@ -97,7 +80,7 @@ $drawing->getShadow()->setDirection(45);
 $drawing->setWorksheet($spreadsheet->getActiveSheet());
 
 $spreadsheet->setActiveSheetIndex(0);
-$spreadsheet->getActiveSheet()->setCellValue('B7', ' Consumed List ');
+$spreadsheet->getActiveSheet()->setCellValue('B7', ' Orders Summary List ');
 $spreadsheet->getActiveSheet()->getStyle('B7')->getFont()->setBold(true);
      
 $spreadsheet->getProperties()->setCreator('cathebert muyila')
@@ -110,28 +93,29 @@ $spreadsheet->getProperties()->setCreator('cathebert muyila')
 
 // Create the worksheet
 
-    
+        \
 
 $spreadsheet->setActiveSheetIndex(0);
 $spreadsheet->getActiveSheet()
-    ->setCellValue('A8', 'Name')
-    ->setCellValue('B8', 'Catalog Number')
-    ->setCellValue('C8', 'Unit Issue')
-    ->setCellValue('D8', 'Total Consumed');
+    ->setCellValue('A8', 'Order #')
+     ->setCellValue('B8','Ordered By')
+    ->setCellValue('C8', 'Order Approved')
+    ->setCellValue('D8', 'Order Consolidated')
+    ->setCellValue('E8', 'Order Delivered');
 
 $num=9;
 $total=0;
 $overall_total=0;
 
   for ($x=0; $x<count($terms); $x++){
-
+$name= $terms[$x]->name.' '.$terms[$x]->name;
   $dat=[
 
     [
-    $terms[$x]->item_name,
-  
-  $terms[$x]->catalog_number,
-  $terms[$x]->unit_issue,
+    $terms[$x]->order_number,
+  $name,
+  $terms[$x]->is_approved,
+  $terms[$x]->is_consolidated,
   $terms[$x]->consumed_quantity,
    
 
@@ -149,7 +133,7 @@ $step=$num+1;
 
 // Create Table
 
-$table = new Table('A8:D'.$num, 'Expired_Data');
+$table = new Table('A8:E'.$num, 'Expired_Data');
 
 // Create Columns
 
@@ -181,15 +165,19 @@ $headers = [
   'Content-Length' => strlen($path)
 
 ];
-$receivers=EmailReceipient::where('report_id',$this->report_id)->select('user_id')->get();
-if(!empty($receivers)){
+            break;
+    }
+    //
+    $receivers=EmailReceipient::where('report_id',$this->report_id)->select('user_id')->get();
+    if(!empty($receivers)){
     foreach($receivers as $user){
-        $user->notify(new ConsumptionNotification($path));
+        $notifier=User::find($user->user_id);
+       $notifier->notify(new RequisitionNotification($path,$start,$end));
     }
 $mail=new SystemMail();
 $mail->lab_id=$lab_id;
-$mail->subject="Consumption Report";
-$mail->type="Consumption";
+$mail->subject="Order to Supplier Report";
+$mail->type="Order";
 $mail->date=now();
 $mail->save();
 }
@@ -198,17 +186,6 @@ ScheduleReport::where('id',$this->report_id)->update([
         'start_date'=>now()
     ]);
 
-
-}
-else{
-  $receivers=EmailReceipient::where('report_id',$this->report_id)->select('user_id')->get();
-if(!empty($receivers)){
-    foreach($receivers as $user){
-        $user->notify(new NoConsumptionNotification());
-    }  
-}
-}
-
-
+     }
     }
 }

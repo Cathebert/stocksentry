@@ -4,7 +4,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>{{ config('app.name', 'StockSentry ') }} | Stock Level</title>
+    <title>{{ config('app.name', 'StockSentry ') }} | Orders</title>
      <link rel="stylesheet" href="{{ asset('assets/css/pdf.css') }}" type="text/css"> 
 </head>
 <body>
@@ -14,7 +14,7 @@
            <hr>
     <table class="w-full">
         <tr>
-           <td class="w-half" style="text-align:center">Stock Level</td>
+           <td class="w-half" style="text-align:center">Orders</td>
         </tr>
     </table>
  
@@ -23,17 +23,19 @@
     </div>
 
     <div class="margin-top">
-         <span class="heading4" style="text-align: center;"><strong>Stock Levels</strong></span> <br> 
+         <span class="heading4" style="text-align: center;"><strong>Orders to supplier</strong></span> <br> 
         <table class="products">
             <tr>
                 <th>Sr.</th>
                 <th>Item Name</th>
-                   <th>Code #</th>
-             
-                 <th>Minimum</th>
-                  <th>Maximum</th>
-                   <th>Available</th>
-                  
+                  <th>Code</th>
+                 <th>Batch #</th>
+                 <th>Disposed Date</th>
+                  <th>Disposed Quantity</th>
+                   <th>Cost</th>
+                
+                    <th>Total</th>
+                    <th>Remark</th>
             </tr>
                           @php $i=1;
                   $Total=0;
@@ -50,9 +52,14 @@
                      <tr class="items">
  
                
-             
-                 
-                        
+                          
+                    @php
+                  
+                    
+                          $sub=$dat->cost*$dat->dispose_quantity;
+                                          $Total=$Total+$sub;
+                                         
+                    @endphp
                    
                     
                     <td>
@@ -61,25 +68,30 @@
                      <td>
                       {{$dat->item_name?? '' }}
                     </td>
+                    <td>
+                      {{$dat->code}}
+                    </td>
+                    <td>
+                      {{$dat->batch_number}}
+                    </td>
+                    <td>
+                      {{$dat->created_at}}
+                    </td>
+                       <td>
+                      {{$dat->dispose_quantity?? '' }}
+                    </td>
+                      <td>
+                      {{$dat->cost?? '' }}
+                    </td>
                     
                        <td>
-                      {{$dat->code?? '' }}
+                {{ $dat->dispose_quantity*$dat->cost }}
                     </td>
-                    
-                    
-                  
                      <td>
-                     {{ $dat->minimum_level }}
+                     {{ $dat->remarks }}
                     </td>
-                      <td>
-                     {{ $dat->maximum_level }}
-                    </td>
-                  
                     
-                      <td>
-                 {{ $dat->stock_on_hand}}
-                    </td>
-                       
+                
                          </tr>
                             @php $i++; @endphp
                     @endforeach
@@ -87,9 +99,12 @@
             @endif
         </table>
     </div>
- 
-    
+  <div class="total">
+        Total: {{number_format($Total,2)  }}
+    </div>
     <hr>
+  
+  
 
     <div class="footer margin-top" >
         <div style="text-align:center">Thank you</div>
