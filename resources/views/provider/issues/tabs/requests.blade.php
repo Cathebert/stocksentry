@@ -1,4 +1,4 @@
-  @extends('provider.layout.main')
+@extends('provider.layout.main')
 @section('title','Lab Inventory Order')
 @push('style')
    
@@ -89,7 +89,7 @@
 
  <div class="col-md-2 col-sm-12 col-xs-12 form-group" >
     <label for="receiving_date">Date</label>
-    <input type="date" class="form-control" id="request_date" value="{{ date('Y-m-d') }}" name="request_date"  required>
+    <input type="date" class="form-control" id="request_date" value="{{ date('Y-m-d') }}" name="request_date"  required readonly>
     
   </div>
 
@@ -123,7 +123,7 @@
  <button type="button" class="btn  btn-primary btn-sm " style="text-color:white" style="" id='pending_request_approval'  ><i class="fa fa-hourglass-half"></i> Pending Approvals  <span class="badge badge-pill badge-danger" id="requests-badge">{{$requests}}</span></button>&nbsp;&nbsp;
  
  @endif
- <button type="button" class="btn  btn-success btn-sm " style="text-color:white" id="approved_request" style=""   ><i class="fa fa-check"></i> Approved  <span class="badge badge-pill badge-danger" id="appro">{{$approved}}</span></button>&nbsp;&nbsp;
+ <button type="button" class="btn  btn-success btn-sm " style="text-color:white" id="approved_request" style=""   ><i class="fa fa-check"></i> Approved  <span class="badge badge-pill badge-danger" ></span></button>&nbsp;&nbsp;
 <button type="button" class="" style="text-color:white "id="requisition_list" style=""  ><i class="fa fa-list"></i> Requisition list  </button>&nbsp;&nbsp;
 </div>
 

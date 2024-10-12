@@ -5,7 +5,7 @@
             <div id="content">
 
                 <!-- Topbar -->
-                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow" id="topbar">
 
                     <!-- Sidebar Toggle (Topbar) -->
                     <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
@@ -43,12 +43,11 @@
                         </li>
 
                         <!-- Nav Item - Alerts -->
-                        <li class="nav-item dropdown no-arrow mx-1">
+                        <li class="nav-item dropdown no-arrow mx-1" hidden>
                             <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button"
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <i class="fas fa-bell fa-fw"></i>
                                 <!-- Counter - Alerts -->
-                                    <!-- Counter - Alerts -->
                                 <span class="badge badge-danger badge-counter">{{auth()->user()->unreadNotifications->count()}}</span>
                             </a>
                             <!-- Dropdown - Alerts -->
@@ -66,7 +65,7 @@
                                         </div>
                                     </div>
                                     <div>
-                                        
+                                    
                                         <div class="small text-gray-500">Stock Taken on {{ $notification->data['stock_take_date'] }} has Issues</div>
                                         <span class="font-weight-bold">{{ $notification->data['count'] }} Items needs reviewing</span>
                 
@@ -108,6 +107,7 @@
                                 </a>
                                 @endif               
                                   @empty
+
                                       <p style="text-align:center"> No notification</p>
                                    
                                  @endforelse
@@ -115,6 +115,7 @@
                                 <a class="dropdown-item text-center small text-gray-500" href="#" hidden>Show All Alerts</a>
                             </div>
                         </li>
+
                         <!-- Nav Item - Messages -->
                         <li class="nav-item dropdown no-arrow mx-1" hidden >
                             <a class="nav-link dropdown-toggle" href="#" id="messagesDropdown" role="button"
@@ -181,7 +182,7 @@
                             </div>
                         </li>
 
-                                    <div class="topbar-divider d-none d-sm-block"></div>
+                                 <div class="topbar-divider d-none d-sm-block"></div>
 <button type="button" class="btn ">
  {{$lab_name??""}} <span class="badge badge-primary">{{ auth()->user()->occupation??''  }}</span>
   
@@ -194,12 +195,12 @@
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <span class="mr-2 d-none d-lg-inline text-gray-600 small">{{auth()->user()->name??"User"}}</span>
                                 <img class="img-profile rounded-circle"
-                                   src="{{ (!empty(auth()->user()->profile_img)) ? url('/public/uploads/profile_images/' . auth()->user()->profile_img) : asset('assets/img/undraw_profile.svg') }}" height="50px" width="50px">
+                                     src="{{ (!empty(auth()->user()->profile_img)) ? url('/public/upload/profile/' . auth()->user()->profile_img) : asset('assets/img/undraw_profile.svg') }}" height="50px" width="50px">
                             </a>
                             <!-- Dropdown - User Information -->
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
                                 aria-labelledby="userDropdown">
-                                <a class="dropdown-item" href="#">
+                                <a class="dropdown-item" href="{{route('labuser.userprofile')}}">
                                     <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
                                     Profile
                                 </a>
@@ -207,7 +208,7 @@
                                     <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
                                     Settings
                                 </a>
-                                <a class="dropdown-item" href="#">
+                                <a class="dropdown-item" href="{{route('logs')}}" hidden>
                                     <i class="fas fa-list fa-sm fa-fw mr-2 text-gray-400"></i>
                                     Activity Log
                                 </a>
@@ -244,8 +245,6 @@ var login="{{url('/')}}"
             }
         });
                         })
-
-
 
                         function showNotification(id){
 var view_notification = "{{route('notifications.show')}}"
@@ -288,11 +287,15 @@ function markAsRead(id){
       },
   }); 
 }
-  
                      </script>
                         </li>
 
                     </ul>
-
+<div class="modal" tabindex="-1" id="notif" role="dialog" >
+  <div class="modal-dialog modal-xl" role="document" >
+    <div class="modal-content" id="show_notification">
+ </div>
+    </div>
+     </div>
                 </nav>
                 <!-- End of Topbar -->

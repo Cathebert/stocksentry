@@ -14,9 +14,15 @@ class NoConsumptionNotification extends Notification
     /**
      * Create a new notification instance.
      */
-    public function __construct()
+    protected $lab_name;
+    protected $start;
+    protected $end;
+    public function __construct($lab_name,$start,$end)
     {
         //
+        $this->lab_name=$lab_name;
+        $this->start=$start;
+        $this->end= $end;
     }
 
     /**
@@ -35,8 +41,8 @@ class NoConsumptionNotification extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-                    ->line('The introduction to the notification.')
-                    ->action('Notification Action', url('/'))
+                    ->line('Nothing consumed from '.$this->lab_name.' for the period '.$this->start.' to '.$this->end)
+                   
                     ->line('Thank you for using our application!');
     }
 

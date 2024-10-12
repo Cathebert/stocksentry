@@ -112,6 +112,9 @@ function ApproveStockTaken(id) {
                         data: {
                             id: id,
                         },
+                          beforeSend: function () {
+                    ajaxindicatorstart("loading data... please wait...");
+                },
                         success: function (data) {
                             if (data.error == false) {
                                 toastr.options = {
@@ -132,7 +135,7 @@ function ApproveStockTaken(id) {
                                     hideMethod: "fadeOut",
                                 };
                                 toastr["success"](data.message);
-
+                                ajaxindicatorstop();
                                 LoadTable();
                             } else {
                                 toastr.options = {
@@ -153,6 +156,7 @@ function ApproveStockTaken(id) {
                                     hideMethod: "fadeOut",
                                 };
                                 toastr["error"](data.message);
+                                ajaxindicatorstop();
                             }
                         },
                         error: function (error) {

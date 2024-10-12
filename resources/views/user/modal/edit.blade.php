@@ -1,4 +1,4 @@
-     <div class="modal-header">
+<div class="modal-header">
                                                     <h5 class="modal-title" >Edit User</h5>
                                                     <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                                                         <span aria-hidden="true">&times;</span>
@@ -96,7 +96,7 @@
 
 
                                                         <div class="modal-footer">
-                                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                                                             <button type="submit" class="btn btn-primary" id="submit">Save Changes</button>
                                                         </div>
                                                     </form>

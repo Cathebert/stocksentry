@@ -11,6 +11,7 @@ t = $("#user_list").DataTable({
     processing: true,
     serverSide: true,
     lengthMenu: [10, 50, 100],
+    destroy:true,
     responsive: true,
     order: [[0, "desc"]],
     oLanguage: {
@@ -89,10 +90,10 @@ function deleteUser(id) {
     var delete_user = $("#delete_user").val();
     $.confirm({
         title: "Confirm!",
-        content: "Do you really  want to delete this user?!",
+        content: "Do you really  want to remove this user?!",
         buttons: {
             Oky: {
-                btnClass: "btn-danger",
+                btnClass: "btn-warning",
                 action: function () {
                     $.ajaxSetup({
                         headers: {
@@ -226,15 +227,15 @@ function resetPassword(id) {
          $("#check").val(0);
      }
 
-     
+
  }
 
- 
+
 
   $("#edit_user_form").on("click", "#submit", function (e) {
 
       var update_url = $("#update_url").val();
-      alert(update_url)
+
       var name = $("#first_name").val();
       var last_name = $("#last_name").val();
       var email = $("#email").val();
@@ -343,3 +344,298 @@ function resetPassword(id) {
       });
       return false;
   });
+
+  $("#user_pdf").on("click", function (e) {
+    e.preventDefault();
+    var download_url = $("#download_url").val();
+    var expiry_form = $("#users_form").serialize();
+    console.log(expiry_form);
+    $.ajax({
+        method: "GET",
+
+        url: download_url,
+        data: {
+            expiry_form,
+            type: "pdf",
+        },
+
+        success: function (data) {
+        //alert( data.url);
+            window.location = data.url;
+            // show bootstrap modal
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            // console.log(get_case_next_modal)
+            alert("Error " + errorThrown);
+        },
+    });
+});
+
+$("#user_excel").on("click", function (e) {
+    e.preventDefault();
+    var download_url = $("#download_url").val();
+    var expiry_form = $("#users_form").serialize();
+    console.log(expiry_form);
+    $.ajax({
+        method: "GET",
+
+        url: download_url,
+        data: {
+            expiry_form,
+            type: "excel",
+        },
+
+        success: function (data) {
+            window.location = data.url;
+            // show bootstrap modal
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            // console.log(get_case_next_modal)
+            alert("Error " + errorThrown);
+        },
+    });
+});
+
+function filterUser(id){
+let user_filter=$('#filter_user').val();
+
+t = $("#user_list").DataTable({
+    processing: true,
+    serverSide: true,
+    lengthMenu: [10, 50, 100],
+    destroy:true,
+    responsive: true,
+    order: [[0, "desc"]],
+    oLanguage: {
+        sProcessing:
+            "<div class='loader-container'><div id='loader'></div></div>",
+    },
+    ajax: {
+        url: user_filter,
+        dataType: "json",
+        type: "GET",
+        data:{
+        id:id
+        }
+    },
+
+    AutoWidth: false,
+    columns: [
+        { data: "id", width: "3%" },
+        { data: "username", width: "10%" },
+        { data: "name", width: "10%" },
+        { data: "last_name", width: "10%" },
+        { data: "email", width: "10%" },
+        { data: "phone", width: "10%" },
+        { data: "lab", width: "10%" },
+        { data: "location", width: "10%" },
+        { data: "options", width: "40%" },
+    ],
+    //Set column definition initialisation properties.
+    columnDefs: [
+        {
+            targets: [-1], //last column
+            orderable: false, //set not orderable
+        },
+        {
+            targets: [-2], //last column
+            orderable: false, //set not orderable
+        },
+        {
+            targets: [-3], //last column
+            orderable: false, //set not orderable
+        },
+    ],
+});
+
+
+}
+
+
+function deletedUsers(){
+let deleted_users=$('#deleted_users').val();
+   // alert(id);
+    $.ajax({
+        method:'GET',
+
+        url:  deleted_users,
+        success: function (data) {
+
+
+             $("#receive_item").html(data);
+            $("#inforg").modal("show"); // show bootstrap modal
+             $('.modal-title').text('Deleted Users');
+
+
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+           // console.log(get_case_next_modal)
+            alert('Error '+errorThrown);
+        }
+    });
+
+}
+
+function restoreUser(id){
+let restore=$('#restore_user').val()
+    Swal.fire({
+  title: 'Are you sure?',
+  text: "Restore User!",
+  icon: 'success',
+  showCancelButton: true,
+  confirmButtonColor: '#16a61d',
+  cancelButtonColor: '#d33',
+  confirmButtonText: 'Yes, restore it!'
+}).then((result) => {
+  if (result.isConfirmed) {
+    //delete
+
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
+        $.ajax({
+            method:'POST',
+            dataType:'JSON',
+            url: restore,
+        data:{
+            id:id,
+        },
+        success:function(data){
+
+   toastr.options = {
+       closeButton: true,
+       debug: false,
+       newestOnTop: false,
+       progressBar: false,
+       positionClass: "toast-top-right",
+       preventDuplicates: false,
+       onclick: null,
+       showDuration: "300",
+       hideDuration: "1000",
+       timeOut: "5000",
+       extendedTimeOut: "1000",
+       showEasing: "swing",
+       hideEasing: "linear",
+       showMethod: "fadeIn",
+       hideMethod: "fadeOut",
+   };
+
+   toastr["success"](data.message);
+   getRestored();
+    getUsers();
+        },
+        error:function(error){
+
+        }
+        })
+
+  }
+})
+}
+
+function getRestored(){
+  var get_restored=$("#load_deleted_users").val();
+ y = $("#users_deleted").DataTable({
+    processing: true,
+    serverSide: true,
+    paging: true,
+    destroy:true,
+    info: true,
+    responsive: true,
+    order: [[0, "desc"]],
+    oLanguage: {
+        sProcessing:
+            "<div class='loader-container'><div id='loader'></div></div>",
+    },
+    ajax: {
+        url:get_restored,
+        dataType: "json",
+        type: "GET",
+    },
+
+
+
+    AutoWidth: false,
+    columns: [
+           { data: "id", width: "3%" },
+        { data: "username", width: "10%" },
+        { data: "name", width: "10%" },
+        { data: "last_name", width: "10%" },
+        { data: "email", width: "10%" },
+        { data: "phone", width: "10%" },
+        { data: "lab", width: "10%" },
+        { data: "location", width: "10%" },
+        { data: "options", width: "40%" },
+    ],
+    //Set column definition initialisation properties.
+    columnDefs: [
+        {
+            targets: [-1], //last column
+            orderable: false, //set not orderable
+        },
+        {
+            targets: [-2], //last column
+            orderable: false, //set not orderable
+        },
+        {
+            targets: [-3], //last column
+            orderable: false, //set not orderable
+        },
+    ],
+});
+
+}
+
+function  getUsers(){
+
+t = $("#user_list").DataTable({
+    processing: true,
+    serverSide: true,
+    lengthMenu: [10, 50, 100],
+    destroy:true,
+    responsive: true,
+    order: [[0, "desc"]],
+    oLanguage: {
+        sProcessing:
+            "<div class='loader-container'><div id='loader'></div></div>",
+    },
+    ajax: {
+        url: user_url,
+        dataType: "json",
+        type: "GET",
+    },
+
+    AutoWidth: false,
+    columns: [
+        { data: "id", width: "3%" },
+        { data: "username", width: "10%" },
+        { data: "name", width: "10%" },
+        { data: "last_name", width: "10%" },
+        { data: "email", width: "10%" },
+        { data: "phone", width: "10%" },
+        { data: "lab", width: "10%" },
+        { data: "location", width: "10%" },
+        { data: "options", width: "40%" },
+    ],
+    //Set column definition initialisation properties.
+    columnDefs: [
+        {
+            targets: [-1], //last column
+            orderable: false, //set not orderable
+        },
+        {
+            targets: [-2], //last column
+            orderable: false, //set not orderable
+        },
+        {
+            targets: [-3], //last column
+            orderable: false, //set not orderable
+        },
+    ],
+});
+
+
+
+}

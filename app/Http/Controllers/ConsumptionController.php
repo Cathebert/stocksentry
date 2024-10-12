@@ -11,10 +11,13 @@ use App\Models\Laboratory;
 use App\Models\LaboratorySection;
 use App\Models\Inventory;
 use App\Models\Adjustment;
+use App\Models\AdjustmentDetail;
 use App\Models\BinCard;
 use App\Models\User;
+use App\Models\UserSetting;
 use App\Notifications\AdjustmentCreatedNotification;
 use App\Notifications\AdjustmentApprovedNotification;
+use App\Services\LogActivityService;
 use App\Services\BinCardService;
 class ConsumptionController extends Controller
 {
@@ -87,6 +90,7 @@ $consump_details->save();
     $bincard=new BinCardService();
     $bincard->updateItemConsumedCard($request->id,$request->consumed);
  DB::commit();
+   LogActivityService::saveToLog('Consumed a single item',auth()->user()->name.' '.auth()->user()->last_name,'low');
  return response()->json([
 'message'=>config('stocksentry.consumed.single_item_consumption'),
 'error'=>false,
@@ -124,7 +128,7 @@ catch(Exception $e){
              
             ->where('t.lab_id','=',auth()->user()->laboratory_id)
             ->where('t.quantity', '>',0)
-             ->where('t.expiry_date', '>', date('Y-m-d') )
+            /// ->where('t.expiry_date', '>', date('Y-m-d'))
                 ->count();
 
 
@@ -143,7 +147,7 @@ catch(Exception $e){
               
           ->where('t.lab_id','=',auth()->user()->laboratory_id)
             ->where('t.quantity', '>',0)
-             ->where('t.expiry_date', '>', date('Y-m-d') )
+             //->where('t.expiry_date', '>', date('Y-m-d') )
    
         
                 ->where(function ($query) use ($search){
@@ -198,7 +202,7 @@ $test=$currentDateTime->greaterThanOrEqualTo($cons->end_date);
             
     $nestedData['last_update']=$cons->start_date;
     $nestedData['next_update']="";
-    $nestedData['consumed'] = "<input type='number'  min='0' id='c_$term->id' size='4' class='form-control' placeholder='Enter Here' name='$term->id' onchange='getText(this.id,this.name)'/>";
+    $nestedData['consumed'] = "<input type='number'  min='0' id='c_$term->id' size='4' class='form-control' placeholder='Enter Here' name='$term->id' oninput='getText(this.id,this.name)'/>";
     $nestedData['status']="<button class='btn btn-outline-primary' id='$term->id' onclick='saveConsumed(this.id)'> <i class='fa fa-save' arial-hidden='true' id='fa_$term->id'></i></button>";
               
      } 
@@ -220,7 +224,7 @@ else
       
 $nestedData['last_update']='Unavailable';
         $nestedData['next_update']='Unavailable';
-    $nestedData['consumed'] = "<input type='number'  min='0' id='c_$term->id' size='4' class='form-control' placeholder='Enter Here' name='$term->id' onchange='getText(this.id,this.name)'/>";
+    $nestedData['consumed'] = "<input type='number'  min='0' id='c_$term->id' size='4' class='form-control' placeholder='Enter Here' name='$term->id' oninput='getText(this.id,this.name)'/>";
     $nestedData['status']="<button class='btn btn-outline-primary' id='$term->id' onclick='saveConsumed(this.id)'> <i class='fa fa-save' arial-hidden='true' id='fa_$term->id'></i></button>";
 }
 
@@ -262,7 +266,7 @@ $nestedData['last_update']='Unavailable';
   
     
  public function updateMany(Request $request){
-  // dd($request);
+ //dd($request);
    try{
        if(!$request->ids){
             return response()->json([
@@ -321,9 +325,9 @@ $consumption->save();
 $consumption_id=$consumption->id;
 
 for($i=0;$i<count($request->ids);$i++){
-$consump_details=new ConsumptionDetail();
-  $consump_details->consumption_id=$consumption_id;
-  $consump_details->consumption_type_id=$period;
+    $consump_details=new ConsumptionDetail();
+ $consump_details->consumption_id=$consumption_id;
+ $consump_details->consumption_type_id=$period;
   $consump_details->lab_id=auth()->user()->laboratory_id;
   $consump_details->section_id=auth()->user()->section_id;
   $consump_details->item_id=$request->ids[$i];
@@ -340,6 +344,7 @@ $bincard->updateItemConsumedCard($request->ids[$i],$request->consumed[$i]);
 }
 
 DB::commit();
+  LogActivityService::saveToLog('Consumed Item updated',auth()->user()->name.' '.auth()->user()->last_name,'low');
      return response()->json([
         'message'=>config('stocksentry.consumed.multiple_items_consumption'),
         'error'=>false
@@ -354,6 +359,217 @@ DB::commit();
    }
      
     }
+    
+      public function showItemAdjustmentModal(Request $request){
+        return view('inventory.modal.adjustment_modal');
+    }
+    
+    public function adjustmentList(Request $request){
+
+
+ $columns = array(
+            0=>'check',
+            1=>'code',
+            2=> 'item',
+            3=>'unit',
+            4=>'quantity',
+            5=>'expiry',
+            6=>'id',
+
+
+        );
+   $totalData = DB::table('inventories as inv')
+   ->join('items as i','i.id','=','inv.item_id')
+          ->where([['inv.lab_id','=',auth()->user()->laboratory_id]])
+          ->where('inv.quantity','>',0)
+          ->count();
+
+
+
+            $totalRec = $totalData;
+          // $totalData = DB::table('appointments')->count();
+
+          $limit = $request->input('length');
+          $start = $request->input('start');
+          $order = $columns[$request->input('order.0.column')];
+          $dir = $request->input('order.0.dir');
+
+           $search = $request->input('search.value');
+            $terms =DB::table('inventories as inv')
+   ->join('items as i','i.id','=','inv.item_id')
+   ->select('inv.id as id','i.code','i.item_name','i.unit_issue','inv.batch_number','inv.quantity','inv.expiry_date')
+          ->where([['inv.lab_id','=',auth()->user()->laboratory_id]])
+->where('inv.quantity','>',0)
+                ->where(function ($query) use ($search){
+                  return  $query->where('inv.batch_number', 'LIKE', "%{$search}%")
+                  ->orWhere('i.code','LIKE',"%{$search}%");
+
+
+            })
+            ->offset($start)
+
+            ->limit($limit)
+            ->orderBy('id','asc')
+            ->get();
+
+          $totalFiltered =  $totalRec ;
+
+
+          $data = array();
+          if (!empty($terms)) {
+$x=1;
+
+
+
+            foreach ($terms as $term) {
+
+
+
+                 $nestedData['id']= $term->id;
+                $nestedData['check']="<input type='checkbox' id='$term->id' class='checkboxall' name='selected_check' value='$term->id'  onclick='selectItem(this.value)' />";
+
+                 $nestedData['code']= $term->code;
+
+                  $nestedData['batch'] = $term->batch_number;
+
+                    $nestedData['item']= $term->item_name;
+
+
+                     $nestedData['unit']= $term->unit_issue;
+
+                 $nestedData['quantity']  =$term->quantity;
+                 if($term->expiry_date!='0000-00-00')
+                 $nestedData['expiry']=$term->expiry_date;
+             else{
+                 $nestedData['expiry']='N/A';
+             }
+
+
+
+                   $x++;
+                $data[] = $nestedData;
+           }
+      }
+
+
+      $json_data = array(
+        "draw" => intval($request->input('draw')),
+        "recordsTotal" => intval($totalData),
+        "recordsFiltered" => intval($totalFiltered),
+        "data" => $data,
+    );
+
+      echo json_encode($json_data);
+}
+
+public function selectedForAdjustment(Request $request){
+
+
+             $columns = array(
+            0=>'id',
+            1=>'item',
+            2=> 'code',
+            3=>'unit',
+            4=>'quantity',
+            5=>'reason',
+            6=>'batch',
+             7=>'catalog',
+             8=>'available'
+
+
+        );
+                           $disposals=array();
+        for($i=0;$i<count($request->selected);$i++){
+      // $consumption[]=ConsumptionDetail::where('item_id',$request->items[$i])->avg('consumed_quantity');
+        $terms=DB::table('inventories as t')
+              ->join('items AS s', 's.id', '=', 't.item_id')
+
+              ->select('t.id as id','s.code','s.catalog_number','s.item_name','t.grn_number','t.batch_number','s.unit_issue','t.cost','t.quantity')
+             ->where([['t.id','=',$request->selected[$i]]])
+             ->groupBy('s.item_name')
+           // ->limit($limit)
+            //->orderBy('s.id','asc')
+            ->get();
+
+       $disposals[]=$terms;
+        }
+
+
+
+
+            $totalData =  DB::table('inventories as t')
+              ->join('items AS s', 's.id', '=', 't.item_id')
+              ->join('consumption_details as d','d.item_id','=','t.id')
+             ->where([['t.lab_id','=',auth()->user()->laboratory_id]])->count();
+
+            $totalRec = $totalData;
+          // $totalData = DB::table('appointments')->count();
+
+         // $limit = $request->input('length');
+        // $start = $request->input('start');
+          //$order = $columns[$request->input('order.0.column')];
+          //$dir = $request->input('order.0.dir');
+
+
+
+          $totalFiltered =  $totalRec ;
+//  0 => 'id',
+
+          $data = array();
+          $d=array();
+          if (!empty($disposals)) {
+$x=1;
+
+
+
+            for ($y=0;$y<count($disposals);$y++ ) {
+
+for($n=0;$n<count($disposals[$y]);$n++){
+$item_id=$disposals[$y][$n]->id;
+$available=$disposals[$y][$n]->quantity;
+                 $nestedData['id']=$x;
+                 $nestedData['code'] = $disposals[$y][$n]->code;
+                      $nestedData['catalog'] = $disposals[$y][$n]->catalog_number;
+                    $nestedData['item'] =  $disposals[$y][$n]->item_name;
+                    $nestedData['unit'] =  $disposals[$y][$n]->unit_issue;
+                    $nestedData['batch']= $disposals[$y][$n]->batch_number;
+         $nestedData['available']='<strong>'. $available.'</strong>';
+                  //$nestedData['quantity']  = "<input type='number' min='1' class='form-control' id='$item_id' name='ordered' size='3'   oninput='getQuantity(this.id,this.value)'/>";
+
+
+                  //
+$nestedData['quantity'] = "<div class='input-group'>
+  <div class='input-group-prepend'>
+    <span class='input-group-text btn btn-primary'
+    id='$item_id'  onclick='decrementValue(this.id)'>-</span>
+  </div>
+  <input type='number' class='form-control' id='adjusted_$item_id' min=0  value=1 size='1'  style='width: 30px;' oninput='getAdjustedValue(this.id)'>
+   <span class='input-group-text btn btn-primary'    id='$item_id'  onclick='incrementValue(this.id)'>+</span>
+</div>";
+
+                  //
+    $nestedData['reason'] ="<textarea class='form-control form-control-sm' placeholder='Leave a note here' id='q_$item_id' name='$item_id' oninput='getNote(this.id,this.name)'>
+</textarea>" ;
+                   $x++;
+                $data[] = $nestedData;
+
+
+           }
+       }
+      }
+
+
+      $json_data = array(
+        "draw" => intval($request->input('draw')),
+        "recordsTotal" => intval($totalData),
+        "recordsFiltered" => intval($totalFiltered),
+        "data" => $data,
+
+    );
+      echo json_encode($json_data);
+}
+
+
     public function searchItemAdjustment(Request $request){
        $data =  DB::table('items as s') 
               ->join('inventories AS t', 's.id', '=', 't.item_id')
@@ -496,12 +712,12 @@ public function loadAdjustedItems(Request $request){
             9=>'id',
             10=>'batch_number',
             11=>'date'
-        ); 
-   $totalData = DB::table('inventories as t') 
+        );
+   $totalData = DB::table('inventories as t')
               ->join('items AS s', 's.id', '=', 't.item_id')
               ->join('adjustment_details as a','a.item_id','=','t.id')
               ->where('t.lab_id','=',auth()->user()->laboratory_id)
-         
+ ->where('a.adjust_id',$request->id)
            // ->where('t.expiry_date', '>', date('Y-m-d') )
               ->count();
 
@@ -516,15 +732,15 @@ public function loadAdjustedItems(Request $request){
           $dir = $request->input('order.0.dir');
 
            $search = $request->search;
-            $terms = DB::table('inventories as t') 
+            $terms = DB::table('inventories as t')
               ->join('items AS s', 's.id', '=', 't.item_id')
            ->join('adjustment_details as a','a.item_id','=','t.id')
               ->select('t.id as id','s.code','s.brand','t.quantity as available','t.batch_number','s.item_name','a.id as adjustment_id','a.quantity','a.is_approved','a.approved_by','a.type','a.notes','a.adjusted_by','a.created_at as adjusted_date')
          ->where('t.lab_id','=',auth()->user()->laboratory_id)
-         ->where('a.is_approved','<>','cancel')
-         
-       
-            
+         ->where('a.adjust_id',$request->id)
+
+
+
            // ->offset($start)
            //->limit($limit)
             ->orderBy('a.id','desc')
@@ -532,14 +748,15 @@ public function loadAdjustedItems(Request $request){
 
           $totalFiltered =  $totalRec ;
 //  0 => 'id',
-    
+
           $data = array();
+        
           if (!empty($terms)) {
 $x=1;
-  
+
 
             foreach ($terms as $term) {
-$user=User::where('id',$term->adjusted_by)->select('name','last_name')->first();
+$user=User::where('id',$term->adjusted_by)->select('name','last_name')->withTrashed()->first();
 $user_name=$user->name.' '.$user->last_name;
             $nestedData['id']=$x;
                 $nestedData['code']=$term->code;
@@ -551,20 +768,42 @@ $user_name=$user->name.' '.$user->last_name;
                  $nestedData['type']= $term->type;
                   $nestedData['remarks']= $term->notes;
                   $nestedData['adjusted_by']= $user_name;
-                  
+if($term->is_approved=='yes'||$term->is_approved=='cancel'){
+    $user=User::where('id',$term->approved_by)->select('name','last_name')->withTrashed()->first();
+                       $approver=$user->name.' '.$user->last_name;
+}
                   if($term->is_approved=="yes"){
-                    $user=User::where('id',$term->approved_by)->select('name','last_name')->first();
-                       $approver=$user->name.' '.$user->last_name; 
+                    
                     $nestedData['status']= "Approved by: <strong>".$approver." </strong>";
-                    $nestedData['action']  ="";
+                    $nestedData['action']  ='
+                    <span class="badge bg-success"><i class="fa fa-check" aria-hidden="true"> </i>Approved</span> ';
             }
-               
-               else{
+
+            
+
+
+               if($term->is_approved=="no"){
                   $nestedData['status']= "No Approved";
+
+
+                   if(auth()->user()->authority==1 || auth()->user()->authority==2){
                    $nestedData['action']  ='<button type="button" id='.$term->adjustment_id.' class="btn btn-success" onclick="ApproveAdjustment(this.id)"><i class="fa fa-check" aria-hidden="true"> </i> Approve</button>  | <button type="button" id='.$term->adjustment_id.' class="btn btn-danger" onclick="cancelAdjustment(this.id)"><i class="fa fa-trash" aria-hidden="true"> </i> Cancel</button> ';
-               } 
-           
-     
+           }
+           elseif (auth()->user()->laboratory_id==99){
+
+                   $nestedData['action']  ='<button type="button" id='.$term->adjustment_id.' class="btn btn-success" onclick="ApproveAdjustment(this.id)"><i class="fa fa-check" aria-hidden="true"> </i> Approve</button>  | <button type="button" id='.$term->adjustment_id.' class="btn btn-danger" onclick="cancelAdjustment(this.id)"><i class="fa fa-trash" aria-hidden="true"> </i> Cancel</button> ';
+           }
+           else{
+            $nestedData['action'] ="";
+           }
+               }
+
+               if($term->is_approved=="cancel"){
+                 $nestedData['status']= "cancelled by: <strong>".$approver." </strong>";
+                    $nestedData['action']  ='<span class="badge bg-danger"><i class="fa fa-times" aria-hidden="true"> </i>Cancelled</span> '; 
+               }
+
+
                    $x++;
                 $data[] = $nestedData;
            }
@@ -579,12 +818,75 @@ $user_name=$user->name.' '.$user->last_name;
 
       echo json_encode($json_data);
 
-   
+
 }
-//approve adjustment  
+//approve bulk adjustment
+public function approveBulkAdjustment(Request $request){
+    $adjust_id=$request->id;
+$adjust=AdjustmentDetail::where('adjust_id',$adjust_id)->get();
+try{
+    if(!empty($adjust)&& count($adjust)>0){
+foreach ($adjust as $adjst) {
+  if($adjst->type=="add"){
+    DB::table('inventories')->where([['id','=',$adjst->item_id],['lab_id','=',auth()->user()->laboratory_id]])
+         ->increment('quantity',$adjst->quantity,['updated_at'=>now()]);
+$bincard=new BinCardService();
+$bincard->updateItemAdjustment($adjst->item_id,$adjst->quantity,$adjst->type);
+ }
+
+ else{
+ DB::table('inventories')->where([['id','=',$adjst->item_id],['lab_id','=',auth()->user()->laboratory_id]])
+         ->decrement('quantity',$adjst->quantity,['updated_at'=>now()]);
+ $bincard=new BinCardService();
+$bincard->updateItemAdjustment($adjst->item_id,$adjst->quantity,$adjst->type);
+ }
+  AdjustmentDetail::where('id',$adjst->id)->update([
+    'approved_by'=>auth()->user()->id,
+    'is_approved'=>'yes',
+    'updated_at'=>now(),
+ ]); 
+}
+
+//update parent adjustment
+  Adjustment::where('id',$adjust_id)->update([
+    'approved_by'=>auth()->user()->id,
+    'is_approved'=>'yes',
+    'updated_at'=>now(),
+ ]);
+  DB::commit();
+//fire notification
+
+$adjusted=Adjustment::where('id',$adjust_id)->first();
+$user=User::where('id',$adjusted->adjusted_by)->first();
+$user->notify(new AdjustmentApprovedNotification());
+return response()->json([
+'message'=>config('stocksentry.adjustment.adjustment_success'),
+'error'=>false,
+      ]);
+    }
+    else{
+return response()->json([
+'message'=>'encountered problem with adjustment',
+'error'=>true,
+      ]);
+    }
+
+}
+catch(Exception $e){
+    DB::rollback();
+
+    return response()->json([
+'message'=>config('stocksentry.adjustment.adjustment_failed'),
+'error'=>true,
+      ]);
+}
+
+}
+//approve single adjustment
 public function approveAdjusted(Request $request){
 
-$adjst=Adjustment::where('id',$request->id)->first();
+$adjst=AdjustmentDetail::where('id',$request->id)->first();
+
 try{
     DB::beginTransaction();
 if($adjst->type=="add"){
@@ -599,14 +901,15 @@ $bincard->updateItemAdjustment($adjst->item_id,$adjst->quantity,$adjst->type);
  $bincard=new BinCardService();
 $bincard->updateItemAdjustment($adjst->item_id,$adjst->quantity,$adjst->type);
  }
- Adjustment::where('id',$request->id)->update([
+ AdjustmentDetail::where('id',$request->id)->update([
     'approved_by'=>auth()->user()->id,
     'is_approved'=>'yes',
     'updated_at'=>now(),
  ]);
+
+ //$user=User::where('id',$adjst->adjusted_by)->first();
+//$user->notify(new AdjustmentApprovedNotification());
 DB::commit();
-$user=User::where('id',$adjst->adjusted_by)->first(); 
-$user->notify(new AdjustmentApprovedNotification());
  return response()->json([
 'message'=>config('stocksentry.adjustment.adjustment_success'),
 'error'=>false,
@@ -620,10 +923,15 @@ DB::rollback();
       ]);
 }
 }
+//cancel bulk adjustment 
+public function cancelBulkAdjusted(Request $request){
 
-//cancel adjustment
-public function cancelAdjusted(Request $request){
 
+ AdjustmentDetail::where('adjust_id',$request->id)->update([
+    'approved_by'=>auth()->user()->id,
+    'is_approved'=>'cancel',
+    'updated_at'=>now(),
+ ]);
 
  Adjustment::where('id',$request->id)->update([
     'approved_by'=>auth()->user()->id,
@@ -638,75 +946,340 @@ public function cancelAdjusted(Request $request){
 
 
 }
+//cancel adjustment
+public function cancelAdjusted(Request $request){
+
+
+ AdjustmentDetail::where('id',$request->id)->update([
+    'approved_by'=>auth()->user()->id,
+    'is_approved'=>'cancel',
+    'updated_at'=>now(),
+ ]);
+
+ return response()->json([
+'message'=>'Adjustment has been cancelled ',
+'error'=>false,
+      ]);
+
+
+}
  public function viewAdjustments(){
-    return view('inventory.modal.adjustment');
+    return view('inventory.modal.adjust');
  }
 
+  public function viewSelectedAdjustment(Request $request){
+    $data['id']=$request->id;
+    return view('inventory.modal.adjustment',$data);
+ }
+public function loadSelectedAdjusted(Request $request){
+  
+    $columns = array(
+            0=>'id',
+            1=>'adjust_date',
+            2=> 'disposed_by',
+            3=>'approved_by',
+            4=>'items',
+            5=>'action',
+            
+           
+           
+        ); 
+   $totalData = Adjustment::where([['laboratory_id','=',auth()->user()->laboratory_id]])
+          ->count();
 
+
+
+            $totalRec = $totalData;
+          // $totalData = DB::table('appointments')->count();
+
+          $limit = $request->input('length');
+          $start = $request->input('start');
+          $order = $columns[$request->input('order.0.column')];
+          $dir = $request->input('order.0.dir');
+
+           $search = $request->input('search.value');
+            $terms =Adjustment::where([['laboratory_id','=',auth()->user()->laboratory_id]])
+
+                ->where(function ($query) use ($search){
+                  return  $query->where('adjusted_by', 'LIKE', "%{$search}%")
+                  ->orWhere('approved_by','LIKE',"%{$search}%");
+                      
+                     
+            })
+            ->offset($start)
+         
+            ->limit($limit)
+            ->orderBy('id','desc')
+            ->get(); 
+
+          $totalFiltered =  $totalRec ;
+
+      
+          $data = array();
+          
+          if (!empty($terms)) {
+$x=1;
+ 
+  
+         
+            foreach ($terms as $term) {
+             $user_disposer=User::where('id',$term->adjusted_by)->select('name','last_name')->withTrashed()->first();
+             $user_approver=User::where('id',$term->approved_by)->select('name','last_name')->withTrashed()->first();
+ if(!$user_approver){
+                $approver="";
+             }
+             else{
+                $approver=$user_approver->name.' '.$user_approver->last_name;
+             }
+             $item_count=AdjustmentDetail::where('adjust_id',$term->id)->count();
+   
+
+                 $nestedData['id']= $x;
+                $nestedData['adjust_date']=date('d, M Y',strtotime($term->adjusted_date));
+              
+               if(!$user_disposer){
+            $nestedData['disposed_by']= $term->adjusted_by;
+               }
+               else{
+               $nestedData['disposed_by']= $user_disposer->name." ".$user_disposer->last_name;
+               }
+                // $nestedData['disposed_by']= $user_disposer->name." ".$user_disposer->last_name;
+                   
+                $nestedData['approved_by'] = $approver;
+                $nestedData['items']=$item_count;
+if(auth()->user()->authority==1 || auth()->user()->authority==2){
+                if($term->is_approved=="no" ){
+                    $nestedData['action']='<button type="button" id='.$term->id.' class="btn btn-success" onclick="ApproveBulkAdjustment(this.id)"><i class="fa fa-check" aria-hidden="true"> </i> Approve</button> |<button type="button" id='.$term->id.' class="btn btn-danger" onclick="cancelBulkAdjustment(this.id)"><i class="fa fa-trash" aria-hidden="true"> </i> Cancel</button>
+                    | <button type="button" id='.$term->id.' class="btn btn-info" onclick="ViewAdjusted(this.id)"><i class="fa fa-eye" aria-hidden="true"> </i> View</button>';
+                
+                     }
+                     if($term->is_approved=="yes"){
+                         $nestedData['action']='<i class="fa fa-check" aria-hidden="true"> </i> Approved || <button type="button" id='.$term->id.' class="btn btn-info" onclick="ViewAdjusted(this.id)"><i class="fa fa-eye" aria-hidden="true"> </i> View</button>';
+                     }
+                     
+                     if($term->is_approved=="cancel"){
+                         $nestedData['action']='<i class="fa fa-trash" aria-hidden="true"> </i> Cancelled || <button type="button" id='.$term->id.' class="btn btn-info" onclick="ViewAdjusted(this.id)"><i class="fa fa-eye" aria-hidden="true"> </i> View</button>';
+                     }    
+                    
+               
+              }
+              if(auth()->user()->authority==4){
+                 if($term->is_approved=="no" ){
+                    $nestedData['action']='<button type="button" id='.$term->id.' class="btn btn-success" onclick="ApproveBulkAdjustment(this.id)"><i class="fa fa-check" aria-hidden="true"> </i> Approve</button> |<button type="button" id='.$term->id.' class="btn btn-danger" onclick="cancelBulkAdjustment(this.id)"><i class="fa fa-trash" aria-hidden="true"> </i> Cancel</button>
+                    | <button type="button" id='.$term->id.' class="btn btn-info" onclick="ViewAdjusted(this.id)"><i class="fa fa-eye" aria-hidden="true"> </i> View</button>';
+                
+                     }
+                              if($term->is_approved=="yes"){
+                         $nestedData['action']='<i class="fa fa-check" aria-hidden="true"> </i> Approved || <button type="button" id='.$term->id.' class="btn btn-info" onclick="ViewAdjusted(this.id)"><i class="fa fa-eye" aria-hidden="true"> </i> View</button>';
+                     }
+                     
+                     if($term->is_approved=="cancel"){
+                         $nestedData['action']='<i class="fa fa-trash" aria-hidden="true"> </i> Cancelled || <button type="button" id='.$term->id.' class="btn btn-info" onclick="ViewAdjusted(this.id)"><i class="fa fa-eye" aria-hidden="true"> </i> View</button>';
+                     }
+              }
+
+          
+            if(auth()->user()->authority==3){
+            if($term->is_approved=='no'){
+                $nestedData['action']='<i class="fa fa-hourglass-half" aria-hidden="true"> </i> Not Approved || <button type="button" id='.$term->id.' class="btn btn-info" onclick="ViewAdjusted(this.id)"><i class="fa fa-eye" aria-hidden="true"> </i> View</button>';
+        }
+                 if($term->is_approved=="yes"){
+                         $nestedData['action']='<i class="fa fa-check" aria-hidden="true"> </i> Approved || <button type="button" id='.$term->id.' class="btn btn-info" onclick="ViewAdjusted(this.id)"><i class="fa fa-eye" aria-hidden="true"> </i> View</button>';
+                     }
+                     
+                     if($term->is_approved=="cancel"){
+                         $nestedData['action']='<i class="fa fa-trash" aria-hidden="true"> </i> Cancelled || <button type="button" id='.$term->id.' class="btn btn-info" onclick="ViewAdjusted(this.id)"><i class="fa fa-eye" aria-hidden="true"> </i> View</button>';
+                     }
+    }
+               
+                   $x++;
+                $data[] = $nestedData;
+           }
+      }
+      
+
+      $json_data = array(
+        "draw" => intval($request->input('draw')),
+        "recordsTotal" => intval($totalData),
+        "recordsFiltered" => intval($totalFiltered),
+        "data" => $data,
+    );
+
+      echo json_encode($json_data);
+
+}
     /**
-     * adjust the available amount 
-     * 
+     * adjust the available amount
+     *
      **/
 
     public function adjustSelected(Request $request){
-    
+
       //dd($request);
 
 try{
 
 
+if(!empty($request->quantity) && count($request->quantity)>0){
+        $ids=array();
+        $quantity=array();
+        $notes=array();
+        $items_data=array();
+        for($j=0; $j<count($request->quantity);$j++){
+ $f=explode("_",$request->quantity[$j]);
+ $ids[]=$f[0];
+$quantity[]=$f[1];
+$notes[]=$f[2];
+
+}
+//dd($notes);
+
+  $approved='no';
+   $approved_by=NULL;
+   $message="Your adjustment is pending approval";   
+
 DB::beginTransaction();
- if($request->type=="Addition"){
-    $type="add";
-     
- }
-if($request->type=="Subtraction"){
-    $type="sub";
-   
- 
- }
 $adjustment=new Adjustment();
-$adjustment->item_id=$request->item;
-$adjustment->lab_id= auth()->user()->laboratory_id;
-$adjustment->section_id=auth()->user()->section_id;
-$adjustment->quantity=$request->adjustment;
-$adjustment->type=$type;
+$adjustment->laboratory_id= auth()->user()->laboratory_id;
 $adjustment->adjusted_by=auth()->user()->id;
-$adjustment->approved_by=NULL;
-$adjustment->notes=$request->notes;
-$adjustment->is_approved="no";
+$adjustment->approved_by=$approved_by;
+$adjustment->is_approved=$approved;
+$adjustment->adjusted_date=now();
 $adjustment->created_at=now();
 $adjustment->updated_at=NULL;
 
 $adjustment->save();
-/**nventory::where([['id','=',$request->id],['lab_id','=',auth()->user()->laboratory_id]])
-            ->update([
-                'quantity'=>$request->consumed,
+$adjust_id=$adjustment->id;
 
-                'updated_at'=>now(),
-            ]);**/
-  $approvers=User::where([['authority','=',2],['laboratory_id','=',auth()->user()->laboratory_id]])->get();
+for($x=0;$x<count($ids);$x++){
+
+    $adjust_details=new AdjustmentDetail();
+    $adjust_details->adjust_id= $adjust_id;
+    $adjust_details->lab_id=auth()->user()->laboratory_id;
+    $item=$this->getType($ids[$x],$quantity[$x]);
+  
+    $available_quantity=$item->quantity;
+    if($available_quantity>$quantity[$x]){
+        $type="sub";
+    }
+    else{
+        $type="add";
+    }
+
+     $adjust_details->type=$type;
+     $adjust_details->item_id=$ids[$x];
+     $adjust_details->quantity=$quantity[$x];
+     $adjust_details->notes=$notes[$x];
+     $adjust_details->is_approved = $approved;
+     $adjust_details->adjusted_by = auth()->user()->id;
+     $adjust_details->approved_by = $approved_by;
+      
+     $adjust_details->created_at=now();
+     $adjust_details->updated_at=NULL;
+     $adjust_details->save();
+     $items_data[]=$item;
+
+
+}
+
+DB::commit();
+//dd($items_data);
+LogActivityService::saveToLog('Item(s) adjusted',auth()->user()->name.' '.auth()->user()->last_name,'low');
+if(auth()->user()->authority!=1 ||auth()->user()->authority!=2 ){
+$this->notifyAdmins($items_data);
+}
+ return response()->json([
+'message'=>$message,
+'error'=>false,
+      ]);
+}
+else{
+      return response()->json([
+    'message'=>'Empty Items',
+    'error' =>true
+]); 
+}
+           /**$approver_list=UserSetting::where('lab_id',auth()->user()->laboratory_id)->select('user_id')->get();
+    $approvers=User::where([['authority','=',2],['laboratory_id','=',auth()->user()->laboratory_id]])->get();
 $disposed_by=auth()->user()->name.' '.auth()->user()->last_name;
+$item=DB::table('inventories as c')
+		->join('items as i','i.id','=','c.item_id')
+		->where('c.id',$request->item)
+		->select('i.item_name','c.quantity')->first();
+$lab=Laboratory::where('id',auth()->user()->laboratory_id)->select('lab_name')->first();
+//$admin=User::find(1);
+$item_name=$item->item_name;
+$quantity=$item->quantity;
+$notes=$request->notes;
+$adjustment=$request->adjustment;
+//$admin->notify(new AdjustmentCreatedNotification($disposed_by,$item_name,$quantity,$adjustment,$notes,$lab->lab_name));
+if(!empty($approver_list) && count($approver_list)>0){
+foreach($approver_list as $list){
+$user=User::find($list->user_id);
+$user->notify(new AdjustmentCreatedNotification($disposed_by,$item_name,$quantity,$adjustment,$notes,$lab->lab_name));
 
+}
+}
+else{
 foreach($approvers as $user){
 
-  $user->notify(new AdjustmentCreatedNotification())
+  $user->notify(new AdjustmentCreatedNotification($disposed_by,$item_name,$quantity,$adjustment,$notes));
+}
 }
  DB::commit();
+  LogActivityService::saveToLog('Item '.$item_name.' adjusted',auth()->user()->name.' '.auth()->user()->last_name,'low');
  return response()->json([
 'message'=>"Your adjustment is pending approval ",
 'error'=>false,
       ]);
+      **/
+
 }
 catch(Exception $e){
   DB::rollback();
   return response()->json([
 'message'=>"Failed to adjust Item",
 'error'=>true,
-      ]); 
+      ]);
 }
-     
+
 }
+protected function notifyAdmins($data){
+ $approver_list=UserSetting::where('lab_id',auth()->user()->laboratory_id)->select('user_id')->get();
+    $approvers=User::where([['authority','=',2],['laboratory_id','=',auth()->user()->laboratory_id]])->get();
+$disposed_by=auth()->user()->name.' '.auth()->user()->last_name; 
+
+$lab=Laboratory::where('id',auth()->user()->laboratory_id)->select('lab_name')->first();
+
+ if(!empty($approver_list) && count($approver_list)>0){
+//$user=User::find(1);
+//$user->notify(new AdjustmentCreatedNotification($disposed_by,$data,$lab->lab_name));
+foreach($approver_list as $list){
+$user=User::find($list->user_id);
+$user->notify(new AdjustmentCreatedNotification($disposed_by,$data,$lab->lab_name));
+
+}
+}
+else{
+foreach($approvers as $user){
+
+  $user->notify(new AdjustmentCreatedNotification($disposed_by,$data,$lab->lab_name));
+}
+} 
+}
+protected function getType($id,$adjusted){
+  $item=DB::table('inventories as c')
+        ->join('items as i','i.id','=','c.item_id')
+        ->where('c.id',$id)
+        ->select('i.item_name','c.quantity')->first();
+$item->adjusted = $adjusted;
+    return $item;  
+}
+
+
+
+
+   
 
  public function searchSectionItemAdjustment(Request $request){
        $data =  DB::table('inventories as t') 
@@ -786,7 +1359,7 @@ $x=1;
             foreach ($terms as $term) {
 $count=ConsumptionDetail::where('consumption_id',$term->id)->count();
 $type=DB::table('consumption_types')->where('id',$term->consumption_type_id)->select('name')->first();
-$user=User::where('id',$term->consumption_updated_by)->select('name','last_name')->first();
+$user=User::where('id',$term->consumption_updated_by)->select('name','last_name')->withTrashed()->first();
 
                 $nestedData['id']=$x;
                   $nestedData['consumption_type']=$type->name;
@@ -823,7 +1396,7 @@ $nestedData['range']= date('d, M Y',strtotime($term->start_date));
                 ->where('id',$request->id)->first();
 $data['id']=$request->id;
     $data['date']   = date('d,M Y',strtotime($details->created_at)) ;     
-  $consume_taker    = User::where('id',$details->consumption_updated_by)->select('name','last_name','signature')->first();
+  $consume_taker    = User::where('id',$details->consumption_updated_by)->select('name','last_name','signature')->withTrashed()->first();
   $consumption_type = DB::table('consumption_types')->where('id',$details->consumption_type_id)->select('name')->first();
 $data['consumption_taker']= $consume_taker->name??"";
 $data['type']=$consumption_type->name;
@@ -907,4 +1480,3 @@ $x=1;
  }
    
     }
-

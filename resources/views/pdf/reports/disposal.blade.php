@@ -4,17 +4,17 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>{{ config('app.name', 'StockSentry ') }} | Orders</title>
-     <link rel="stylesheet" href="{{ asset('assets/css/pdf.css') }}" type="text/css"> 
+    <title>{{ config('app.name', 'StockSentry ') }} | Disposal</title>
+     <link rel="stylesheet" href="https://stocksentry.org/assets/css/pdf.css" type="text/css"> 
 </head>
 <body>
     
-                <img src="{{ asset('assets/icon/logo_black.png') }}" style="margin-bottom: 0px;" height=70px >
+                <img src="https://stocksentry.org/assets/icon/logo_black.png" style="margin-bottom: 0px;" height=70px >
            
            <hr>
     <table class="w-full">
         <tr>
-           <td class="w-half" style="text-align:center">Orders</td>
+           <td class="w-half" style="text-align:center">{{$lab_name ?? "" }} Item Disposal</td>
         </tr>
     </table>
  
@@ -23,7 +23,7 @@
     </div>
 
     <div class="margin-top">
-         <span class="heading4" style="text-align: center;"><strong>Orders to supplier</strong></span> <br> 
+         <span class="heading4" style="text-align: center;"><strong>Item Disposed</strong></span> <br> 
         <table class="products">
             <tr>
                 <th>Sr.</th>
@@ -31,11 +31,12 @@
                   <th>Code</th>
                  <th>Batch #</th>
                  <th>Disposed Date</th>
+                  <th>Remark</th>
                   <th>Disposed Quantity</th>
                    <th>Cost</th>
                 
                     <th>Total</th>
-                    <th>Remark</th>
+                   
             </tr>
                           @php $i=1;
                   $Total=0;
@@ -77,6 +78,9 @@
                     <td>
                       {{$dat->created_at}}
                     </td>
+                     <td>
+                     {{ $dat->remarks }}
+                    </td>
                        <td>
                       {{$dat->dispose_quantity?? '' }}
                     </td>
@@ -87,9 +91,7 @@
                        <td>
                 {{ $dat->dispose_quantity*$dat->cost }}
                     </td>
-                     <td>
-                     {{ $dat->remarks }}
-                    </td>
+                    
                     
                 
                          </tr>

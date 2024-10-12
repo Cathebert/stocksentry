@@ -1,10 +1,12 @@
- @extends('layouts.main')
+@extends('layouts.main')
 
 @section('title','User Help')
 @section('content')
-
+ <h1 style="text-align:center"><b> Quick Guide </b></h1>
+    <p style="text-align:center">This is a quick guide to help you use the system effectively. Click on the link and follow the instructions given </p><br>
 
 <div class="container">
+
 	<div class="accordion" id="accordionExample">
   <div class="card">
     <div class="card-header" id="headingOne">
@@ -28,24 +30,32 @@
 
              </li>
              <li>
-               -Enter Details like Purchase Order, Delivery Note Number and Store from the Physical Delivery Note
+               -Enter Details like Supplier, GRN Number , details of from  person who checked  and who reviewed the items
              </li>
-
+ 
               <li>
-               -Search the item to receive, then select add.
+               -Search the item to receive, once found  select it and click <button class="btn btn-success"> add</button>.A pop up will appear with details of the item
              </li>
              <li>
                -Enter details like batch number, expiry date e.t.c
 
              </li>
-
-               <li>
-               -Repeat until the items on the Delivery Note have been completed then select save.
-             </li>
-
+             
               <li>
-               -Once saved it will show you a report of the items received.
+               -Once all the Item details click <button class="btn btn-primary"> Add</button>.
+
              </li>
+            <li>
+               -The item will be added to the <strong>Item receive list</strong>.
+             </li>
+           <li>
+               -You can clear the  list or remove the an individual item.
+             </li>
+               <li>
+               -Repeat until the items on the Delivery Note have been completed then click <button class="btn btn-primary"> Save </button>.
+             </li>
+
+            
              <li>
                -Once saved it will show you a report of the items received.
              </li>
@@ -461,6 +471,654 @@
 </div>
 <!-----------------------------end disposal-------------->
 
+<!----------------------------Ordering Items for purchase----->
+
+<div class="card">
+    <div class="card-header" id="heading8">
+      <h5 class="mb-0">
+        <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapse8" aria-expanded="false" aria-controls="collapse7">
+   Order Item For Purchase
+        </button>
+      </h5>
+    </div>
+    <div id="collapse8" class="collapse" aria-labelledby="heading8" data-parent="#accordionExample">
+      <div class="card-body">
+      
+       <div class="row">
+        <div class="col">
+          <ol>
+            <li>
+               - Click  <i class="fas fa-boxes"></i> <strong>Inventory</strong> From Main Menu and Click <strong>Inventory </strong>.
+             </li>
+             <li>
+              -Select <strong> Stock Forecasting  </strong>   tab 
+
+
+             </li>
+             <li>
+               -Select Lead time and  click load inventory
+
+
+             </li>
+
+              <li>
+               -Select  items you want to order .
+
+
+
+             </li>
+             <li>
+               -Click <strong>Run Forecast</strong> , You can adjust the orders by entering in the order box. Once satisfied you can click <strong> Place Order</strong>
+
+
+             </li>
+ <li>
+               -This action requires approval 
+
+
+             </li>
+         <li>
+              
+
+
+             </li>    
+        </ol>
+    </div>
+       <div class="col-6">
+        <div>
+            <video width="450" height="600"  controls>
+              <source src="{{ url('/').'/public/upload/help/order_item.mp4' }}" type="video/mp4">
+ 
+                Your browser does not support the video tag.
+             </video>
+       </div>
+    </div>
+
+  </div>
+
+      <!---end card---->
+    </div>
+  </div>
+</div>
+
+<!----------------------------End ordering------------------>
+<!----Approve order for purchase-------------------->
+
+<div class="card">
+    <div class="card-header" id="heading9">
+      <h5 class="mb-0">
+        <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapse9" aria-expanded="false" aria-controls="collapse9">
+  Approve Orders
+        </button>
+      </h5>
+    </div>
+    <div id="collapse9" class="collapse" aria-labelledby="heading9" data-parent="#accordionExample">
+      <div class="card-body">
+      
+       <div class="row">
+        <div class="col">
+          <ol>
+            <li>
+               - Click  <i class="fas fa-boxes"></i> <strong>Inventory</strong> From Main Menu and Click <strong>Inventory </strong>.
+             </li>
+             <li>
+              -Select <strong> Stock Forecasting  </strong>   tab 
+
+
+             </li>
+             <li>
+               -Click on <button class="btn btn-info"><i class="fa fa-check"></i>Approve Orders</button>. A list of orders will appear. You can <button class="btn btn-info"><i class="fa fa-eye"></i>View</button> /<button class="btn btn-danger"> <i class="fa fa-trash"></i>Deny </button>/ <button class="btn btn-success"> <i class="fa fa-check"> </i> Approve</button> the order
+
+
+             </li>
+
+              <li>
+               -Once approved the  <button class="btn btn-success"> <i class="fa fa-check"> </i> Approve</button> action changes to <span class='badge badge-success'><i class='fa fa-check'></i> Approved</span> and if is denied it changes to <span class='badge badge-danger'><i class='fa fa-trash'></i> Denied</span>
+
+
+
+             </li>
+             <li>
+               -Once Approved the orders are ready for consolidation at the Store
+
+             </li>
+ 
+         <li>
+              
+
+
+             </li>    
+        </ol>
+    </div>
+       <div class="col-6">
+        <div>
+            <video width="450" height="600"  controls>
+              <source src="{{ url('/').'/public/upload/help/approve_order_purchase.mp4' }}" type="video/mp4">
+ 
+                Your browser does not support the video tag.
+             </video>
+       </div>
+    </div>
+
+  </div>
+
+      <!---end card---->
+    </div>
+  </div>
+</div>
+
+
+
+<!------end Approve order for purchase------------->
+
+
+
+<!---- consolidating orders for purchase----->
+<div class="card">
+    <div class="card-header" id="heading10">
+      <h5 class="mb-0">
+        <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapse10" aria-expanded="false" aria-controls="collapse10">
+  Consolidating  Orders For Purchase
+        </button>
+      </h5>
+    </div>
+    <div id="collapse10" class="collapse" aria-labelledby="heading10" data-parent="#accordionExample">
+      <div class="card-body">
+      
+       <div class="row">
+        <div class="col">
+          <ol>
+            <li>
+               - Click  <i class="fas fa-boxes"></i> <strong>Inventory</strong> From Main Menu and Click <strong>Inventory </strong>.
+             </li>
+             <li>
+              -Select <strong> Stock Forecasting & Order </strong>   tab 
+
+
+             </li>
+             <li>
+               -Click on <a class="card-header-color">
+             <i class="fa fa-server  "></i> View Orders</a> <strong> OR </strong> on dashboard  click on <strong> pending orders to supplier </strong>. A list of approved orders will appear. 
+
+
+             </li>
+
+             <li>
+              - Click <button  class="btn btn-success"><i class="fa fa-plus"></i>Add</button> to add orders for consolidation. A status Message popup  and the <button  class="btn btn-success"><i class="fa fa-plus"></i>Add</button> will change to
+               <button  class="btn btn-secondary"><i class="fa fa-minus"></i>Remove</button> (this button removes order from consolidation list)
+              </li>
+
+              <li>
+               -Once Done Marking orders click on <strong> <a class="nav-link active"><i class="fa fa-server"></i> Consolidate Marked Orders</a> </strong> and the click <button class="btn btn-primary"> Consolidate</button>
+
+
+
+             </li>
+            
+ 
+         <li>
+              
+
+
+             </li>    
+        </ol>
+    </div>
+       <div class="col-6">
+        <div>
+            <video width="450" height="600"  controls>
+              <source src="{{ url('/').'/public/upload/help/order_consolidation.mp4' }}" type="video/mp4">
+ 
+                Your browser does not support the video tag.
+             </video>
+       </div>
+    </div>
+
+  </div>
+
+      <!---end card---->
+    </div>
+  </div>
+</div>
+
+
+
+<!-----end consolidation orders for purchase-->
+<!------creating items----->
+
+<div class="card">
+    <div class="card-header" id="heading11">
+      <h5 class="mb-0">
+        <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapse11" aria-expanded="false" aria-controls="collapse11">
+ Creating,Editing and Deleting Items 
+        </button>
+      </h5>
+    </div>
+    <div id="collapse11" class="collapse" aria-labelledby="heading11" data-parent="#accordionExample">
+      <div class="card-body">
+      
+       <div class="row">
+        <div class="col">
+          <ol>
+            <li>
+               -<strong>On Creating</strong>: Click   <strong><i class="fas fa-fw fas fa-list"></i>
+                    <span>Items </span> </strong> on your left and then click on <strong>Create Item </strong>.
+             </li>
+             <li>
+              -Enter/select Item details in the provided form. Once done Click on <button class="btn btn-primary">Save</button> and your item will be saved.
+
+
+             </li>
+             <li>
+               -<strong>On Editing</strong>:
+            Click  <strong><i class="fas fa-fw fas fa-list"></i>
+                    <span>Items </span></strong>on your left and then click on <strong>Items List </strong>. The list of items load. click on <a  style="color:#3B71CA" > <i class="fa fa-edit" title="Edit Item"></i></a>. After making changes click on <button class="btn btn-primary">Save Changes</button>
+             </li>
+
+             <li>
+              - <strong>On Deleting </strong>: Follow steps as Editing but click on <a  style="color:red"> <i class="fa fa-trash"  title="Delete"></i></a>. After Accepting deletion the item will be removed
+              </li>
+
+             
+ 
+         <li>
+              
+
+
+             </li>    
+        </ol>
+    </div>
+       <div class="col-6">
+        <div>
+            <video width="450" height="600"  controls>
+              <source src="{{ url('/').'/public/upload/help/create_item.mp4' }}" type="video/mp4">
+ 
+                Your browser does not support the video tag.
+             </video>
+       </div>
+    </div>
+
+  </div>
+
+      <!---end card---->
+    </div>
+  </div>
+</div>
+
+<!---end creating items--->
+<!-- adding laboratory --> 
+
+
+<div class="card">
+    <div class="card-header" id="heading12">
+      <h5 class="mb-0">
+        <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapse12" aria-expanded="false" aria-controls="collapse12">
+ Creating,Viewing ,Editing and Deleting Laboratories 
+        </button>
+      </h5>
+    </div>
+    <div id="collapse12" class="collapse" aria-labelledby="heading12" data-parent="#accordionExample">
+      <div class="card-body">
+      
+       <div class="row">
+        <div class="col">
+          <ol>
+            <li>
+               -<strong>On Creating</strong>: Click   <strong> <i class="fas fa-fw fa-flask"></i>
+                    <span>Laboratory</span> </strong> on your left and then click on <strong>Add Lab </strong>.
+             </li>
+             <li>
+              -Enter all required information on the form. Once done Click on <button class="btn btn-primary"><i class="fa fa-save"></i> Save</button> and lab is saved.
+
+
+             </li>
+             <li>
+               -<strong>On Viewing and Editing</strong>:
+            Click  <strong><i class="fas fa-fw fa-flask"></i>
+                    <span>Laboratory</span></strong>on your left and then click on <strong>View Lab </strong>. The list of laboratories load. click on <button  class="btn btn-primary" > <i class="fa fa-edit" title="Edit Item"></i> Edit</button>. After making changes click on <button class="btn btn-primary">Save Changes</button>
+             </li>
+
+             <li>
+              - <strong>On Deleting </strong>: Follow steps as Editing but click on <button  class="btn btn-warning"> <i class="fa fa-eye"  title="Delete"></i> Hide</button>. After Accepting deletion the lab will be removed from the list
+              </li>
+
+             
+ 
+         <li>
+              
+
+
+             </li>    
+        </ol>
+    </div>
+       <div class="col-6">
+        <div>
+            <video width="450" height="600"  controls>
+              <source src="{{ url('/').'/public/upload/help/create_lab.mp4' }}" type="video/mp4">
+ 
+                Your browser does not support the video tag.
+             </video>
+       </div>
+    </div>
+
+  </div>
+
+      <!---end card---->
+    </div>
+  </div>
+</div>
+
+
+<!--end  adding lab-->
+<!-- creating users--->
+<div class="card">
+    <div class="card-header" id="heading13">
+      <h5 class="mb-0">
+        <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapse13" aria-expanded="false" aria-controls="collapse13">
+ Creating,Viewing ,Editing , Deleting  and Resetting Users 
+        </button>
+      </h5>
+    </div>
+    <div id="collapse13" class="collapse" aria-labelledby="heading13" data-parent="#accordionExample">
+      <div class="card-body">
+      
+       <div class="row">
+        <div class="col">
+          <ol>
+            <li>
+               -<strong>On Creating</strong>: Click   <strong> <i class="fas fa-fw fa-users"></i>
+                    <span>Users</span> </strong>  on your left and then click on <strong>Add User </strong>.
+             </li>
+             <li>
+              -Select Laboratory the user will be part of,enter other details(firstname, lastname ,email etc) Once done Click on <button class="btn btn-primary"><i class="fa fa-save"></i> Save</button> and user is saved.Note that the username will be the one used to log in the system.
+
+
+             </li>
+             <li>
+               -<strong>On Viewing and Editing</strong>:
+            Click  <strong><i class="fas fa-fw fa-users"></i>
+                    <span>Users</span></strong>on your left and then click on <strong>View Users </strong>. The list of users load. click on <button  class="btn btn-info" > <i class="fa fa-edit" title="Edit Item"></i> Edit</button>. After making changes click on <button class="btn btn-primary">Save Changes</button>
+             </li>
+
+             <li>
+              - <strong>On Deleting </strong>: Follow steps as Editing but click on <button  class="btn btn-danger"> <i class="fa fa-trash"  title="Delete"></i> Delete</button>. After Accepting deletion the user will be removed from the list
+              </li>
+
+             <li>
+              - <strong>On Resetting Passwords </strong>: Follow steps as Editing but click on <button  class="btn btn-warning"> <i class="fa fa-lock"  title="Delete"></i> Reset</button>. After Accepting reset confirmation the user will receive email with password reset instructions 
+              </li>
+             
+ 
+         <li>
+              
+
+
+             </li>    
+        </ol>
+    </div>
+       <div class="col-6">
+        <div>
+            <video width="450" height="600"  controls>
+              <source src="{{ url('/').'/public/upload/help/create_user.mp4' }}" type="video/mp4">
+ 
+                Your browser does not support the video tag.
+             </video>
+       </div>
+    </div>
+
+  </div>
+
+      <!---end card---->
+    </div>
+  </div>
+</div>
+
+<!----- end creating users---->
+
+<!---create Supplier---->
+<div class="card">
+    <div class="card-header" id="heading14">
+      <h5 class="mb-0">
+        <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapse14" aria-expanded="false" aria-controls="collapse14">
+ Creating,Viewing ,Editing , Deleting  Suppliers
+        </button>
+      </h5>
+    </div>
+    <div id="collapse14" class="collapse" aria-labelledby="heading14" data-parent="#accordionExample">
+      <div class="card-body">
+      
+       <div class="row">
+        <div class="col">
+          <ol>
+            <li>
+               -<strong>On Creating</strong>: Click   <strong> <i class="fas fa-fw fas fa-handshake"></i>
+                    <span>Supplier</span> </strong>  on your left and then click on <strong>Add Supplier </strong>.
+             </li>
+             <li>
+              -Enter Supplier details(Supplier name, Contact Person ,email etc) Once done Click on <button class="btn btn-primary"><i class="fa fa-save"></i> Save</button> 
+
+
+             </li>
+             <li>
+               -<strong>On Viewing and Editing</strong>:
+            Click  <strong><i class="fas fa-fw fas fa-handshake"></i>
+                    <span>Supplier</span></strong>on your left and then click on <strong>All Suppliers </strong>. The list of Supplier load. click on <button  class="btn btn-info" > <i class="fa fa-edit" title="Edit Item"></i> Edit</button>. After making changes click on <button class="btn btn-primary">Save Changes</button>
+             </li>
+
+             <li>
+              - <strong>On Deleting </strong>: Follow steps as Editing but click on <button  class="btn btn-warning"> <i class="fa fa-eye"  title="Delete"></i> Hide</button>. After Accepting deletion the user will be removed from the list
+              </li>
+
+            
+             
+  
+        </ol>
+    </div>
+       <div class="col-6">
+        <div>
+            <video width="450" height="600"  controls>
+              <source src="{{ url('/').'/public/upload/help/create_supplier.mp4' }}" type="video/mp4">
+ 
+                Your browser does not support the video tag.
+             </video>
+       </div>
+    </div>
+
+  </div>
+
+      <!---end card---->
+    </div>
+  </div>
+</div>
+
+
+
+<!---end create supplier--->
+
+<!------- Contract Management--->
+
+<div class="card">
+    <div class="card-header" id="heading15">
+      <h5 class="mb-0">
+        <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapse15" aria-expanded="false" aria-controls="collapse15">
+ Contract Management(Creating,Updating, Editing,Deleting) 
+        </button>
+      </h5>
+    </div>
+    <div id="collapse15" class="collapse" aria-labelledby="heading15" data-parent="#accordionExample">
+      <div class="card-body">
+      
+       <div class="row">
+        <div class="col">
+          <ol>
+            <li>
+               -<strong>On Creating</strong>: Click   <strong> <i class="fas fa-fw fa-file"></i>
+                    <span>Contract Management</span> </strong>  on your left and then click on <strong>Show Contract</strong>.List of Contracts loads
+             </li>
+             <li>
+              -Click on <button class="btn btn-primary"><i class="fa fa-plus"></i>Add</button>. Enter Contract name , number , description. Select Contract start date ,frequency(how often will it be renewed), Unit(monthly or yearly). Select if it is for Supplies or for Service
+
+
+             </li>
+                <li>
+              -Select the people who will be receiving reminders when the contract is about to expire            </li>
+             <li>
+               -<strong>On Viewing and Editing</strong>:
+            Click  <strong><i class="fas fa-fw fa-file"></i>
+                    <span>Contract Management</span></strong>on your left and then click on <strong>Show Contract</strong>. The list of contracts load. click on <button  class="btn btn-primary" > <i class="fa fa-edit" title="Edit Item"></i> </button>. After making changes click on <button class="btn btn-primary">Save</button>
+             </li>
+
+             <li>
+              - <strong>On Renewing Contract </strong>: Follow steps as Editing but click on <button  class="btn btn-success"> <i class="fa fa-refresh"  title="Renew"></i></button>. Select the Contract End Date . Next Renewal date will automatically be calculated
+              </li>
+
+             <li>
+              - <strong>On Deleting Contract</strong>: Follow steps as Editing but click on <button  class="btn btn-danger"> <i class="fa fa-trash"  title="Delete"></i> Delete</button>. The Contract will be removed 
+              </li>
+             
+    
+        </ol>
+    </div>
+       <div class="col-6">
+        <div>
+            <video width="450" height="600"  controls>
+              <source src="{{ url('/').'/public/upload/help/contract.mp4' }}" type="video/mp4">
+ 
+                Your browser does not support the video tag.
+             </video>
+       </div>
+    </div>
+
+  </div>
+
+      <!---end card---->
+    </div>
+  </div>
+</div>
+
+<!-- end Contract Management-->
+
+<!----scheduling Reports----> 
+<div class="card">
+    <div class="card-header" id="heading16">
+      <h5 class="mb-0">
+        <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapse16" aria-expanded="false" aria-controls="collapse16">
+Scheduling Reports
+        </button>
+      </h5>
+    </div>
+    <div id="collapse16" class="collapse" aria-labelledby="heading16" data-parent="#accordionExample">
+      <div class="card-body">
+      
+       <div class="row">
+        <div class="col">
+          <ol>
+            <li>
+               -<strong>On Creating</strong>: Click   <strong>  <i class="fas fa-fw fa-chart-area"></i>
+                    <span>Reports</span> </strong> .Under <strong>Automation</strong> Click on View/Schedule Reports
+             </li>
+             <li>
+              -Click on <button class="btn btn-primary"><i class="fa fa-plus"> </i> Schedule</button>. Select the frequency ,the report type,Report recipient and report format.  Once done Click on <button class="btn btn-primary"><i class="fa fa-save"></i> Save Changes</button> 
+
+
+             </li>
+             <li>
+               -<strong>Deactivating Scheduled Reports </strong>:
+          Click   <strong>  <i class="fas fa-fw fa-chart-area"></i>
+                    <span>Reports</span> </strong>.Under <strong>Automation</strong> Click on View/Schedule Reports then click on <button class="btn btn-success"><i class="fa fa-pause"> </i>Deactivate</button>
+                </li>
+
+             <li>
+              - <strong>On Deleting </strong>: Follow steps as Deactivating but click on <button  class="btn btn-danger"> <i class="fa fa-trash"  title="Delete"></i> </button>.The Scheduled report will be removed from the list
+              </li>
+
+            
+             
+  
+        </ol>
+    </div>
+       <div class="col-6">
+        <div>
+            <video width="450" height="600"  controls>
+              <source src="{{ url('/').'/public/upload/help/schedule_report.mp4' }}" type="video/mp4">
+ 
+                Your browser does not support the video tag.
+             </video>
+       </div>
+    </div>
+
+  </div>
+
+      <!---end card---->
+    </div>
+  </div>
+</div>
+
+
+
+
+
+<!----end Scheduling Report---->
+
+<!----start back up---->
+
+<div class="card">
+    <div class="card-header" id="heading17">
+      <h5 class="mb-0">
+        <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapse17" aria-expanded="false" aria-controls="collapse16">
+View/Schedule/Restore Backup
+        </button>
+      </h5>
+    </div>
+    <div id="collapse17" class="collapse" aria-labelledby="heading16" data-parent="#accordionExample">
+      <div class="card-body">
+      
+       <div class="row">
+        <div class="col">
+          <ol>
+            <li>
+                Click   <strong>  <i class="fas fa-fw fa-chart-area"></i>
+                    <span>Reports</span> </strong> .Under <strong>Automation</strong> Click on View/Data Backup
+             </li>
+             <li>
+              -<strong>On Creating Backup</strong>:
+              Click  <button class="btn btn-secondary"><i class="fa fa-download"> </i> Run Backup</button>. Two copies of data will be generated,one file will be downloaded on your machine,another file will remain on the server. 
+
+             </li>
+         
+
+             <li>
+              - <strong>On Restoring </strong>: Click on <button  class="btn btn-success"> <i class="fa fa-upload"  ></i> Restore</button>Select a back up file then click <button class="btn btn-primary"> Upload Backup</button> Alternatively click on <button class="btn btn-success"><i class="fa fa-hdd-o"></i> Backup List</button> Choose from the list the backup you want to restore
+</li>
+               <li>
+              - <strong>On Scheduling </strong>: Click on <button  class="btn btn-primary"> <i class="fa fa-plus"  ></i> Schedule Backup</button>Select a back up file then click <button class="btn btn-primary"> Upload Backup</button> Select  frequency (daily,weekly,monthly) and the receiver who will be getting the backup. The receiver will be getting a backup notification with an attachment              
+             
+  
+        </ol>
+    </div>
+       <div class="col-6">
+        <div>
+            <video width="450" height="600"  controls>
+              <source src="{{ url('/').'/public/upload/help/back.mp4' }}" type="video/mp4">
+ 
+                Your browser does not support the video tag.
+             </video>
+       </div>
+    </div>
+
+  </div>
+
+      <!---end card---->
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+<!----end backup---->
 </div>
  </div>
 @endsection

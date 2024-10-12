@@ -1,4 +1,3 @@
-
 <div class="modal-header">
         <h5 class="modal-title">Edit Laboratory</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -46,7 +45,7 @@
     <input type="text" class="form-control" id="lab_phone" name="lab_phone" value="{{$laboratory->lab_phone}}">
   </div>
 
-  <div class="col-md-12 col-sm-12 col-xs-12 form-group">
+  <div class="col-md-12 col-sm-12 col-xs-12 form-group" hidden>
     <label for="exampleInputPassword1">Has Sections? </label>
     <div class="form-check">
   <input class="form-check-input" type="radio" name="has_section" id="has_section_no" value="no" {{($laboratory->has_section =='no') ? "checked" : ""}} onchange="hasChanged(this.value)">

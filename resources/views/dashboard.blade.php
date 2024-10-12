@@ -1,4 +1,4 @@
- @extends('layouts.main')
+@extends('layouts.main')
 @section('title','Dashboard')
 @section('content')
 
@@ -7,16 +7,13 @@
  <div class="container-fluid">
 
                     <!-- Page Heading -->
-                    <div class="d-sm-flex align-items-center justify-content-between mb-4">
-                        <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
-                        <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i
-                                class="fas fa-download fa-sm text-white-50"></i> Generate Report</a>
-                    </div>
+                  
 
                     <!-- Content Row -->
                     <div class="row">
 
                         <!-- Earnings (Monthly) Card Example -->
+                           <!-- Earnings (Monthly) Card Example -->
                         <div class="col-xl-3 col-md-6 mb-4">
                             <div class="card border-left-primary shadow h-100 py-2">
                                 <div class="card-body">
@@ -24,7 +21,7 @@
                                         <div class="col mr-2">
                                             <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
                                                 Stock In Hand</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800"><a href="{{route('inventory.bincard')}}" style="text-decoration:none"> {{$item??'0' }} </a></div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800"><a href="{{route('inventory.bincard')}}" style="text-decoration:none"> {{number_format($item)??'0' }} </a></div>
                                         </div>
                                         <div class="col-auto">
                                             <i class="fas fa-calendar fa-2x text-gray-300"></i>
@@ -34,7 +31,7 @@
                             </div>
                         </div>
 
-                        <!-- Earnings (Monthly) Card Example -->
+                           <!-- Earnings (Monthly) Card Example -->
                         <div class="col-xl-3 col-md-6 mb-4">
                             <div class="card border-left-success shadow h-100 py-2">
                                 <div class="card-body">
@@ -52,35 +49,14 @@
                             </div>
                         </div>
 
-                      
- <!-- Pending Requests Card Example -->
-                        <div class="col-xl-3 col-md-6 mb-4">
+                          <div class="col-xl-3 col-md-6 mb-4">
                             <div class="card border-left-warning shadow h-100 py-2">
                                 <div class="card-body">
                                     <div class="row no-gutters align-items-center">
                                         <div class="col mr-2">
                                             <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                                               Users</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{$users??'0' }}</div>
-                                        </div>
-                                        <div class="col-auto">
-                                            <i class="fas fa-users fa-2x text-gray-300"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    
-
-                        <!-- Pending Requests Card Example -->
-                        <div class="col-xl-3 col-md-6 mb-4">
-                            <div class="card border-left-warning shadow h-100 py-2">
-                                <div class="card-body">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                               <a href="{{ route('view.orders') }}"> Pending Orders </a></div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800"><a href="{{ route('view.orders') }}">{{ $requests }}</a></div>
+                                                 <a href="{{ route('view.orders') }}"> Pending Orders  To Supplier</a></div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800"><a href="{{ route('view.orders') }}">{{$to_supplier  }}</a></div>
                                         </div>
                                         <div class="col-auto">
                                             <i class="fas fa-comments fa-2x text-gray-300"></i>
@@ -89,7 +65,26 @@
                                 </div>
                             </div>
                         </div>
+                        <!-- Pending Requests to store -->
+                             <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card border-left-secondary shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-secondary text-uppercase mb-1">
+                                               <a href="{{ route('issue.requisition') }}"> Pending Orders  To Store</a></div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800"><a href="{{ route('view.orders') }}">{{ $requests }}</a></div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-clock fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
+
+                    
 
                     <!-- Content Row -->
 
@@ -97,7 +92,7 @@
 
                         <!-- Area Chart -->
                         <div class="col-xl-8 col-lg-7">
-                            <div class="card shadow mb-4">
+                             <div class="card shadow mb-4">
                                 <!-- Card Header - Dropdown -->
                                 <div
                                     class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
@@ -136,7 +131,7 @@
                                     </div>
                                 </div>
                                 <!-- Card Body -->
-                                <div class="card-body">
+ <div class="card-body">
                                   
                                     <div class="chart-area" style="width:100%">
                                         <canvas id="myAreaChart"></canvas>
@@ -292,10 +287,11 @@
   </div>
                             </div>
                             
+
                         </div>
 
                         <!-- Pie Chart -->
-                        <div class="col-xl-4 col-lg-3">
+                        <div class="col-xl-4 col-lg-5">
                             <div class="card shadow mb-4">
                                 <!-- Card Header - Dropdown -->
                                 <div
@@ -340,55 +336,58 @@
                             <!-- Project Card Example -->
                             <div class="card shadow mb-4">
                                 <div class="card-header py-3">
-                                    <h6 class="m-0 font-weight-bold text-primary">Stock Usage</h6>
+                                    <h6 class="m-0 font-weight-bold text-primary">Inventory Quantity Level</h6>
                                 </div>
-                             
                                 <div class="card-body">
-                                    @foreach($consumption as $c)
-                                 @php
-                                    $percentage=round(($c->consumed_quantity/$total)*100,2); 
-                                    $class= array("bg-secondary", "bg-primary", "bg-success", "bg-info", "bg-warning");  
-                                    $random_keys=array_rand($class,3);                                     $total
-                                @endphp
-                              
-                                    <h4 class="small font-weight-bold">{{$c->lab_name}}<span
-                                  
-                                            class="float-right">{{ $percentage }}%</span></h4>
-                                    <div class="progress mb-4">
-                                        <div class="progress-bar {{  $class[$random_keys[0]] }}" role="progressbar" style="width: {{ $percentage }}%"
-                                            aria-valuenow="{{$percentage}}" aria-valuemin="0" aria-valuemax="100"></div>
-                                    </div>
-                                 
-                                    @endforeach
-                                    
+                                   
+                                   
+                                   
+                                   <div class="hstack gap-">
+  <table class="table">
+  <thead>
+    <tr>
+      <th scope="col">Low</th>
+      <th scope="col">Medium</th>
+      <th scope="col">High</th>
+    
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th  id="low" class="text-danger">1</th>
+      <td id="medium" class="text-warning">Mark</td>
+      <td id="high" class="text-primary">Otto</td>
+      
+    </tr>
+    </tbody>
+</table>
+    <br>
+  
+ <div class="d-flex" style="height: 200px;">
+  <div class="vr"></div>
+</div>
+&nbsp;&nbsp;
+   <div ><canvas id="myround_pie" ></canvas></div>
+</div>
+
+                                </div>
                             </div>
 
                             <!-- Color System -->
-                            <div class="row"  hidden>
-                                <div class="col-lg-6 mb-4" hidden>
+                            <div class="row" hidden>
+                                <div class="col-lg-6 mb-4">
                                     <div class="card bg-primary text-white shadow">
+                                        <div class="card-header py-3">
+                                    <h6 class="m-0 font-weight-bold text-primary">Top Consumed</h6>
+                                </div>
                                         <div class="card-body">
                                             Primary
                                             <div class="text-white-50 small">#4e73df</div>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-lg-6 mb-4">
-                                    <div class="card bg-success text-white shadow">
-                                        <div class="card-body">
-                                            Success
-                                            <div class="text-white-50 small">#1cc88a</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg-6 mb-4">
-                                    <div class="card bg-info text-white shadow">
-                                        <div class="card-body">
-                                            Info
-                                            <div class="text-white-50 small">#36b9cc</div>
-                                        </div>
-                                    </div>
-                                </div>
+                                
+                                
                                 <div class="col-lg-6 mb-4">
                                     <div class="card bg-warning text-white shadow">
                                         <div class="card-body">
@@ -433,46 +432,71 @@
 
                         </div>
 
-                        <div class="col-lg-6 mb-4" >
+                        <div class="col-lg-6 mb-4">
 
                             <!-- Illustrations -->
-                            <div class="card shadow mb-4"hidden >
+                            <div class="card shadow mb-4">
                                 <div class="card-header py-3">
-                                    <h6 class="m-0 font-weight-bold text-primary">Illustrations</h6>
+                                    <h6 class="m-0 font-weight-bold text-primary">Top Consumed</h6>
                                 </div>
                                 <div class="card-body">
-                                    
+                                  
                                    
+                                    <div class="table-responsive">
+        <table class="table table-bordered table-striped table-sm table-hover" id="items_tabl">
+<thead class="thead-light">
+    <tr>
+  <th scope="col">Preview</th>
+      <th scope="col">Item Name</th>
+     <th scope="col">Code #</th>
+      <th scope="col">Quantity Consumed</th>
+   
+   
+    </tr>
+  </thead>
+  <tbody>
+</table>
+      </div>
+
+
+
+
                                 </div>
                             </div>
 
                             <!-- Approach -->
-                            <div class="card shadow mb-4" hidden>
-                                <div class="card-header py-3" >
-                                    <h6 class="m-0 font-weight-bold text-primary">Development Approach</h6>
+                            <div class="card shadow mb-4">
+                                <div class="card-header py-3">
+                                    <h6 class="m-0 font-weight-bold text-primary">Latest Orders</h6>
                                 </div>
                                 <div class="card-body">
-                                    <p>SB Admin 2 makes extensive use of Bootstrap 4 utility classes in order to reduce
-                                        CSS bloat and poor page performance. Custom CSS classes are used to create
-                                        custom components and custom utility classes.</p>
-                                    <p class="mb-0">Before working with this theme, you should become familiar with the
-                                        Bootstrap framework, especially the utility classes.</p>
+                                                                     <div class="table-responsive">
+        <table class="table table-bordered table-striped table-sm" id="req">
+    <thead class="thead-light">
+    <tr>
+      <th scope="col">SR #</th>
+      <th scope="col">Requesting Lab</th>
+      <th scope="col">Requested Date</th>
+      <!--<th scope="col">Options</th>-->
+   
+    </tr>
+  </thead>
+  <tbody>
+</table>
+ </div>
+                                    
                                 </div>
                             </div>
 
                         </div>
                     </div>
-
+ <div class="modal" tabindex="-1" id="inforg" role="dialog" >
+  <div class="modal-dialog modal-xl" role="document" >
+    <div class="modal-content" id="view_item_datails">
+</div>
                 </div>
-                    <div class="modal fade" id="infor" role="dialog" data-focus="false">
-        <div class="modal-dialog modal-xl" role="document">
-            <div class="modal-content" id="add_certi">
-
-            </div>
-        </div>
-    </div>
                 <!-- /.container-fluid -->
- 
+
 <input type="hidden" id="inventory_health" value="{{route('stats.pie')}}" />
 <input type="hidden" id="get_details" value="{{route('stats.detail_modal')}}"/>
 <input type="hidden" id="consumption-chart" value="{{route('dashboard.consumption')}}" />
@@ -480,13 +504,18 @@
 <input type="hidden" id="requisition_chart" value="{{route('dashboard.requisition')}}"/>
 <input type="hidden" id="orders_chart" value="{{route('dashboard.orders')}}"/>
 <input type="hidden" id="period-chart" value="{{route('dashboard.period')}}"/>
-
+<input type="hidden" id="item-chart" value="{{route('dashboard.item_details')}}"/>
+<input type="hidden" id="top_consumed" value="{{route('dashboard.top_consumed')}}"/>
+<input type="hidden" id="get_latest" value="{{ route('dashboard.latestOrders') }}"/>
+<input type="hidden" id="view_approved_request" value="{{route('requests.view-approved')}}"/>
+<input type="hidden" id="save_approved_request" value="{{route('requisition.save-approved')}}"/>
 
             </div>
             @endsection
 
        @push('js')
+             <script src="{{asset('assets/js/demo/chart-pie-demo.js')}}"></script>
              <script src="{{asset('assets/admin/js/inventory/reports/dashboard/reports.js')}}"> </script>
               <script src="{{asset('assets/admin/js/inventory/reports/dashboard/consumption.js')}}"> </script>
-                
-            @endpush     
+              <script src="{{asset('assets/admin/js/inventory/issues/requisition.js') }}"></script>
+            @endpush

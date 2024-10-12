@@ -1,9 +1,15 @@
 <div class="modal-header">
+
         <h5 class="modal-title">Order Details</h5>
+       
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <input type="hidden" id="load_orders" value="{{route('order.load')}}"/>
+        <input type="hidden" id="order_id" value="{{$id}}"/>
+        <input type="hidden" id="mark_all_as_received" value="{{route('order.mark_all_received')}}"/>
+        <input type="hidden" id="mark_without_number" value="{{route('order.mark_without_number')}}"/>
+         <button type="button" class="btn btn-primary btn-sm pull-right" onclick="markAllAsReceived()">Mark All As Received</button>
 <div class="input-group mb-3">
 
 </div>
@@ -15,8 +21,10 @@
           <th scope="col">#</th>
       <th scope="col">Item</th>
        <th scope="col">Supplier</th>
+         <th>Purchase Number</th>
       <th scope="col">UOM</th>
       <th scope="col">Ordered Quantity</th>
+      <th scope="col">Mark As Received</th>
     
       
       
@@ -69,8 +77,11 @@
         { data: "id" },
         { data: "item" },
         { data: "supplier" },
+         { data: "purchase_number" },
+      
         { data: "unit" },
         { data: "ordered" },
+         { data: "mark_received" },
     ],
     //Set column definition initialisation properties.
     columnDefs: [
@@ -134,6 +145,3 @@ function SelectAll(){
 
 
   </script>
-
-  
-   

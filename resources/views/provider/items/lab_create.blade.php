@@ -1,4 +1,4 @@
- @extends('provider.layout.main')
+@extends('provider.layout.main')
 @section('title','Create Item')
 @push('style')
         <link href="{{ asset('assets/admin/Image-preview/dist/css/bootstrap-imageupload.css') }}" rel="stylesheet">
@@ -10,7 +10,7 @@
  <div class="container-fluid">
 <nav aria-label="breadcrumb">
   <ol class="breadcrumb">
-    <li class="breadcrumb-item"><a href="{{route('admin.home')}}">Home</a></li>
+    <li class="breadcrumb-item"><a href="{{route('moderator.home')}}">Home</a></li>
     <li class="breadcrumb-item"><a href="#">Inventory</a></li>
     <li class="breadcrumb-item active" aria-current="page">Create</li>
   </ol>
@@ -70,6 +70,10 @@
   <div class="col-md-4 col-sm-12 col-xs-12 form-group">
     <label for="exampleInputPassword1">Warehouse pack Size <span class="text-danger">*</span></label>
     <input type="number" class="form-control" id="warehouse_size" name="warehouse_size" required>
+  </div>
+  <div class="col-md-4 col-sm-12 col-xs-12 form-group">
+    <label for="exampleInputPassword1">Location <span class="text-danger">*</span></label>
+    <input type="text" class="form-control" id="location" name="location" required>
   </div>
    <div class="col-md-4 col-sm-12 col-xs-12 form-group">
     <label for="exampleInputPassword1">Catalog Number <span class="text-danger">*</span></label>

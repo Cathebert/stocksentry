@@ -9,7 +9,7 @@ t = $("#expiry_table").DataTable({
     serverSide: true,
     paging: true,
     scrollCollapse: true,
-
+    destroy: true,
     info: true,
 
     lengthMenu: [10, 20, 50],
@@ -37,11 +37,10 @@ t = $("#expiry_table").DataTable({
     },
     AutoWidth: false,
     columns: [
-        { data: "id", width: "3%" },
-        { data: "item", width: "15%" },
-        { data: "brand", width: "15%" },
-        { data: "batch_number" },
+          { data: "id", width: "3%" },
         { data: "name" },
+        { data: "batch_number" },
+      
         { data: "location" },
         { data: "expire_date" },
         { data: "quantity" },
@@ -105,7 +104,7 @@ function getTableData() {
         serverSide: true,
         paging: true,
         scrollCollapse: true,
-
+  destroy: true,
         info: true,
 
         lengthMenu: [10, 20, 50],
@@ -133,17 +132,16 @@ function getTableData() {
         },
         AutoWidth: false,
         columns: [
-            { data: "id", width: "3%" },
-            { data: "item", width: "15%" },
-            { data: "brand", width: "15%" },
-            { data: "batch_number" },
-            { data: "name" },
-            { data: "location" },
-            { data: "expire_date" },
-            { data: "quantity" },
-            { data: "cost" },
-            { data: "est_loss" },
-            { data: "status" },
+             { data: "id", width: "3%" },
+        { data: "name" },
+        { data: "batch_number" },
+      
+        { data: "location" },
+        { data: "expire_date" },
+        { data: "quantity" },
+        { data: "cost" },
+        { data: "est_loss" },
+        { data: "status" },
         ],
         //Set column definition initialisation properties.
         columnDefs: [
@@ -170,7 +168,7 @@ function  getSelectedByLab(value){
      serverSide: true,
      paging: true,
      scrollCollapse: true,
-
+  destroy: true,
      info: true,
 
      lengthMenu: [10, 20, 50],
@@ -198,17 +196,16 @@ function  getSelectedByLab(value){
      },
      AutoWidth: false,
      columns: [
-         { data: "id", width: "3%" },
-         { data: "item", width: "15%" },
-         { data: "brand", width: "15%" },
-         { data: "batch_number" },
-         { data: "name" },
-         { data: "location" },
-         { data: "expire_date" },
-         { data: "quantity" },
-         { data: "cost" },
-         { data: "est_loss" },
-         { data: "status" },
+             { data: "id", width: "3%" },
+        { data: "name" },
+        { data: "batch_number" },
+      
+        { data: "location" },
+        { data: "expire_date" },
+        { data: "quantity" },
+        { data: "cost" },
+        { data: "est_loss" },
+        { data: "status" },
      ],
      //Set column definition initialisation properties.
      columnDefs: [
@@ -235,7 +232,7 @@ function  getSelectedByRange(value){
       serverSide: true,
       paging: true,
       scrollCollapse: true,
-
+  destroy: true,
       info: true,
 
       lengthMenu: [10, 20, 50],
@@ -265,17 +262,17 @@ function  getSelectedByRange(value){
       },
       AutoWidth: false,
       columns: [
-          { data: "id", width: "3%" },
-          { data: "item", width: "15%" },
-          { data: "brand", width: "15%" },
-          { data: "batch_number" },
-          { data: "name" },
-          { data: "location" },
-          { data: "expire_date" },
-          { data: "quantity" },
-          { data: "cost" },
-          { data: "est_loss" },
-          { data: "status" },
+            { data: "id", width: "3%" },
+        { data: "name" },
+        { data: "batch_number" },
+      
+        { data: "location" },
+        { data: "expire_date" },
+        { data: "quantity" },
+        { data: "cost" },
+        { data: "est_loss" },
+        { data: "status" },
+         
       ],
       //Set column definition initialisation properties.
       columnDefs: [

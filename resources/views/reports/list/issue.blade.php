@@ -1,4 +1,4 @@
- @extends('layouts.main')
+@extends('layouts.main')
 @section('title','Stock Inventory')
 @section('content')
 
@@ -12,17 +12,17 @@
 </nav>
    <!-- Page Heading -->
    
-                    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                    <div class="d-sm-flex align-items-center justify-content-between mb-4" >
                         <h1 class="h3 mb-0 text-gray-800">Issue Report</h1>
                          <div class="dropdow" style="text-align:right" >
-  <button  role="button" data-toggle="modal" data-target="#exampleModal">
+  <button  role="button" data-toggle="modal" data-target="#exampleModal" hidden>
   <i class="fa fa-clock"> Schedule</i>
 </button>
 
 </div>
 
                     </div>
-<div class="dropdown" style="text-align:right" >
+<div class="dropdown" style="text-align:right" hidden>
   <button class="dropdown-toggle btn btn-outline-primary btn-sm" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
   <i class="fa fa-upload"> Export As</i>
 </button>
@@ -53,7 +53,7 @@
  
             
             <div class="row">
-    <div class="col-md-4 col-sm-12 col-xs-12 form-group"  >
+    <div class="col-md-4 col-sm-12 col-xs-12 form-group"  hidden>
 <div class="input-group mb-3">
   <div class="input-group-prepend">
     <label class="input-group-text" for="period">Location</label>

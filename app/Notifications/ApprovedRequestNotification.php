@@ -15,10 +15,12 @@ class ApprovedRequestNotification extends Notification
      * Create a new notification instance.
      */
     protected $number;
-    public function __construct($number)
+    protected $approved_by;
+    public function __construct($number,$approved_by)
     {
         //
         $this->number=$number;
+        $this->approved_by=$approved_by;
     }
 
     /**
@@ -37,10 +39,10 @@ class ApprovedRequestNotification extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-                    ->line('Your request to order items from store has been approved.')
+                    ->line('Your request to order items from store has been approved by. '. $this->approved_by)
                     ->line('You will receive notification from store when the order has been processed')
-                    ->line('Your older number is'.$this->number);
-                    ->line('Thank You')
+                    ->line('Your older number is '.$this->number)
+                    ->line('Thank You');
     }
 
     /**

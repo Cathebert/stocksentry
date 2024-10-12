@@ -1,4 +1,4 @@
- @extends(sectionhead.layout.main')
+@extends('clerk.layout.main')
 @section('title','User Profile')
 @push('style')
    <link href="{{ asset('assets/admin/Image-preview/dist/css/bootstrap-imageupload.css') }}" rel="stylesheet">
@@ -21,7 +21,7 @@
         
         <h5 class="card-title"> <strong>User Profile Information</strong></h5>
       <br>
-   @include('sectionhead.user.header')  
+   @include('clerk.user.header')  
     <div class="clearfix"></div>  
 <div class="row">
    

@@ -35,7 +35,7 @@ class IssueApproved extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-                    ->line('The introduction to the notification.')
+                    ->line('The issue has been approved.')
                     ->action('Notification Action', url('/'))
                     ->line('Thank you for using our application!');
     }

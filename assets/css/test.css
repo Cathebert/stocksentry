@@ -1,0 +1,38 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Style for the topbar */
+#topbar {
+    background-color: #333;
+    color: #fff;
+    padding: 10px;
+    position: fixed;
+	
+    top: 0;
+    left: 0;
+	height:45px;
+    width: 100%;
+    z-index: 1000; /* Ensures it stays above other content */
+}
+
+/* Style for the sidebar */
+.sidebar {
+    background-color: #eee;
+	
+    width: 200px;
+    position: fixed;
+    top: 40px; /* Adjust according to the height of your topbar */
+    left: 0;
+    height: 100%;
+    overflow-y: auto; /* Enable scrolling if content overflows */
+}
+
+/* Style for the main content */
+#center{
+    margin-top: 70px; /* Adjust according to the height of your topbar */
+    margin-left: 200px; /* Adjust according to the width of your sidebar */
+    padding: 20px;
+}

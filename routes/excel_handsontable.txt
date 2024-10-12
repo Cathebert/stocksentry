@@ -1,0 +1,42 @@
+<div class="controls pull-right">
+  
+    <button id="save" class="btn btn-success">Save data</button>
+    <label>
+      <input type="checkbox" name="autosave" id="autosave"/>
+      Autosave
+    </label>
+  </div>
+                <div class="x_content">
+  
+ <div id="excel-editor"></div>
+<ul class="nav nav-tabs">
+    @for ($x=0;$x<$sheet_count; $x++ )
+     <li class="nav-item">
+      <a class="nav-link active" href="#" name="{{ $name }}" onclick="getSheet(this.id,this.name)">{{$sheet_names[$x]}}</a>  
+   </li>
+      @endfor
+</ul>
+
+</div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const data = @json($sheetData);
+            const container = document.getElementById('excel-editor');
+const hot = new Handsontable(container, {
+  data: data,
+  width: 1300,
+  height: 640,
+ 
+  colHeaders: true,
+  rowHeaders: true,
+  customBorders: true,
+  dropdownMenu: true,
+  multiColumnSorting: true,
+  filters: true,
+  manualRowMove: true,
+  licenseKey: 'non-commercial-and-evaluation',
+
+                 
+            });
+        });
+    </script>

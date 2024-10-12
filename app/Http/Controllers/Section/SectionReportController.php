@@ -6,8 +6,173 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use DB;
+use App\Models\Laboratory;
+use App\Models\ScheduleReport;
+use App\Models\User;
+use App\Models\LaboratorySection;
+use App\Models\Supplier;
 class SectionReportController extends Controller
 {
+public function  showUserReport(){
+$lab=Laboratory::where('id',auth()->user()->laboratory_id)->select('lab_name')->first();
+   
+   $section=LaboratorySection::where('id',auth()->user()->section_id)->select('section_name')->first();
+   if($section){
+     $data['lab_name']='Logged Into: '.$lab->lab_name.' / '.$section->section_name;  
+   }
+   else
+   {
+$data['lab_name']='Logged Into: '.$lab->lab_name;
+}
+    return view('clerk.reports.show',$data);
+}
+
+
+public function showUserExpiredReport(){
+$data['users']=User::where([['laboratory_id','=',auth()->user()->laboratory_id],['authority','=',1]])
+             ->select('id','email')->get();
+           $data['laboratories']=Laboratory::get();
+           
+                $lab=Laboratory::where('id',auth()->user()->laboratory_id)->select('lab_name')->first();
+   
+   
+$data['lab_name']='Logged Into: '.$lab->lab_name;
+return view('clerk.reports.list.expired',$data);
+
+  }
+  
+public function showUserExpiryReport(Request $request){
+             $data['users']=User::where([['laboratory_id','=',auth()->user()->laboratory_id],['authority','=',1]])
+             ->select('id','email')->get();
+           $data['laboratories']=Laboratory::get();
+           
+                $lab=Laboratory::where('id',auth()->user()->laboratory_id)->select('lab_name')->first();
+   
+   $section=LaboratorySection::where('id',auth()->user()->section_id)->select('section_name')->first();
+   if($section){
+     $data['lab_name']='Logged Into: '.$lab->lab_name.' / '.$section->section_name;  
+   }
+   else
+   {
+$data['lab_name']='Logged Into: '.$lab->lab_name;
+}
+return view('clerk.reports.list.expiry',$data);
+    }
+
+public function showUserConsumptionReport(){
+     $data['users']=User::where([['laboratory_id','=',auth()->user()->laboratory_id],['authority','=',1]])
+             ->select('id','email')->get();
+           $data['laboratories']=Laboratory::get();
+                $lab=Laboratory::where('id',auth()->user()->laboratory_id)->select('lab_name')->first();
+   
+   $section=LaboratorySection::where('id',auth()->user()->section_id)->select('section_name')->first();
+   if($section){
+     $data['lab_name']='Logged Into: '.$lab->lab_name.' / '.$section->section_name;  
+   }
+   else
+   {
+$data['lab_name']='Logged Into: '.$lab->lab_name;
+}
+    return view('clerk.reports.list.consumption_report',$data);
+}
+
+public function stockLevelReport(){
+     $lab=Laboratory::where('id',auth()->user()->laboratory_id)->select('lab_name')->first();
+   
+   $section=LaboratorySection::where('id',auth()->user()->section_id)->select('section_name')->first();
+   if($section){
+     $data['lab_name']='Logged Into: '.$lab->lab_name.' / '.$section->section_name;  
+   }
+   else
+   {
+$data['lab_name']='Logged Into: '.$lab->lab_name;
+}
+    return view('clerk.reports.list.stock_level',$data);
+  }
+  
+ public function showOutOfStockReport(){
+      
+           $lab=Laboratory::where('id',auth()->user()->laboratory_id)->select('lab_name')->first();
+   
+   $section=LaboratorySection::where('id',auth()->user()->section_id)->select('section_name')->first();
+   if($section){
+     $data['lab_name']='Logged Into: '.$lab->lab_name.' / '.$section->section_name;  
+   }
+   else
+   {
+$data['lab_name']='Logged Into: '.$lab->lab_name;
+}
+    return view('clerk.reports.list.out_of_stock',$data);
+  }
+ public function showDisposal(){
+              $data['users']=User::where([['laboratory_id','=',auth()->user()->laboratory_id],['authority','=',1]])
+             ->select('id','email')->get();
+              $lab=Laboratory::where('id',auth()->user()->laboratory_id)->select('lab_name')->first();
+                    $section=LaboratorySection::where('id',auth()->user()->section_id)->select('section_name')->first();
+  
+   
+$data['lab_name']='Logged Into: '.$lab->lab_name;
+
+$data['laboratories']=Laboratory::get();
+           
+return view('clerk.reports.list.disposal',$data);
+        
+    }
+    
+    
+    public function showIssueReport(Request $request){
+     $data['users']=User::where([['laboratory_id','=',auth()->user()->laboratory_id],['authority','=',1]])
+             ->select('id','email')->get();
+           $data['laboratories']=Laboratory::get();
+                $lab=Laboratory::where('id',auth()->user()->laboratory_id)->select('lab_name')->first();
+   
+   $section=LaboratorySection::where('id',auth()->user()->section_id)->select('section_name')->first();
+   if($section){
+     $data['lab_name']='Logged Into: '.$lab->lab_name.' / '.$section->section_name;  
+   }
+   else
+   {
+$data['lab_name']='Logged Into: '.$lab->lab_name;
+}
+    return view('clerk.reports.list.issue',$data);
+  }
+
+public function showRequisitionReport(){
+    $data['users']=User::where([['laboratory_id','=',auth()->user()->laboratory_id],['authority','=',1]])
+             ->select('id','email')->get();
+           $data['laboratories']=Laboratory::get();
+                $lab=Laboratory::where('id',auth()->user()->laboratory_id)->select('lab_name')->first();
+   
+   $section=LaboratorySection::where('id',auth()->user()->section_id)->select('section_name')->first();
+   if($section){
+     $data['lab_name']='Logged Into: '.$lab->lab_name.' / '.$section->section_name;  
+   }
+   else
+   {
+$data['lab_name']='Logged Into: '.$lab->lab_name;
+}
+    return view('clerk.reports.list.requisition_report',$data);
+}
+
+
+
+public function showSupplierOrderReport(){
+     $data['users']=User::where([['laboratory_id','=',auth()->user()->laboratory_id],['authority','=',1]])
+             ->select('id','email')->get();
+           $data['laboratories']=Laboratory::select('id','lab_name')->get();
+           $data['suppliers']=Supplier::select('id','supplier_name')->get();
+                $lab=Laboratory::where('id',auth()->user()->laboratory_id)->select('lab_name')->first();
+   
+   $section=LaboratorySection::where('id',auth()->user()->section_id)->select('section_name')->first();
+   if($section){
+     $data['lab_name']='Logged Into: '.$lab->lab_name.' / '.$section->section_name;  
+   }
+   else
+   {
+$data['lab_name']='Logged Into: '.$lab->lab_name;
+}
+    return view('clerk.reports.list.supplier_order_report',$data);  
+}
 
 public  function loadConsumptionTable(Request $request){
    
@@ -718,5 +883,17 @@ $from =DB::table('items as t')
             break;
     }
 }
+public function showStockVarianceReport(Request $request){
+   $lab=Laboratory::where('id',auth()->user()->laboratory_id)->select('lab_name')->first();
+   
+   $section=LaboratorySection::where('id',auth()->user()->section_id)->select('section_name')->first();
+   if($section){
+     $data['lab_name']='Logged Into: '.$lab->lab_name.' / '.$section->section_name;  
+   }
+   else
+   {
+$data['lab_name']='Logged Into: '.$lab->lab_name;
 }
-
+    return view('clerk.reports.list.variance',$data);    
+}
+}

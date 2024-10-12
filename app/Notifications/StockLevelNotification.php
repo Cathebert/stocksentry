@@ -14,10 +14,12 @@ class StockLevelNotification extends Notification
     /**
      * Create a new notification instance.
      */
+     protected $lab_name;
     protected $path;
     protected $start;
-    public function __construct($path,$start)
+    public function __construct($lab_name,$path,$start)
     {
+    	$this->lab_name=$lab_name;
         $this->path=$path;
         $this->start=$start;
     }
@@ -38,7 +40,7 @@ class StockLevelNotification extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-                   ->line('This is a scheduled report for stock level as of .'.$this->start)
+                   ->line('This is a scheduled report for stock level from '.$this->lab_name. ' as of .'.$this->start)
                     ->attach($this->path)
                     ->line('Thank you for using our application!');
     }

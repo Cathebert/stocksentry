@@ -1,4 +1,3 @@
-   
 <div class="modal-header">
         <h5 class="modal-title">Disposal Details</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="Close_Button"></button>
@@ -44,7 +43,7 @@
                         <div class="col-sm-6">
                             <div class="text-muted" >
                                  <div>
-                                <h5 class="font-size-12 mb-1">Disposal Lab/Section:<strong>{{$disposal_lab}}</strong></h5>
+                                <h5 class="font-size-12 mb-1">Disposing Lab:<strong>{{$disposal_lab}}</strong></h5>
                                 </div>
                                 <div>
                                     <h5 class="font-size-12 mb-1">Disposal Date:<strong> {{ $date }}</strong></h5>
@@ -159,9 +158,9 @@
                             </div>
                             <br>
                             <div class="float-start">
-                              
+                          
                              @if ($signature!='')
-                              <span><strong>Signature:</strong><img src="{{ url('/').'/public/upload/signatures/'.$signature }}" width="70px" height="50px"/></span> 
+                              <span><strong>Signature:</strong><img src="{{ url('/').'/public/upload/signatures/'.$signature }}" width="50px" height="50px"/></span> 
                              @endif
                               
                             </div>
@@ -181,7 +180,7 @@
                               
                              @if ($approver_sign!='')
                                 
-                              <span><strong>Signature:</strong><img src="{{ url('/').'/public/upload/signatures/'.$signature }}" width="70px" height="50px"/></span> 
+                              <span><strong>Signature:</strong><img src="{{ url('/').'/public/upload/signatures/'.$approver_sign}}" width="50px" height="50px"/></span> 
                              @endif
                               
                             </div>

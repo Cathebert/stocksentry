@@ -136,8 +136,3 @@ t = $("#expiry_table").DataTable({
     ],
 });
 }
-$("#download").on('click',function(e){
-    e.preventDefault();
-    var expiry_form = $("#expiry_form").serialize();
-    console.log(expiry_form);
-});

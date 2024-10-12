@@ -1,4 +1,4 @@
- @extends('layouts.main')
+@extends('layouts.main')
 @section('title','Create User')
 @section('content')
 
@@ -25,7 +25,7 @@
           @csrf
           <input type="hidden" class="form-control" id="post_url" value="{{route('user.create')}}">
      <input type="hidden" id="get_sections" value="{{route('lab.sections')}}"/>
- <input type="hidden" id="check" name="check" value="0"/>
+  <input type="hidden" id="check" name="check" value="0"/>
         
 <script type="text/javascript">
 
@@ -47,7 +47,7 @@
   </select>
   </div>
   
-  <input type="hidden" name="extension"  id="ext" value=".st"/>
+  <input type="hidden" name="extension"  id="ext" value="st"/>
 <div class="col-md-4 col-sm-12 col-xs-12 form-group">
     <label for="exampleInputPassword1">First Name</label>
     <input type="text" class="form-control" id="first_name" name="first_name">
@@ -60,7 +60,7 @@
     <div class="col-md-4 col-sm-12 col-xs-12 form-group">
     <label for="exampleInputPassword1">User Name</label>
     <div class="input-group mb-3">
-  <input type="text" class="form-control"  name="username" id="username" aria-label="username" aria-describedby="basic-addon2">
+  <input type="text" class="form-control"  name="username" id="username" aria-label="username" aria-describedby="basic-addon2" readonly>
   <div class="input-group-append" >
     <span class="input-group-text btn btn-secondary"  id="extension" >.st</span>
   </div>
@@ -120,18 +120,34 @@
  
   
    
- 
+
+  
   <div class="col-md-4 col-sm-12 col-xs-12 form-group">
     <label for="exampleInputPassword1">Position</label>
     <input type="text" class="form-control" id="user_position" name="user_position">
   </div>
+    @if(auth()->user()->authority==2)
+   <div class="col-md-4 col-sm-12 col-xs-12 form-group">
+
+    <label for="exampleInputPassword1">User Role</label>
+    <select class="form-control" id="user_role" name="user_type" style="width: 75%" >
+
+   
+  
+   <option value="2"> Manager</option>
+  <option value="3">User</option>
     
+   
+  </select>
+  </div>
+  @endif
+
 
 
 
 
 </div>
-<button type="submit" class="btn btn-primary" id="submit" style="float:right">Submit</button>
+<button type="submit" name="save_btn" class="btn btn-primary waves-effect waves-light" id="submit" style="float:right"><i class="fa fa-save" id="btn_loader"></i> Save </button>
   <button type="reset" class="btn btn-secondary" id="reset" style="float:left">Reset</button>
 </form>
       </div>

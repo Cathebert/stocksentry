@@ -1,4 +1,4 @@
- @extends('layouts.main')
+@extends('layouts.main')
 @section('title','Stock Inventory')
 @section('content')
 
@@ -15,14 +15,12 @@
                     <div class="d-sm-flex align-items-center justify-content-between mb-4">
                         <h1 class="h3 mb-0 text-gray-800">About To Expire Report</h1>
                          <div class="dropdow" style="text-align:right" >
-  <button  role="button" data-toggle="modal" data-target="#exampleModal">
-  <i class="fa fa-clock"> Schedule</i>
-</button>
+ 
 
 </div>
 
                     </div>
-<div class="dropdown" style="text-align:right" >
+<div class="dropdown" style="text-align:right">
   <button class="dropdown-toggle btn btn-outline-primary btn-sm" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
   <i class="fa fa-upload"> Export As</i>
 </button>
@@ -141,10 +139,10 @@
 <thead class="thead-light">
     <tr>
        <th scope="col"></th>
-     <th scope="col">Item</th>
-       <th scope="col">Brand</th>
-        <th scope="col">Batch Number</th>
-        <th scope="col">Generic Name</th>
+     <th scope="col">Item Name</th>
+    
+        <th scope="col">Batch #</th>
+     
           <th scope="col">Location</th>
         <th scope="col">Expiration </th>
         <th scope="col">Quantity</th>

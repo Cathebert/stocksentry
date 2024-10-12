@@ -1,4 +1,3 @@
-   
 <div class="modal-header">
         <h5 class="modal-title">Requisitions</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="Close_Button"></button>
@@ -119,6 +118,7 @@
                                         <th style="width: 70px;">No.</th>
                                         <th>Item</th>
                                          <th>Batch Number</th>
+                                        
                                           <th>UOM</th>
                                         
                                         <th>Price</th>
@@ -143,6 +143,7 @@
                                             </div>
                                         </td>
                                          <td>{{$data->batch_number}}</td>
+        
                                           <td>{{$data->unit_issue}}</td>
                                         
                                         <td>{{$data->cost}}</td>
@@ -164,6 +165,7 @@
                                         <th scope="row" colspan="4" class="text-end">Total</th>
                                          <td class="text-end"></td>
                                          <td class="text-end"></td>
+                                          <td class="text-end"></td>
                                         <td class="text-end"><strong>{{number_format($Total,2)  }}</strong></td>
                                     </tr>
                                     <!-- end tr -->

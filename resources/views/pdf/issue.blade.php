@@ -133,9 +133,9 @@
                     <div><img src="{{ url('/').'/public/upload/signatures/'.$approver_sign }}" width="50px" height="50px"/></div>
                     @endif
                 </td>
-@endif
-                 
-                   @if($receiver!='')
+                @endif
+                
+                 @if($receiver!=NULL)
                       
                        <td class="w-half" >
                     <div><h4>Received  By:{{$receiver}}</h4></div>

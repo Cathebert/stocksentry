@@ -16,11 +16,12 @@ class PendingRequsitionNotification extends Notification
      */
     protected $user;
     protected $number;
-    public function __construct($user, $number)
+    public function __construct ($number,$user)
     {
         //
+         $this->number=$number;
         $this->user=$user;
-        $this->number=$number;
+       
     }
 
     /**

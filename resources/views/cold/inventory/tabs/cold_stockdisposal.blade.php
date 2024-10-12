@@ -1,4 +1,4 @@
- @extends('cold.layout.main')
+@extends('cold.layout.main')
 @section('title','Inventory')
 @push('style')
    
@@ -40,17 +40,17 @@
           @csrf
           <input type="hidden" class="form-control" id="disposal_url" value="{{route('inventory.disposal_show')}}">
            <input type="hidden" class="form-control" id="disposal_selected" value="{{route('inventory.selected_dispose')}}"/>
-           <input type="hidden" class="form-control" id="run_disposal" value="{{route('inventory.run-disposal')}}"/>
-            <input type="hidden" id="check_quantity" value="{{route('inventory.check_quantity')}}"/>
-            <input type="hidden" id="modal_dispose_url" value="{{route('disposal.list')}}"/>
+  <input type="hidden" class="form-control" id="run_disposal" value="{{route('inventory.run-disposal')}}"/>
+<input type="hidden" id="check_quantity" value="{{route('inventory.check_quantity')}}"/>
+   <input type="hidden" id="modal_dispose_url" value="{{route('disposal.list')}}"/>
             <input type="hidden" id="items_disposal_list" value="{{route('disposal.load')}}"/>
             <input type="hidden" id="approve_disposal"  value="{{route('disposal.approve')}}"/>
- 
+             <input type="hidden" id="deny_disposal"  value="{{route('disposal.cancel')}}"/>
             
             <div class="row">
 
   
-     <div class="col-md-6 col-sm-12 col-xs-12 form-group" >
+   <div class="col-md-6 col-sm-12 col-xs-12 form-group" >
   <div class="input-group">
   <span class="input-group-text btn btn-secondary">Date:</span> 
   <input type="date" aria-label="First name" class="form-control" id="start_date" name="start_date" value="{{date('Y-m-d')}}" disabled>
@@ -77,8 +77,8 @@
 
 </div>
     <div class="modal-footer">
-        <button type="button" class="btn btn-secondary"  id="add_new"><i class="fa fa-plus" aria-hidden="true"></i> Select Items to Dispose</button>
-        <button type="button" class="btn btn-danger" onclick="showDisposedListModal()"><i class="fa fa-trash" aria-hidden="true" ></i> Disposed Items</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal" id="add_new"><i class="fa fa-plus" aria-hidden="true"></i> Select Items to Dispose</button>
+           <button type="button" class="btn btn-danger"  onclick="showDisposedListModal()"><i class="fa fa-trash" aria-hidden="true"></i> Disposed Items</button>
       </div>
 </div>
  
@@ -91,18 +91,18 @@
     </div>
         <!---- table start ---->
                <div class="table-responsive">
-        <table class="table table-sm" id="update_disposals" width="100%">
+        <table class="table table-bordered table-striped table-sm table-hover" id="update_disposals" width="100%">
 <thead class="thead-light">
     <tr>
        <th scope="col">#</th>
-     <th scope="col">Code</th>
-       <th scope="col">Brand</th>
-         <th scope="col">Batch Number</th>
-        <th scope="col">Generic Name</th>
+     <th scope="col">Item Name</th>
+       <th scope="col">Code</th>
+         <th scope="col">Batch #</th>
+        <th scope="col">Catalog #</th>
         <th scope="col">UOM </th>
         <th scope="col">Quantity Available</th>
-         <th scope="col">Quantity To Dispose</th>
           <th scope="col">Reason</th>
+           <th scope="col">Quantity To Dispose</th>
   
       
       

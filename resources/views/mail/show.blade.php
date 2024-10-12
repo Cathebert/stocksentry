@@ -1,11 +1,11 @@
- @extends('layouts.main')
+@extends('layouts.main')
 @section('title','System Mail List')
 @section('content')
 <div class="container-fluid">
 <nav aria-label="breadcrumb">
   <ol class="breadcrumb">
     <li class="breadcrumb-item"><a href="{{route('admin.home')}}">Home</a></li>
-    <li class="breadcrumb-item"><a href="#">System</a></li>
+    <li class="breadcrumb-item"><a href="{{route('reports.show')}}">System</a></li>
     <li class="breadcrumb-item active" aria-current="page">Mails</li>
   </ol>
 </nav>

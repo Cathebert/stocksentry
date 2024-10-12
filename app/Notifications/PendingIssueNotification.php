@@ -17,12 +17,14 @@ class PendingIssueNotification extends Notification
     protected $issuer;
     protected $lab_name;
     protected $stock_tranfer_no;
-    public function __construct($issuer,$lab_name,$stock_transfer_no)
+    protected $from_lab;
+    public function __construct($issuer,$lab_name,$stock_transfer_no,$from_lab)
     {
         //
         $this->issuerer=$issuer;
         $this->lab_name=$lab_name;
         $this->stock_transfer_no=$stock_transfer_no;
+        $this->from_lab =$from_lab;
     }
 
     /**
@@ -41,7 +43,7 @@ class PendingIssueNotification extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-                    ->line($this->issuerer. ' made a request that is waiting your approval to.')
+                    ->line($this->issuerer. ' made a request from '.$this->from_lab.' that is waiting your approval to.')
                     ->line('issue to '.$this->lab_name.' with stock transfer number'.$this->stock_transfer_no)
                     ->action('Please login to approve!',url('/'))
                     ->line('Thank You');

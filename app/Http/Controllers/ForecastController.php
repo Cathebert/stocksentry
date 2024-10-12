@@ -21,11 +21,14 @@ use PhpOffice\PhpSpreadsheet\Worksheet\AutoFilter;
 use PhpOffice\PhpSpreadsheet\Worksheet\Table;
 use PhpOffice\PhpSpreadsheet\Worksheet\Table\TableStyle;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Collection;
 class ForecastController extends Controller
 {
     //load items selection for forecasting
 
     public function showForecasted(){
+   
         return view('inventory.modal.forecast');
     }
     public function loadForecastItem(Request $request){
@@ -43,7 +46,121 @@ class ForecastController extends Controller
            
            
         ); 
-   $totalData =  DB::table('inventories as t') 
+         /*$store1Id=auth()->user()->laboratory_id;
+$store2Id=0;
+  
+        
+          
+            if(auth()->user()->laboratory_id!=0){
+ $query =DB::table('inventories as t') 
+              ->join('items AS s', 's.id', '=', 't.item_id')
+          ->select('t.id as id','s.id as item_id','s.code','s.item_name','s.unit_issue','t.cost','t.quantity',
+           DB::raw('SUM(CASE WHEN t.lab_id = ? THEN t.quantity ELSE 0 END) AS lab_total'),
+        DB::raw('SUM(CASE WHEN t.lab_id = ? THEN t.quantity ELSE 0 END) AS store_total')
+    )
+       ->setBindings([$store1Id, $store2Id])->groupBy('s.item_name');
+$totalData = $query->get(); // Execute the query and get the result set
+
+$count = $totalData->count();
+            $totalRec =$count;
+          
+          // $totalData = DB::table('appointments')->count();
+            $limit = $request->input('length');
+          $start = $request->input('start');
+          $order = $columns[$request->input('order.0.column')];
+          $dir = $request->input('order.0.dir');
+
+           $search = $request->input('search.value');
+          
+            $terms =DB::table('inventories as t') 
+              ->join('items AS s', 's.id', '=', 't.item_id')
+          ->select('t.id as id','s.id as item_id','s.code','s.item_name','s.unit_issue','t.cost','t.quantity',
+           DB::raw('SUM(CASE WHEN t.lab_id = ? THEN t.quantity ELSE 0 END) AS lab_total'),
+        DB::raw('SUM(CASE WHEN t.lab_id = ? THEN t.quantity ELSE 0 END) AS store_total')
+    )
+    ->setBindings([$store1Id, $store2Id])
+            //->offset($start)
+           ->groupBy('s.item_name')
+           // ->limit($limit)
+            //->orderBy('s.id','asc')
+            ->get(); 
+
+        }
+        else{
+         $query =DB::table('inventories as t') 
+              ->join('items AS s', 's.id', '=', 't.item_id')
+          ->select('t.id as id','s.id as item_id','s.code','s.item_name','s.unit_issue','t.cost','t.quantity',
+         
+        DB::raw('SUM(CASE WHEN t.lab_id = ? THEN t.quantity ELSE 0 END) AS store_total')
+    )
+       ->setBindings([ $store2Id])->groupBy('s.item_name');
+$totalData = $query->get(); // Execute the query and get the result set
+
+$count = $totalData->count();
+            $totalRec =$count;
+          
+          // $totalData = DB::table('appointments')->count();
+            $limit = $request->input('length');
+          $start = $request->input('start');
+          $order = $columns[$request->input('order.0.column')];
+          $dir = $request->input('order.0.dir');
+
+           $search = $request->input('search.value');
+$terms =DB::table('inventories as t') 
+        ->join('items AS s', 's.id', '=', 't.item_id')
+        ->select('t.id as id','s.id as item_id','s.code','s.item_name','s.unit_issue','t.cost','t.quantity',
+        DB::raw('SUM(t.quantity) AS lab_total'),
+        DB::raw('SUM(CASE WHEN t.lab_id = ? THEN t.quantity ELSE 0 END) AS store_total')
+    )
+    ->setBindings([$store2Id])
+            //->offset($start)
+           ->groupBy('s.item_name')
+           // ->limit($limit)
+            //->orderBy('s.id','asc')
+            ->get();
+        }
+
+          $totalFiltered =  $totalRec ;
+//  0 => 'id',
+$page = request()->get('page', 1);
+       $perPage = 10; // Number of items per page
+
+$results = $terms; // Get all results
+$total = $results->count(); // Total number of items
+
+// Create a new collection instance to hold the paginated items
+$items = new Collection($results->forPage($page, $perPage)->values());
+
+// Create the paginator instance
+$paginator = new Paginator($items, $perPage, $page, ['total' => $total]);
+
+
+          $data = array();
+          if (!empty($terms)) {
+$x=1;
+   
+  
+           
+            foreach ($terms as $term) {
+
+
+
+             $nestedData['id']=$term->id;
+                $nestedData['check']="<input type='checkbox' id='$term->id' class='checkboxall' name='selected_check' value='$term->id'  onclick='selectItem(this.value)'/>";
+             
+                 $nestedData['code']= $term->code;
+                     
+                    $nestedData['item']= $term->item_name;
+                     $nestedData['unit']= $term->unit_issue;
+             
+                     $nestedData['cost']= $term->cost;
+               
+                 $nestedData['available']  =$term->lab_total; 
+                 $nestedData['in_store']  =$term->store_total;               
+                   $x++;
+                $data[] = $nestedData;*/
+                
+                 $totalData =  DB::table('inventories as t') 
               ->join('items AS s', 's.id', '=', 't.item_id')     
              ->where([['t.lab_id','=',auth()->user()->laboratory_id]])->count();
 
@@ -117,12 +234,13 @@ $x=1;
                    $x++;
                 $data[] = $nestedData;
            }
+           
       }
       
 
       $json_data = array(
         "draw" => intval($request->input('draw')),
-        "recordsTotal" => intval($totalData),
+        "recordsTotal" => intval($totalRec),
         "recordsFiltered" => intval($totalFiltered),
         "data" => $data,
     );
@@ -160,7 +278,7 @@ $x=1;
               ->select('t.id as id','s.id as item_id','s.code','s.item_name','t.grn_number','s.unit_issue','t.cost','t.quantity',
                DB::raw('SUM(t.quantity) as quantity_requested'))
              ->where([['t.item_id','=',$inv->item_id]])
-                ->where([['t.lab_id','=',auth()->user()->laboratory_id]])
+               // ->where([['t.lab_id','=',auth()->user()->laboratory_id]])
              ->groupBy('s.item_name')
            // ->limit($limit)
             //->orderBy('s.id','asc')
@@ -366,7 +484,7 @@ public function loadNewOrders(Request $request){
           $dir = $request->input('order.0.dir');
 
            $search = $request->input('search.value');
-            $terms =ItemOrder::select('id','order_number','is_delivered','is_marked','is_consolidated','lab_id','section_id','delivery_date')
+            $terms =ItemOrder::select('id','order_number','is_delivered','is_marked','is_consolidated','received_by','approved_by','ordered_by','lab_id','section_id','delivery_date')
                    
                    
 
@@ -408,10 +526,10 @@ $x=1;
                     $nestedData['ordered_by']= $order_first_name.' '.$order_last;
                      $nestedData['approved_by']= $approver_first.' '.$approver_last;
                      if($term->is_delivered!="yes"){
-              $nestedData['action']=" <a class='btn btn-info btn-sm' id='$term->id' onclick='viewOrder(this.id)'><i class='fa fa-eye'></i>View</a> | <a class='btn btn-success btn-sm' id='$term->id' onclick='MarkAsReceived(this.id)'><i class='fa fa-check'></i>Mark As Received</a>";
+              $nestedData['action']=" <a class='btn btn-info btn-sm' id='$term->id' onclick='viewOrder(this.id)'><i class='fa fa-eye'></i>View / Set Purchase #</a> ";
       }
       else{
-       $nestedData['action']=" <a class='btn btn-info btn-sm' id='$term->id' onclick='viewOrder(this.id)'><i class='fa fa-eye'></i>View</a> | <span class='badge badge-success'>Order Received</span>"; 
+       $nestedData['action']=" <a class='btn btn-info btn-sm' id='$term->id' onclick='viewOrder(this.id)'><i class='fa fa-eye'></i>View / Set Purchase #</a> | <span class='badge badge-success'>Order Received</span>"; 
       }
 
             switch($term->is_marked){
@@ -470,6 +588,10 @@ public function showOrderDetails(Request $request){
     $data['id']=$request->id;
     return view('inventory.modal.order_details_modal',$data);
 }
+public function viewOrderDetailsApproval(Request $request){
+    $data['id']=$request->id;
+    return view('inventory.modal.order_details_modal_approval',$data);
+}
 public function loadOrderDetails(Request $request){
 
 
@@ -480,6 +602,7 @@ public function loadOrderDetails(Request $request){
             2=> 'unit',
             3=>'ordered',
            4=>'id',
+           5=>'purchase_number'
            
            
            
@@ -498,9 +621,9 @@ public function loadOrderDetails(Request $request){
 
            $search = $request->input('search.value');
             $terms =DB::table('item_order_details as iod')
-                    ->join('items as i','i.id','=','iod.item_id')
+                    ->leftjoin('items as i','i.id','=','iod.item_id')
                     
-                    ->select('iod.id as id','iod.order_number','iod.supplier_id','iod.ordered_quantity','i.item_name','i.unit_issue')
+                    ->select('iod.id as id','iod.order_number','iod.order_id','iod.purchase_number','iod.mark_received','iod.supplier_id',DB::raw('SUM(iod.ordered_quantity) as ordered_quantity'),'i.item_name','i.unit_issue')
                 ->where('iod.order_id',$request->id)
              
 
@@ -509,9 +632,9 @@ public function loadOrderDetails(Request $request){
                           
             })
             ->offset($start)
-           //->groupBy('s.item_name')
+           ->groupBy('iod.inventory_id')
             ->limit($limit)
-            ->orderBy('i.item_name','desc')
+            ->orderBy('iod.id','desc')
             ->get(); 
 
           $totalFiltered =  $totalRec ;
@@ -535,10 +658,123 @@ $x=1;
                  //$nestedData['delivery']= date('M. d,Y', strtotime($term->delivery_date??''));
                      
                     $nestedData['supplier']= $supplier->supplier_name;
+                    if($term->purchase_number==NULL){
+                        $nestedData['purchase_number']=  "<div class='input-group mb-3' id='pn_ $term->id'>
+  <input type='text' class='form-control' id='p_$term->id' placeholder='Enter purchase number' aria-label='Recipient's username' aria-describedby='button-addon2'><div class='input-group-append'>
+    <button class='btn btn-secondary' type='button' id='$term->id' name='s' onclick='savePurchaseNumber(this.id,$term->order_id)'><i class='fa fa-save' id='r_$term->id'></i></button></div>";
+    }
+else{
+    $nestedData['purchase_number'] =$term->purchase_number;
+}
                      $nestedData['unit']= $term->unit_issue;
               $nestedData['ordered']='<strong>'.$term->ordered_quantity.'</strong>';
-              
+              if($term->mark_received == 'pending'){
+              $nestedData['mark_received']="<a class='btn btn-success btn-sm' id='$term->id' onclick='MarkAsReceived(this.id)'><i class='fa fa-check'></i>Mark As Received</a>";
+                    } 
+                if($term->mark_received == 'no'){
+                 $nestedData['mark_received']="<span class='badge badge-danger'>Item Not Received</span> | <a class='btn btn-success btn-sm' id='$term->id' onclick='MarkAsReceived(this.id)'><i class='fa fa-check'></i>Mark As Received</a>";
+                }
+                
+                 if($term->mark_received == 'yes'){
+                 $nestedData['mark_received']="<span class='badge badge-success'>Item Received</span>";
+                }
+               
+                            
+                   $x++;
+                $data[] = $nestedData;
+           }
+      }
+      
+
+      $json_data = array(
+        "draw" => intval($request->input('draw')),
+        "recordsTotal" => intval($totalData),
+        "recordsFiltered" => intval($totalFiltered),
+        "data" => $data,
+    );
+
+      echo json_encode($json_data);
+
+}
+public function showOrderDetailReceived(Request $request){
+    $data['id']=$request->id;
+    return view('inventory.modal.order_details_received_modal',$data);
+}
+public function loadOrdersDetailsReceived(Request $request){
+
+
+
+        $columns = array(
+        
+            0=>'item',
+            1=>'supplier',
+            2=> 'unit',
+            3=>'ordered',
+           4=>'id',
+           5=>'purchase_number'
+         
+           
+           
+        ); 
+   $totalData =DB::table('item_order_details as iod')
+                    ->join('items as i','i.id','=','iod.item_id')
+                    ->where('iod.order_id',$request->id)->count();
+
+            $totalRec = $totalData;
+          // $totalData = DB::table('appointments')->count();
+
+          $limit = $request->input('length');
+          $start = $request->input('start');
+          $order = $columns[$request->input('order.0.column')];
+          $dir = $request->input('order.0.dir');
+
+           $search = $request->input('search.value');
+            $terms =DB::table('item_order_details as iod')
+                    ->leftjoin('items as i','i.id','=','iod.item_id')
+                    
+                    ->select('iod.id as id','iod.order_number','iod.order_id','iod.purchase_number','iod.mark_received','iod.supplier_id',DB::raw('SUM(iod.ordered_quantity) as ordered_quantity'),'i.item_name','i.unit_issue')
+                ->where('iod.order_id',$request->id)
+             
+
+                ->where(function ($query) use ($search){
+                  return  $query->where('iod.order_number', 'LIKE', "%{$search}%");
+                          
+            })
+            ->offset($start)
+           ->groupBy('iod.inventory_id')
+            ->limit($limit)
+            ->orderBy('iod.id','desc')
+            ->get(); 
+
+          $totalFiltered =  $totalRec ;
+//  0 => 'id',
+         
+          $data = array();
+          if (!empty($terms)) {
+$x=1;
+   
+ 
+           
+           
+            foreach ($terms as $term) {
+
+
+ $nestedData['id']=$x;
+             $nestedData['item']=$term->item_name;
+
+             $supplier=Supplier::where('id',$term->supplier_id)->select('supplier_name')->first();
+             
+                 //$nestedData['delivery']= date('M. d,Y', strtotime($term->delivery_date??''));
                      
+                    $nestedData['supplier']= $supplier->supplier_name;
+      
+    $nestedData['purchase_number'] =$term->purchase_number;
+
+                     $nestedData['unit']= $term->unit_issue;
+              $nestedData['ordered']='<strong>'.$term->ordered_quantity.'</strong>';
+          
+                 $nestedData['mark_received']="<span class='badge badge-success'>Item Received</span>";
+              
                
                             
                    $x++;
@@ -775,14 +1011,25 @@ $x=1;
     }
 function markAsReceived(Request $request){
 
-    ItemOrder::where('id',$request->id)->update([
-        'is_delivered'=>'yes',
+    ItemOrderDetail::where('id',$request->id)->update([
+        'mark_received'=>'yes',
         'received_by'=>auth()->user()->id,
         'updated_at'=>now(),
     ]);
+$order= ItemOrderDetail::where('id',$request->id)->select('order_id')->first();
+$total= ItemOrderDetail::where('order_id',$order->order_id)->count();
+$received=ItemOrderDetail::where([['order_id',$order->order_id],['mark_received','=','yes']])->count();
+if($total==$received){
+ItemOrder::where('id',$order->order_id)->update([
+     'is_delivered'=>'yes',
+        'received_by'=>auth()->user()->id,
+        'updated_at'=>now(),
+]);
 
+}
     return response()->json([
-        'message'=>"Order marked as Received",
+        'message'=>"Item  marked as Received",
+        'id'=>$order->order_id
     ]);
 }
 public function markForConsolidation(Request $request){
@@ -862,8 +1109,8 @@ $columns = array(
                     'r.ordered_by',
                     'r.approved_by',
                      DB::raw('SUM(rd.ordered_quantity) as quantity_requested'))
-                   ->where([['r.is_approved','=','no'],['r.is_marked','=','yes']])
-                   ->groupBy('t.item_name','r.id')
+                   ->where([['r.is_approved','=','yes'],['r.is_marked','=','yes']])
+                  ->groupBy('rd.order_id')
                    ->count();
            // ->where('t.expiry_date', '>', date('Y-m-d') )
          
@@ -904,9 +1151,9 @@ $columns = array(
                     'r.lab_id',
                     'r.ordered_by',
                     'r.approved_by',
-                     DB::raw('GROUP_CONCAT(i.id) as requisitions_ids'),
+                   
                      DB::raw('SUM(rd.ordered_quantity) as quantity_requested'))
-                   ->where([['r.is_approved','=','no'],['r.is_marked','=','yes']])
+                   ->where([['r.is_approved','=','yes'],['r.is_marked','=','yes']])
           //->where('t.expiry_date', '>', date('Y-m-d') )
                 ->where(function ($query) use ($search){
                   return  $query->where('t.item_name', 'LIKE', "%{$search}%");
@@ -916,7 +1163,7 @@ $columns = array(
             })
             ->offset($start)
             ->limit($limit)
-            ->groupBy('t.item_name','r.lab_id')
+            ->groupBy('t.item_name')
             ->get();
 
           $totalFiltered =  $totalRec ;
@@ -929,7 +1176,7 @@ $x=1;
 
             foreach ($terms as $term) {
 $total=$term->quantity_requested*$term->cost;
- $nestedData['item_id']=$term->requisitions_ids;
+
                 $nestedData['id']=$x;
                 
                 $nestedData['item_name']=$term->item_name;
@@ -990,7 +1237,7 @@ $record= DB::table('inventories as inv')
                     'r.ordered_quantity'
                     )->where('inv.id',$ids[$i])
                     ->where('rd.is_marked','yes')
-                    ->where('rd.is_approved','no')->get();
+                    ->where('rd.is_approved','yes')->get();
                     
              
              foreach($record as $r)  { 
@@ -1044,9 +1291,9 @@ $data[]= $nested;
                     'r.approved_by',
                      //DB::raw('GROUP_CONCAT(r.id) as ids'),
                       DB::raw('SUM(rd.ordered_quantity) as quantity_requested'))
-                   ->where([['r.is_approved','=','no'],['r.is_marked','=','yes']])
+                   ->where([['r.is_approved','=','yes'],['r.is_marked','=','yes']])
                    ->where('t.item_category','ambient goods')
-            ->groupBy('t.item_name','r.lab_id')
+             ->groupBy('t.item_name')
                    ->get();
 
 
@@ -1077,13 +1324,13 @@ $data[]= $nested;
                     'r.approved_by',
                      //DB::raw('GROUP_CONCAT(r.id) as ids'),
                    DB::raw('SUM(rd.ordered_quantity) as quantity_requested'))
-                   ->where([['r.is_approved','=','no'],['r.is_marked','=','yes']])
+                   ->where([['r.is_approved','=','yes'],['r.is_marked','=','yes']])
                    ->where('t.item_category','perishable')
-                   ->groupBy('t.item_name','r.lab_id')
+                  ->groupBy('t.item_name')
                    ->get();
 
 
-$orders=ItemOrder::where([['is_approved','=','no'],['is_marked','=','yes']])->count();
+$orders=ItemOrder::where([['is_approved','=','yes'],['is_marked','=','yes']])->count();
      // dd($test);
                    if(count($report)==0 && count($perishable)==0){
                  return  back()->with('error',' Data was not found! ');
@@ -1293,6 +1540,8 @@ try{
     DB::beginTransaction();
     ItemOrder::where('is_marked','yes')->update([
  'is_marked'=>'done',
+ 'is_consolidated'=>'yes'
+ 
 ]);
 $this->saveOrdersHistory($orders,$db_name); 
 DB::commit();
@@ -1308,7 +1557,7 @@ return response()->download($path,$name, $headers);
 
    public function receivedOrders(Request $request){
        
- $columns= array(
+ $columns=$arrayName = array(
     0 => 'id', 
     1=>'order',
     2=>'lab',
@@ -1360,16 +1609,35 @@ $x=1;
             foreach ($terms as $term) {
 
  $lab=Laboratory::select('id','lab_name')->where('id',$term->lab_id)->first();
-
+$user=User::where('id',$term->ordered_by)->select('name','last_name')->first();
+if($term->approved_by!=NULL){
+$approver=User::find($term->approved_by);
+$ap_name=$approver->name;
+$ap_last=$approver->last_name;
+$approver_name=$ap_name.' '.$ap_last;
+}
+else{
+$approver_name="Not Approved";
+}
+if($term->received_by!=NULL){
+$receiver=User::find($term->received_by);
+$r_name=$receiver->name;
+$last_name=$receiver->last_name;
+$receiver_name=$r_name.' '.$last_name;
+}
+else{
+$receiver_name="Not Received";
+}
+  
              $nestedData['id']=$x;
                 $nestedData['order']=$term->order_number;
              
                  $nestedData['lab']= $lab->lab_name;
                     $nestedData['delivery']= date('d,M Y',strtotime($term->created_at));
                    
-                 $nestedData['ordered_by'] = $term->ordered_by;
-                 $nestedData['approved_by']  =$term->approved_by;
-                  $nestedData['received_by']  =$term->approved_by;
+                 $nestedData['ordered_by'] = $user->name.' '.$user->last_name;
+                 $nestedData['approved_by']  =$approver_name;
+                  $nestedData['received_by']  =$receiver_name;
                 $nestedData['action']= " <a class='btn btn-info btn-sm' id='$term->id' onclick='viewOrder(this.id)'><i class='fa fa-eye'></i> View</a>  ";
               
                
@@ -1517,6 +1785,7 @@ return response()->download($path,$name, $headers);
 
 }
     
+
 public function loadOrders(){
     return view('inventory.modal.orders_approval');
 }
@@ -1549,14 +1818,14 @@ public function loadPendingOrders(Request $request){
 
            $search = $request->input('search.value');
 
-            $terms = DB::table('item_orders') 
-         
+            $terms = DB::table('item_orders as i') 
+           		->join('users as u','u.id','=','i.ordered_by')
+           		->select('i.id as id','i.order_number', 'i.created_at','i.is_delivered','i.is_approved','u.name','u.last_name')
           //->where('t.expiry_date', '>', date('Y-m-d') )
                 ->where(function ($query) use ($search){
                   return  $query->where('ordered_by', 'LIKE', "%{$search}%");
                  
-                      
-                     
+                  
             })
             ->offset($start)
             ->limit($limit)
@@ -1580,14 +1849,17 @@ $x=1;
                 $nestedData['id']=$x;
                 $nestedData['order_no']=$term->order_number;
                 $nestedData['order_date']= date('d,M Y',strtotime($term->created_at));
-             $nestedData['order_by']= $term->ordered_by;
-              $nestedData['status']= $term->is_delivered;
+             $nestedData['order_by']= $term->name.' '.$term->last_name;
+              $nestedData['status']= $term->is_approved;
               if($term->is_approved=='no'){
-                $nestedData['action']= "<a class='btn btn-info btn-sm' id='$term->id' onclick='viewOrder(this.id)'><i class='fa fa-eye'></i> View</a> | <a class='btn btn-success btn-sm' id='$term->id' onclick='approveOrder(this.id)'><i class='fa fa-check'></i> Approve</a> ";
+                $nestedData['action']= "<a class='btn btn-info btn-sm' id='$term->id' onclick='viewOrder(this.id)'><i class='fa fa-eye'></i> View</a>|<a class='btn btn-danger btn-sm' id='$term->id' onclick='DeclineOrder(this.id)'><i class='fa fa-times'></i> Decline</a> | <a class='btn btn-success btn-sm' id='$term->id' onclick='approveOrder(this.id)'><i class='fa fa-check'></i> Approve</a> ";
     }
-    else{
-       $nestedData['action']= "<a class='btn btn-info btn-sm' id='$term->id' onclick='viewOrder(this.id)'><i class='fa fa-eye'></i> View</a> 
-       | <span class='badge badge-success'><i class='fa fa-check'></i> Approved</span>";  
+    
+    if($term->is_approved=='denied'){
+     $nestedData['action']= "<a class='btn btn-info btn-sm' id='$term->id' onclick='viewOrder(this.id)'><i class='fa fa-eye'></i> View</a> | <span class='badge badge-danger'><i class='fa fa-times'></i> Not Approved</span>";  
+    }
+    if($term->is_approved=='yes'){
+       $nestedData['action']= "<a class='btn btn-info btn-sm' id='$term->id' onclick='viewOrder(this.id)'><i class='fa fa-eye'></i> View</a> | <span class='badge badge-success'><i class='fa fa-check'></i> Approved</span>";  
     }
                
                    $x++;
@@ -1607,9 +1879,22 @@ $x=1;
 
   
 }
+public function declinePendingOrder(Request $request){
+    ItemOrder::where('id',$request->id)->update([
+        'is_approved'=>'denied',
+        'approved_by'=>auth()->user()->id
+    ]
+    );
+
+    return response()->json([
+        'message'=>"Order Not approved ",
+        'error'=>false
+    ]);
+}
 public function approvePendingOrder(Request $request){
     ItemOrder::where('id',$request->id)->update([
-        'is_approved'=>'yes'
+        'is_approved'=>'yes',
+        'approved_by'=>auth()->user()->id
     ]
     );
 
@@ -1617,5 +1902,75 @@ public function approvePendingOrder(Request $request){
         'message'=>"Order approved successfully",
         'error'=>false
     ]);
+}
+    /**
+ * save purchase number of the item
+ * 
+ * */
+public function savePurchaseNumber(Request $request){
+  try{
+ ItemOrderDetail::where('id',$request->id)->update([
+    'purchase_number'=>$request->purchase_number
+  ]);
+  
+  return response()->json([
+'message'=>"Purchase number  saved",
+'error'=>false,
+  ]); 
+}
+  catch(Exception $e){
+     return response()->json([
+'message'=>"Failed to  save",
+'error'=>true,
+  ]);
+  }
+}
+public function markReceivedAll(Request $request){
+$items= ItemOrderDetail::where('order_id',$request->id)->where('purchase_number',NULL)->count();
+
+if($items>0){
+return response()->json([
+'message'=>"Are you sure everything is set?",
+'error'=>'no',
+'id'=>$request->id
+]);
+}
+else{
+ItemOrderDetail::where('order_id',$request->id)->update([
+'mark_received'=>'yes',
+'received_by'=>auth()->user()->id,
+]
+);
+
+ItemOrder::where('id',$request->id)->update([
+  'is_delivered'=>'yes',
+   'received_by'=>auth()->user()->id,
+    'updated_at'=>now(),
+]);
+
+return response()->json([
+'message'=>"All Items are marked as received",
+'error'=>'success'
+]);
+}
+}
+
+public function markReceivedWithoutPurchaseNumber(Request $request){
+ItemOrderDetail::where('order_id',$request->id)->update([
+'mark_received'=>'yes',
+'received_by'=>auth()->user()->id,
+]
+);
+
+ItemOrder::where('id',$request->id)->update([
+  'is_delivered'=>'yes',
+   'received_by'=>auth()->user()->id,
+    'updated_at'=>now(),
+]);
+
+return response()->json([
+'message'=>"All Items are marked as received",
+'error'=>false
+]);
 }
 }

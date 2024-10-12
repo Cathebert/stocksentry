@@ -1,4 +1,4 @@
-       <link href="{{ asset('assets/admin/Image-preview/dist/css/bootstrap-imageupload.css') }}" rel="stylesheet">
+<link href="{{ asset('assets/admin/Image-preview/dist/css/bootstrap-imageupload.css') }}" rel="stylesheet">
     <link href="{{ asset('assets/admin/jcropper/css/cropper.min.css') }}" rel="stylesheet">
       
       <script src="{{ asset('assets/admin/jcropper/js/cropper.min.js') }}"></script>
@@ -59,7 +59,7 @@
     <label for="exampleInputPassword1">Warehouse pack Size</label>
     <input type="text" class="form-control" id="warehouse_size" name="warehouse_size" value="{{$item->warehouse_size}}" required>
   </div>
-    <div class="col-md-4 col-sm-12 col-xs-12 form-group">
+   <div class="col-md-4 col-sm-12 col-xs-12 form-group">
     <label for="exampleInputPassword1">Location</label>
     <input type="text" class="form-control" id="location" name="location" value="{{$item->location}}" >
   </div>
@@ -122,7 +122,7 @@
    @foreach ($laboratories as $laboratory)
        <option value="{{$laboratory->id}}" {{(!empty($item->laboratory_id) && $item->laboratory_id ==$laboratory->id) ? "Selected" : "" }}>{{$laboratory->lab_name}}</option>
    @endforeach
-   <option value="999" {{(!empty($item->laboratory_id) && $item->laboratory_id ==999) ? "Selected" : "" }}>Other</option>
+     <option value="999" {{(!empty($item->laboratory_id) && $item->laboratory_id == 999) ? "Selected" : "" }}>Other</option>
   </select>
 </div>
 

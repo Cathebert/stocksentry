@@ -33,7 +33,7 @@ class BinCardService{
     $bincard->balance=$inventory->quantity;
     $bincard->lab_id = $inventory->lab_id;
     $bincard->section_id = $inventory->section_id;
-    $bincard->created_at = now();
+    $bincard->created_at =$inventory->created_at;
     $bincard->updated_at=NULL;
 $bincard->save();
 DB::commit();

@@ -21,7 +21,7 @@
          <th width="5%">Order #</th>
           <th width="20%">Order Date</th>
           <th width="20%">Ordered By</th>
-        <th width="20%">Status</th>
+        <th width="20%">Approved?</th>
              <th width="20%">Action</th>
            
   </thead>
@@ -41,7 +41,7 @@ var approval_issues = $("#orders_approvals").val();
     destroy:true,
     paging: true,
     info: true,
-    lengthMenu: [5, 10, 15],
+    lengthMenu: [10, 20, 50],
     responsive: true,
     order: [[0, "desc"]],
     oLanguage: {

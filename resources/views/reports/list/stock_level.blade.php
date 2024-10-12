@@ -1,4 +1,4 @@
- @extends('layouts.main')
+@extends('layouts.main')
 @section('title','Stock Level')
 @section('content')
 
@@ -15,7 +15,7 @@
 <div class="d-sm-flex align-items-center justify-content-between mb-4" hidden>
 <h1 class="h3 mb-0 text-gray-800">Stock Level Report</h1>
 <div class="dropdow" style="text-align:right" >
-  <button  role="button" data-toggle="modal" data-target="#exampleModal">
+  <button  role="button" data-toggle="modal" data-target="#exampleModal" hidden>
   <i class="fa fa-clock"> Schedule</i>
 </button>
 </div>
@@ -50,29 +50,31 @@
  <input type="hidden" class="form-control" id="generate_report"value="{{route('report.download')}}"/> 
  <input type="hidden" class="form-control" id="stock_level" value="{{route('report.load_stock_level')}}"/>
  <input type="hidden" class="form-control" id="stock_level_details" value="{{route('report.stock_level_details')}}"/>
+ <input type="hidden" class="form-control" id="lab_selected" value="{{route('cold.stock_level_selected')}}"/>
  
-            
-            <div class="row">
-    
-  
-     <div class="col-md-6 col-sm-12 col-xs-12 form-group" hidden>
+   <div class="row" >
+         
+  <div class="col-md-4 col-sm-12 col-xs-12 form-group">
   <div class="input-group">
-  <span class="input-group-text">Expiry Days Range:</span> 
-   <span class="input-group-text"><i class="fa fa-sort-numeric-asc" aria-hidden="true"></i></span>
-  <select class="custom-select" id="days_range" name="period" onchange="getSelectedRange()">
-   <option value="99" selected>All</option>
-   
-    <option value="2"> >1 to < 30 days</option>
-      <option value="3" > > 30  to < 60 days </option>
-        <option value="2"> > 60  to < 90 days</option>
+  <span class="input-group-text">Lab</span> 
+   <span class="input-group-text"><i class="fa fa-home" aria-hidden="true"></i></span>
+  <select class="custom-select" id="days_range" name="period" onchange="getLab(this.value)">
+   <option value="" selected>All</option>
+
+     @foreach ($laboratories as $lab)
+
+       <option value="{{$lab->id}}">{{$lab->lab_name}}</option>
+  
+   @endforeach
      
 </select>
 </div>
 
   </div>
 
-</form>
 
+</form>
+<hr><br>
 
 
 

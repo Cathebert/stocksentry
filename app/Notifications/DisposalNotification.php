@@ -35,8 +35,9 @@ class DisposalNotification extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-                    ->line('The introduction to the notification.')
-                    ->action('Notification Action', url('/'))
+                    ->line('Item Disposal has been Initiated in the system that requires your approval .')
+                      ->line('Login to check the take necessary action .')
+                    ->action('Login', url('/'))
                     ->line('Thank you for using our application!');
     }
 

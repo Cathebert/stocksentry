@@ -1,4 +1,4 @@
- @extends('provider.layout.main')
+@extends('provider.layout.main')
 @section('title','Lab Inventory')
 @push('style')
    
@@ -46,6 +46,7 @@
          <input type="hidden" class="form-control" id="inventory_save_all" value="{{route('stock.saveall')}}"> 
 <input type="hidden" class="form-control" id="selected_location" value="{{route('stock.getselected_location')}}"/>
 <input type="hidden" id="expected" value="{{$count}}"/>
+<input type="hidden" id="edit_inventory_modal" value="{{ route('inventory.edit_modal') }}"/>
  
             
             <div class="row">
@@ -82,7 +83,7 @@
      <div class="col-md-3 col-sm-12 col-xs-12 form-group" >
   <div class="input-group ">
   <span class="input-group-text btn btn-secondary">Date:</span> 
-  <input type="date" aria-label="First name" class="form-control" id="start_date" name="start_date" value="{{date('Y-m-d')}}">
+  <input type="date" aria-label="First name" class="form-control" id="start_date" name="start_date" value="{{date('Y-m-d')}}" readonly>
    <span class="input-group-text btn btn-secondary"  hidden>-</span>
   <input type="date" aria-label="Last name" class="form-control " id="end_date" name="end_date" hidden>
 </div>
@@ -180,11 +181,14 @@
         <table class="table table-bordered table-striped table-sm table-hover" id="inventories_taking" width="100%">
 <thead class="thead-light">
     <tr>
-        <th scope="col">#</th>
+        <th scope="col"></th>
      <th scope="col">Item Name</th>
        <th scope="col">Code</th>
         <th scope="col">Batch Number</th>
         <th scope="col">UOM </th>
+        <th scope="col">Expiry</th>
+          <th scope="col">Location </th>
+          <th scope="col">Edit Entry </th>
         <th scope="col">Physical Count</th>
        <th scope="col">Action</th>
       
@@ -204,7 +208,17 @@
 
 <!----------Table end --------->
       </div>
-     
+     <!--------moddal-------------------->
+    <div class="modal" tabindex="-1" id="inforg" role="dialog" >
+  <div class="modal-dialog modal-lg" role="document" >
+    <div class="modal-content" id="receive_item">
+
+    </div>
+    </div>
+    </div>
+
+<!--------end modal------------->
+
   </div>
             @endsection
  @push('js')

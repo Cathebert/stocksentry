@@ -21,56 +21,9 @@ $("#supplier_form").on("click", "#submit", function (e) {
 
          return;
      }
-     if (!contact_person) {
-         $.alert({
-             icon: "fa fa-warning",
-             title: "Missing information!",
-             type: "orange",
-             content: "Please provide contact personnel!",
-         });
-         $("#contact_person").focus();
-         return;
-     }
-     if (!address) {
-         $.alert({
-             icon: "fa fa-warning",
-             title: "Missing information!",
-             type: "orange",
-             content: "Please provide address of supplier!",
-         });
-         $("#address").focus();
-         return;
-     }
-       if (!email) {
-           $.alert({
-               icon: "fa fa-warning",
-               title: "Missing information!",
-               type: "orange",
-               content: "Please provide email address of supplier!",
-           });
-           $("#email").focus();
-           return;
-       }
-         if (!phone) {
-             $.alert({
-                 icon: "fa fa-warning",
-                 title: "Missing information!",
-                 type: "orange",
-                 content: "Please provide phone number of supplier!",
-             });
-             $("#phone").focus();
-             return;
-         }
-           if (!expiry) {
-               $.alert({
-                   icon: "fa fa-warning",
-                   title: "Missing information!",
-                   type: "orange",
-                   content: "Please provide expiry contract date  of supplier!",
-               });
-               $("#expiry").focus();
-               return;
-           }
+
+ 
+      
          $.ajaxSetup({
              headers: {
                  "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
@@ -81,8 +34,12 @@ $("#supplier_form").on("click", "#submit", function (e) {
         dataType: "JSON",
         url: url,
         data: $("#supplier_form").serialize(),
+          beforeSend: function () {
+                    ajaxindicatorstart("saving data... please wait...");
+                },
         success: function (data) {
             if (data.error == false) {
+            ajaxindicatorstop();
                 // Welcome notification
                 // Welcome notification
                 toastr.options = {
@@ -105,6 +62,7 @@ $("#supplier_form").on("click", "#submit", function (e) {
                 toastr["success"](data.message);
                 $("#supplier_form")[0].reset();
             } else {
+             ajaxindicatorstop();
                 toastr.options = {
                     closeButton: true,
                     debug: false,

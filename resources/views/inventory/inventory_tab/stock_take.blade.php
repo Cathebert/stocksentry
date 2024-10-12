@@ -1,4 +1,4 @@
- @extends('layouts.main')
+@extends('layouts.main')
 @section('title','Inventory')
 @push('style')
     <link href="{{asset('assets/admin/vendors/select2/dist/css/select2.min.css') }}" rel="stylesheet">
@@ -46,6 +46,7 @@
       <input type="hidden" class="form-control" id="inventory_taking" value="{{route('inventory.stock')}}"> 
          <input type="hidden" class="form-control" id="inventory_save_all" value="{{route('stock.saveall')}}"> 
 <input type="hidden" id="expected" value="{{$count}}"/>
+<input type="hidden" id="edit_inventory_modal" value="{{ route('inventory.edit_modal') }}"/>
 <input type="hidden" id="item_locate" value="{{route('stock.item_location')}}"/>
 <input type="hidden" id="download_item" value="{{route('stock.download_item_selected')}}"/>
  
@@ -71,7 +72,7 @@
      <div class="col-md-3 col-sm-12 col-xs-12 form-group" >
   <div class="input-group ">
   <span class="input-group-text btn btn-secondary">Date:</span> 
-  <input type="date" aria-label="First name" class="form-control" id="start_date" name="start_date" value="{{date('Y-m-d')}}">
+  <input type="date" aria-label="First name" class="form-control" id="start_date" name="start_date" value="{{date('Y-m-d')}}" readonly>
    <span class="input-group-text btn btn-secondary"  hidden>-</span>
   <input type="date" aria-label="Last name" class="form-control " id="end_date" name="end_date" hidden>
 </div>
@@ -157,7 +158,9 @@
   <select class="custom-select my-1 mr-sm-2" id="items_list" onchange="getItems(this.value,this.name)" style="width: 70%"  name="labs[]" multiple>
 <option value="-1"></option>
   @foreach ( $labs as $lab)
+  @if($lab->id!=99)
      <option value="{{ $lab->id }}">{{$lab->lab_name}}</option>
+     @endif
   @endforeach
   <option value="999">Other</option>
   </select>
@@ -191,6 +194,9 @@
        <th scope="col">Code</th>
         <th scope="col">Batch Number</th>
         <th scope="col">UOM </th>
+        <th scope="col">Expiry</th>
+          <th scope="col">Location </th>
+          <th scope="col">Edit Entry </th>
         <th scope="col">Physical Count</th>
        <th scope="col">Action</th>
       
@@ -210,7 +216,16 @@
 
 <!----------Table end --------->
       </div>
-     
+     <!--------moddal-------------------->
+    <div class="modal" tabindex="-1" id="inforg" role="dialog" >
+  <div class="modal-dialog modal-lg" role="document" >
+    <div class="modal-content" id="receive_item">
+
+    </div>
+    </div>
+    </div>
+
+<!--------end modal------------->
   </div>
             @endsection
  @push('js')

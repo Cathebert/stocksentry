@@ -1,4 +1,4 @@
-     @extends('clerk.layout.main')
+@extends('clerk.layout.main')
 @section('title','Inventory')
 @push('style')
    
@@ -66,19 +66,7 @@
        @endforeach
 </select>
 </div>
-@if(!empty($sections) && count($sections)>0)
-<div class="col-md-3 col-sm-12 col-xs-12 form-group"   >
-    <label for="section_id">Issue From Section</label>
-     <select class="form-control" id="from_section_id" name="from_section_id" style="width: 75%"  required >
-    <option value=""></option>
-     @foreach ($sections as $sec)
-     @if($sec->id==auth()->user()->section)
-       <option value="{{$sec->id}}" selected>{{$sec->section_name}}</option>
-       @endif
-   @endforeach
-</select>
-  </div>
-@endif
+
 
    <div class="col-md-3 col-sm-12 col-xs-12 form-group" >
     <label for="lab_id">Issue to Lab</label>
@@ -94,17 +82,7 @@
 </div>
 
 
-<div class="col-md-3 col-sm-12 col-xs-12 form-group" id="req"  hidden>
-    <label for="section_id">Issue to Section</label>
-     <select class="form-control" id="to_section_id" name="to_section_id" style="width: 75%"  required >
-    <option value=""></option>
-     @foreach ($sections as $sec)
-    
-       <option value="{{$sec->id}}" >{{$sec->section_name}}</option>
-   
-   @endforeach
-</select>
-  </div>
+
 
 <div class="col-md-3 col-sm-12 col-xs-12 form-group" id="req"  >
     <label for="section_id">Received by:</label>
@@ -115,7 +93,7 @@
   </div>
  <div class="col-md-2 col-sm-12 col-xs-12 form-group" >
     <label for="receiving_date">Issue Date</label>
-    <input type="date" class="form-control" id="issue_date" value="{{ date('Y-m-d') }}" name="issue_date"  required>
+    <input type="date" class="form-control" id="issue_date" value="{{ date('Y-m-d') }}" name="issue_date"  required readonly>
     
   </div>
 
@@ -146,10 +124,10 @@
       <br>
  <div class="btn-group  btn-group-sm" role="group" aria-label="Basic example" style="float:right">
     @if(auth()->user()->authority==2 ||auth()->user()->authority==1 )
- <button type="button" class="btn  btn-primary btn-sm " style="text-color:white"id="save_issue" style="" onclick="showApprovals()"><i class="fa fa-hourglass-half"></i>Pending Approvals  <span class="badge badge-pill badge-danger" id="requests-badge">{{$badges}}</span></button>&nbsp;&nbsp;
+ <button type="button" class="btn  btn-primary btn-sm " style="text-color:white"id="save_issue" style="" onclick="showApprovals()"><i class="fa fa-hourglass-half"></i>Pending Approvals  <span class="badge badge-pill badge-danger" ></span></button>&nbsp;&nbsp;
  
  @endif
- <button type="button" class="btn  btn-success btn-sm " style="text-color:white"id="show_approved" style="" ><i class="fa fa-check"></i>Approved <span class="badge badge-pill badge-danger">{{$approved}}</span></button>&nbsp;&nbsp;
+ <button type="button" class="btn  btn-success btn-sm " style="text-color:white"id="show_approved" style="" ><i class="fa fa-check"></i>Approved <span class="badge badge-pill badge-danger"></span></button>&nbsp;&nbsp;
 </div>
 
    <br>
@@ -269,4 +247,3 @@
  <script src="{{asset('assets/admin/js/inventory/issues/add-issue.js') }}"></script>
 
 @endpush
-

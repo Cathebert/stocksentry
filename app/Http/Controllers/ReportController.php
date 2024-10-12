@@ -8,8 +8,10 @@ use App\Models\Laboratory;
 use App\Models\User;
 use App\Models\LaboratorySection;
 use App\Models\Supplier;
+use App\Models\Item;
 use DB;
 use PDF;
+use DataTables;
 use Carbon\Carbon;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Worksheet\AutoFilter;
@@ -70,12 +72,11 @@ return view('reports.list.expiry',$data);
             9=>'est_loss',
             10=>'status',
         ); 
-    
-   $totalData = DB::table('inventories as t') 
+    $totalData = DB::table('inventories as t') 
               ->join('items AS s', 's.id', '=', 't.item_id')
               ->join('laboratories as l','l.id','=','t.lab_id')
               ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.quantity','t.cost','s.item_name','t.expiry_date')
-         
+         ->where('t.quantity','>',0)
              ->whereBetween(DB::raw('DATE(t.expiry_date)'), array($from_date, $date))
           ->get();
 
@@ -102,6 +103,150 @@ foreach($totalData as $item){
               ->join('items AS s', 's.id', '=', 't.item_id')
                ->join('laboratories as l','l.id','=','t.lab_id')
               ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+              ->where('t.quantity','>',0)
+        // ->where('t.lab_id','=',auth()->user()->laboratory_id)
+        ->whereBetween(DB::raw('DATE(t.expiry_date)'), array($from_date, $date))
+          //->where('t.expiry_date', '<', $date )
+                ->where(function ($query) use ($search){
+                  return  $query->where('s.code', 'LIKE', "%{$search}%")
+                  ->orWhere('s.item_name','LIKE',"%{$search}%");
+                      
+                     
+            })
+            ->offset($start)
+            ->limit($limit)
+            ->orderBy('t.expiry_date','asc')
+            ->get();
+
+          $totalFiltered =  $totalRec ;
+//  0 => 'id',
+    
+          $data = array();
+          if (!empty($terms)) {
+$x=1;
+ 
+ $t=0;
+$total=0;
+            foreach ($terms as $term) {
+
+
+$sub_total=$term->quantity* $term->cost;
+                $nestedData['id']=$x;
+                $nestedData['item']=$term->item_name;
+                $nestedData['brand']= $term->brand;
+                    $nestedData['batch_number']= $term->batch_number;
+                 $nestedData['name']= $term->code;
+                    $nestedData['location']= $term->lab_name;
+                 $nestedData['expire_date'] = $term->expiry_date;
+              $nestedData['quantity'] = $term->quantity;
+               $nestedData['cost'] = $term->cost;
+                $nestedData['est_loss'] =$sub_total;
+               $to = \Carbon\Carbon::createFromFormat('Y-m-d', $term->expiry_date);
+      $from = \Carbon\Carbon::createFromFormat('Y-m-d', date('Y-m-d'));
+                 $diff_in_days = $from->diffInDays($to);
+                 if($diff_in_days<0){
+                    $nestedData['status']="<span class='text-danger'>  Expired</span>";  
+                 }
+                  if($diff_in_days==0){
+                    $nestedData['status']="<span class='text-danger'> Expiring Today</span>";  
+                 }
+                elseif( $diff_in_days>=1 && $diff_in_days <30){
+                    $nestedData['status']="<span class='text-danger'>  expiring (".$diff_in_days. " day(s)) </span>";
+                }
+  else if( $diff_in_days>=30 && $diff_in_days <60){
+                    $nestedData['status']="<span class='text-warning'>expiring (".$diff_in_days. " days)</span>";
+                }
+      elseif( $diff_in_days>=60 && $diff_in_days <90){
+                    $nestedData['status']="<span class='text-success'>expiring (".$diff_in_days." days)</span>";
+                }
+                  
+            
+                   $x++;
+                $data[] = $nestedData;
+      
+           }
+      }
+
+      $json_data = array(
+        "draw" => intval($request->input('draw')),
+        "recordsTotal" => intval(count($totalData)),
+        "recordsFiltered" => intval($totalFiltered),
+        "data" => $data,
+        "total"=>$total,
+        "quantity"=>count($totalData),
+    );
+
+      echo json_encode($json_data);
+
+} 
+}
+ private function getTableData($request) {
+     //dd($request);
+    parse_str($request->expiry_form,$out);
+ $expiry_details= $out;
+  //dd($expiry_details['lab']);
+         $columns = array(
+            0 =>'id',
+            1=>'item',
+            2=> 'brand',
+            3=>'batch_number',
+            4=>'name',
+            5=>'location',
+            6=>'expire_date',
+            7=>'quantity',
+            8=>'cost',
+            9=>'est_loss',
+            10=>'status',
+        ); 
+             if($expiry_details['lab']==-1 &&  $expiry_details['period']==-1){
+            $date= \Carbon\Carbon::createFromFormat('Y-m-d', date('Y-m-d'))->addDays(90);
+    $from_date=date('Y-m-d');
+         $columns = array(
+            0 =>'id',
+            1=>'item',
+            2=> 'brand',
+            3=>'batch_number',
+            4=>'Name',
+            5=>'location',
+            6=>'expire_date',
+            7=>'quantity',
+            8=>'cost',
+            9=>'est_loss',
+            10=>'status',
+        ); 
+    
+   $totalData = DB::table('inventories as t') 
+              ->join('items AS s', 's.id', '=', 't.item_id')
+              ->join('laboratories as l','l.id','=','t.lab_id')
+              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.quantity','t.cost','s.item_name','t.expiry_date')
+         ->where('t.quantity','>',0)
+             ->whereBetween(DB::raw('DATE(t.expiry_date)'), array($from_date, $date))
+          ->get();
+
+
+  
+ $t=0;
+$total=0;
+foreach($totalData as $item){
+    $cost=$item->quantity* $item->cost;
+    $t= $cost;
+   $total=$total+$t;
+}
+
+            $totalRec = count($totalData);
+          // $totalData = DB::table('appointments')->count();
+
+          $limit = $request->input('length');
+          $start = $request->input('start');
+          $order = $columns[$request->input('order.0.column')];
+          $dir = $request->input('order.0.dir');
+
+           $search = $request->input('search.value');
+            $terms = DB::table('inventories as t') 
+              ->join('items AS s', 's.id', '=', 't.item_id')
+               ->join('laboratories as l','l.id','=','t.lab_id')
+              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+               ->where('t.quantity','>',0)
         // ->where('t.lab_id','=',auth()->user()->laboratory_id)
         ->whereBetween(DB::raw('DATE(t.expiry_date)'), array($from_date, $date))
           //->where('t.expiry_date', '<', $date )
@@ -174,26 +319,7 @@ $sub_total=$term->quantity* $term->cost;
 
       echo json_encode($json_data);
 
-} 
-}
-  private function getTableData($request) {
-     //dd($request);
-    parse_str($request->expiry_form,$out);
- $expiry_details= $out;
-  //dd($expiry_details['lab']);
-         $columns = array(
-            0 =>'id',
-            1=>'item',
-            2=> 'brand',
-            3=>'batch_number',
-            4=>'Name',
-            5=>'location',
-            6=>'expire_date',
-            7=>'quantity',
-            8=>'cost',
-            9=>'est_loss',
-            10=>'status',
-        ); 
+         }    
    if($expiry_details['lab']!=-1 &&  $expiry_details['period']!=-1){
     
     switch ($expiry_details['period']) {
@@ -231,6 +357,7 @@ $sub_total=$term->quantity* $term->cost;
               ->join('items AS s', 's.id', '=', 't.item_id')
               ->join('laboratories as l','l.id','=','t.lab_id')
               ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.quantity','t.cost','s.item_name','t.expiry_date')
+               ->where('t.quantity','>',0)
          ->where('t.lab_id','=',$expiry_details['lab'])
              ->whereBetween('t.expiry_date', [$from_date, $to_date])
           ->count();
@@ -250,6 +377,7 @@ $sub_total=$term->quantity* $term->cost;
               ->join('items AS s', 's.id', '=', 't.item_id')
                ->join('laboratories as l','l.id','=','t.lab_id')
               ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+               ->where('t.quantity','>',0)
           ->where('t.lab_id','=',$expiry_details['lab'])
         ->whereBetween('t.expiry_date',[$from_date, $to_date])
           //->where('t.expiry_date', '<', $date )
@@ -279,10 +407,10 @@ $total=0;
 
                 $cost=$term->quantity* $term->cost;
                 $nestedData['id']=$x;
-                $nestedData['item']=$term->code;
+                $nestedData['item']=$term->item_name;
                 $nestedData['brand']= $term->brand;
                 $nestedData['batch_number']= $term->batch_number;
-                $nestedData['name']= $term->item_name;
+                $nestedData['name']= $term->code;
                 $nestedData['location']= $term->lab_name;
                 $nestedData['expire_date'] = $term->expiry_date;
                 $nestedData['quantity'] = $term->quantity;
@@ -309,7 +437,7 @@ $total=0;
                  elseif($diff_in_days==0){
   $nestedData['status']="<span class='text-danger'>  Expiring Today</span>"; 
                  }
-                elseif( $diff_in_days>=1 && $diff_in_days <30){
+                elseif( $diff_in_days >=1 && $diff_in_days <30){
                     $nestedData['status']="<span class='text-danger'>  expiring (".$diff_in_days. " day(s)) </span>";
                 }
   else if( $diff_in_days>=30 && $diff_in_days <60){
@@ -352,6 +480,7 @@ $totalData = DB::table('inventories as t')
               ->join('items AS s', 's.id', '=', 't.item_id')
               ->join('laboratories as l','l.id','=','t.lab_id')
               ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.quantity','t.cost','s.item_name','t.expiry_date')
+               ->where('t.quantity','>',0)
               ->where('t.lab_id','=',$expiry_details['lab'])
               ->whereBetween('t.expiry_date', [$from_date, $to_date])
           ->count();
@@ -371,6 +500,7 @@ $totalData = DB::table('inventories as t')
               ->join('items AS s', 's.id', '=', 't.item_id')
                ->join('laboratories as l','l.id','=','t.lab_id')
               ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+               ->where('t.quantity','>',0)
           ->where('t.lab_id','=',$expiry_details['lab'])
         ->whereBetween('t.expiry_date',[$from_date, $to_date])
           //->where('t.expiry_date', '<', $date )
@@ -400,10 +530,10 @@ $total=0;
 
 $cost=$term->quantity* $term->cost;
                 $nestedData['id']=$x;
-                $nestedData['item']=$term->code;
+                $nestedData['item']=$term->item_name;
                 $nestedData['brand']= $term->brand;
                 $nestedData['batch_number']= $term->batch_number;
-                $nestedData['name']= $term->item_name;
+                $nestedData['name']= $term->code;
                 $nestedData['location']= $term->lab_name;
                 $nestedData['expire_date'] = $term->expiry_date;
                 $nestedData['quantity'] = $term->quantity;
@@ -440,6 +570,7 @@ $cost=$term->quantity* $term->cost;
                     $nestedData['status']="<span class='text-success'>expiring (".$diff_in_days." days)</span>";
                 }
                  
+            
                    $x++;
                 $data[] = $nestedData;
                 $t= $cost;
@@ -508,10 +639,11 @@ if($lab==-1 && $period !=-1){
               ->join('items AS s', 's.id', '=', 't.item_id')
               ->join('laboratories as l','l.id','=','t.lab_id')
               ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.quantity','t.cost','s.item_name','t.expiry_date')
-         
+          ->where('t.quantity','>',0)
              ->whereBetween('t.expiry_date', [$from_date,  $to_date])
           ->count();
- 
+
+
 
             $totalRec = $totalData;
           // $totalData = DB::table('appointments')->count();
@@ -526,6 +658,7 @@ if($lab==-1 && $period !=-1){
               ->join('items AS s', 's.id', '=', 't.item_id')
                ->join('laboratories as l','l.id','=','t.lab_id')
               ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+               ->where('t.quantity','>',0)
         // ->where('t.lab_id','=',auth()->user()->laboratory_id)
         ->whereBetween('t.expiry_date', [$from_date,  $to_date])
           //->where('t.expiry_date', '<', $date )
@@ -542,19 +675,22 @@ if($lab==-1 && $period !=-1){
 
           $totalFiltered =  $totalRec ;
 //  0 => 'id',
-    $x=1;
+    
           $data = array();
           if (!empty($terms)) {
-
+$x=1;
+ 
+ $t=0;
+$total=0;
             foreach ($terms as $term) {
 
 
-            
+                $cost=$term->quantity* $term->cost;
                 $nestedData['id']=$x;
-                $nestedData['item']=$term->code;
+                $nestedData['item']=$term->item_name;
                 $nestedData['brand']= $term->brand;
                 $nestedData['batch_number']= $term->batch_number;
-                $nestedData['name']= $term->item_name;
+                $nestedData['name']= $term->code;
                 $nestedData['location']= $term->lab_name;
                 $nestedData['expire_date'] = $term->expiry_date;
               $nestedData['quantity'] = $term->quantity;
@@ -587,12 +723,14 @@ if($lab==-1 && $period !=-1){
       elseif( $diff_in_days>=60 && $diff_in_days <90){
                     $nestedData['status']="<span class='text-success'>expiring (".$diff_in_days." days)</span>";
                 }
-                 
-                
+                  else{
+                    $nestedData['status']="<span class='text-success'>".$diff_in_days." days  remaining</span>";
+                }
             
                    $x++;
                 $data[] = $nestedData;
-  
+                  $t= $cost;
+   $total=$total+$t;
            }
       }
 
@@ -643,7 +781,7 @@ if($lab==-1 && $period !=-1){
     }
   }
 
-public function downloadReport(Request $request){
+  public function downloadReport(Request $request){
 
   parse_str($request->expiry_form,$out);
  $expired= $out;
@@ -662,7 +800,7 @@ if($lab==-1 && $period==-1){
               ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
         // ->where('t.lab_id','=',auth()->user()->laboratory_id)
         ->whereBetween(DB::raw('DATE(t.expiry_date)'), array($from_date, $date))->get();
-    }
+        }
 
     if($lab!=-1 && $period==-1){
        $date= \Carbon\Carbon::createFromFormat('Y-m-d', date('Y-m-d'))->addDays(90);
@@ -751,6 +889,7 @@ if($lab!=-1 && $period!=-1){
         ->whereBetween('t.expiry_date', [$from_date,  $to_date])->get(); 
 
 }
+     
           //->where('t.expiry_date', '<', $date )
 
           //$path=public_path('reports').'/Inventory Expiry.pdf';
@@ -759,12 +898,12 @@ if($lab!=-1 && $period!=-1){
      // dd("done");
   
 
-   if($request->type=="download"){
+     if($request->type=="download"){
    
     $name="Inventory Expiry.pdf";
        $path=public_path('reports').'/Inventory Expiry.pdf';
         
-$pdf=PDF::loadView('pdf.reports.expiry_report',['info'=>$report]);
+   $pdf=PDF::loadView('pdf.reports.expiry_report',['info'=>$report]);
         $pdf->save($path); 
 $url=route('report.expiry_download',['name'=>$name]);
 
@@ -772,17 +911,17 @@ return response()->json([
     'path'=>$name,
     'url'=>$url,
 
-]);
-
+]); 
 }
 if($request->type=="print"){
  $pdf=PDF::loadView('pdf.reports.expiry_report',['info'=>$report]);
- return $pdf->stream();
+                  return $pdf->stream();
 }
 if($request->type=="excel"){
 $spreadsheet = new Spreadsheet();
 
-     $spreadsheet->getActiveSheet()->getDefaultColumnDimension()->setWidth(100, 'pt');
+        
+$spreadsheet->getActiveSheet()->getDefaultColumnDimension()->setWidth(100, 'pt');
     $spreadsheet->getActiveSheet()->getColumnDimension('A')->setAutoSize(true);
       $drawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
  $image = file_get_contents(url('/').'/assets/icon/logo_black.png');
@@ -1001,14 +1140,28 @@ $x=1;
             foreach ($terms as $term) {
 
  $user=User::where('id',$term->issued_by)->select('name','last_name','id')->first();
+if($term->approved_by!=NULL){
+    $approver=User::where('id',$term->approved_by)->select('name','last_name')->first();
+    $approver_name=$approver->name." ".$approver->lab_name;
+}
+else{
+    $approver_name="";
+}
 
+if($term->received_by!=NULL){
+    $receiver=User::where('id',$term->received_by)->select('name','last_name')->first();
+    $receiver_name=$receiver->name." ".$receiver->lab_name;
+}
+else{
+   $receiver_name="";
+}
 
                 $nestedData['id']=$x;
                 $nestedData['siv']=$term->siv_number;
                 $nestedData['to_lab']= $term->lab_name;
-                $nestedData['issued_by']= $user->name??"";
-                $nestedData['approved_by']= $term->approved_by??"";
-                $nestedData['received_by']= $term->received_by??"";
+                $nestedData['issued_by']= $user->name.' '.$user->last_name;
+                $nestedData['approved_by']= $approver_name;
+                $nestedData['received_by']= $receiver_name;
                 $nestedData['issue_date']= $term->issuing_date;
                 $nestedData['status'] = $term->approve_status;
              
@@ -1060,7 +1213,7 @@ public  function loadConsumptionTable(Request $request){
 
           $totalData = DB::table('items as t') 
               ->join('inventories AS l', 'l.item_id', '=', 't.id')
-              ->leftjoin('consumption_details as c','c.item_id','=','l.id')
+              ->join('consumption_details as c','c.item_id','=','l.id')
               ->select(
                 DB::raw('SUM(c.consumed_quantity) as consumed_quantity'))
                 ->orderBy('t.item_name','asc')
@@ -1101,7 +1254,6 @@ public  function loadConsumptionTable(Request $request){
             ->orderBy('t.item_name','asc')
             ->groupBy('t.item_name')
             ->get();
-
           $totalFiltered =  $totalRec ;
 //  0 => 'id',
     
@@ -1200,8 +1352,8 @@ $end = Carbon::now()->addWeek()->startOfWeek();
                     'rd.consumed_quantity',
                     'r.batch_number'
                 )->whereBetween('rd.created_at', [$start, $end])
-                ->where('t.id',$request->id)
-                ->get();
+                  ->where('t.id',$request->id)
+                   ->get();
   
 break;
 //this month
@@ -1374,14 +1526,13 @@ break;
                   ->select(
                     'l.lab_name',
                     'u.section_id',
-                    'u.consumption_id',
                     'rd.consumed_quantity',
+                       'rd.consumption_id',
                     'r.batch_number'
                 )
-                  ->where('r.id',$request->id)
-                   ->groupBy('u.batch_number')
+                  ->where('t.id',$request->id)
+                  ->groupBy('rd.consumption_id')
                    ->get();
-
                }
 $x=1;
          $data= array();
@@ -1409,34 +1560,27 @@ $x++;
 }
 
 public function filterConsumption(Request $request){
-   
       $columns = array(
             0 =>'id',
             1=>'item_name',
             2=>'catalog_number',
             3=>'unit_issue',
             4=>'consumed',
-         
-           
         );
-parse_str($request->form_data,$out);
+        parse_str($request->form_data,$out);
  $expired= $out;
-
-
  $period=$expired['period'];
    switch($period){
 case -1:
 
-          $totalData = DB::table('items as t') 
+            $totalData = DB::table('items as t') 
               ->join('inventories AS l', 'l.item_id', '=', 't.id')
-              ->leftjoin('consumption_details as c','c.item_id','=','l.id')
+              ->join('consumption_details as c','c.item_id','=','l.id')
               ->select(
                 DB::raw('SUM(c.consumed_quantity) as consumed_quantity'))
                 ->orderBy('t.item_name','asc')
             ->groupBy('t.item_name')
               ->count();
-
-
 
             $totalRec = $totalData;
           // $totalData = DB::table('appointments')->count();
@@ -1447,6 +1591,7 @@ case -1:
           $dir = $request->input('order.0.dir');
 
            $search = $request->input('search.value');
+           
             $terms =DB::table('items as t') 
               ->join('inventories AS l', 'l.item_id', '=', 't.id')
               ->join('consumption_details as c','c.item_id','=','l.id')
@@ -1470,8 +1615,11 @@ case -1:
             ->orderBy('t.item_name','asc')
             ->groupBy('t.item_name')
             ->get();
-            $totalFiltered =  $totalRec ;
+            
+             $totalFiltered =  $totalRec ;
 break;
+    //today
+
     //today
 case 0:
 
@@ -1497,9 +1645,11 @@ $date=Carbon::now()->format('Y-m-d');
           $dir = $request->input('order.0.dir');
 
            $search = $request->input('search.value');
+           
+           
             $terms =DB::table('items as t') 
               ->join('inventories AS l', 'l.item_id', '=', 't.id')
-              ->leftjoin('consumption_details as c','c.item_id','=','l.id')
+              ->join('consumption_details as c','c.item_id','=','l.id')
               ->select(
                  't.id as item_id',
                 'l.id as id',
@@ -1534,7 +1684,7 @@ $date=date('Y-m-d', strtotime("-1 days"));
 
           $totalData = DB::table('items as t') 
               ->join('inventories AS l', 'l.item_id', '=', 't.id')
-              ->leftjoin('consumption_details as c','c.item_id','=','l.id') 
+              ->join('consumption_details as c','c.item_id','=','l.id') 
                ->where('c.created_at', '=', $date)    
               ->count();
 
@@ -1551,7 +1701,7 @@ $date=date('Y-m-d', strtotime("-1 days"));
            $search = $request->input('search.value');
             $terms =DB::table('items as t') 
               ->join('inventories AS l', 'l.item_id', '=', 't.id')
-              ->leftjoin('consumption_details as c','c.item_id','=','l.id')
+              ->join('consumption_details as c','c.item_id','=','l.id')
               ->select(
                  't.id as item_id',
                 'l.id as id',
@@ -1580,13 +1730,13 @@ break;
 // this week
 case 2:
 ///previous week $start = Carbon::now()->subWeek()->startOfWeek();
-$start = Carbon::now()->subWeek()->endOfWeek();
-$end = Carbon::now()->addWeek()->startOfWeek();
+$start_date = Carbon::now()->subWeek()->endOfWeek();
+$end_date = Carbon::now()->addWeek()->startOfWeek();
 
   $totalData = DB::table('items as t') 
               ->join('inventories AS l', 'l.item_id', '=', 't.id')
-              ->leftjoin('consumption_details as c','c.item_id','=','l.id') 
-               ->whereBetween('c.created_at', [$start, $end])
+              ->join('consumption_details as c','c.item_id','=','l.id') 
+               ->whereBetween('c.created_at', [$start_date, $end_date])
                 ->orderBy('t.item_name','asc')
             ->groupBy('t.item_name')
               ->count();
@@ -1604,7 +1754,7 @@ $end = Carbon::now()->addWeek()->startOfWeek();
            $search = $request->input('search.value');
             $terms =DB::table('items as t') 
               ->join('inventories AS l', 'l.item_id', '=', 't.id')
-              ->leftjoin('consumption_details as c','c.item_id','=','l.id')
+              ->join('consumption_details as c','c.item_id','=','l.id')
               ->select(
                  't.id as item_id',
                 'l.id as id',
@@ -1613,7 +1763,7 @@ $end = Carbon::now()->addWeek()->startOfWeek();
                 't.catalog_number',
                 'unit_issue',
                 DB::raw('SUM(c.consumed_quantity) as consumed_quantity'))
-                  ->whereBetween('c.created_at', [$start, $end])
+                  ->whereBetween('c.created_at', [$start_date, $end_date])
 
                 ->where(function ($query) use ($search){
                   return  $query->where('t.item_name', 'LIKE', "%{$search}%")
@@ -1635,18 +1785,18 @@ break;
 case 3:
 
  $myDate = date('Y-m-d');
-        $start = Carbon::createFromFormat('Y-m-d', $myDate)
+        $start_date = Carbon::createFromFormat('Y-m-d', $myDate)
                         ->firstOfMonth()
                         ->format('Y-m-d');
 
-$end = Carbon::createFromFormat('Y-m-d', $myDate)
+$end_date = Carbon::createFromFormat('Y-m-d', $myDate)
                         ->lastOfMonth()
                         ->format('Y-m-d');
 
   $totalData = DB::table('items as t') 
               ->join('inventories AS l', 'l.item_id', '=', 't.id')
-              ->leftjoin('consumption_details as c','c.item_id','=','l.id') 
-               ->whereBetween('c.created_at', [$start, $end])
+              ->join('consumption_details as c','c.item_id','=','l.id') 
+               ->whereBetween('c.created_at', [$start_date, $end_date])
                 ->orderBy('t.item_name','asc')
             ->groupBy('t.item_name')
               ->count();
@@ -1664,7 +1814,7 @@ $end = Carbon::createFromFormat('Y-m-d', $myDate)
            $search = $request->input('search.value');
             $terms =DB::table('items as t') 
               ->join('inventories AS l', 'l.item_id', '=', 't.id')
-              ->leftjoin('consumption_details as c','c.item_id','=','l.id')
+              ->join('consumption_details as c','c.item_id','=','l.id')
               ->select(
                  't.id as item_id',
                 'l.id as id',
@@ -1673,7 +1823,7 @@ $end = Carbon::createFromFormat('Y-m-d', $myDate)
                 't.catalog_number',
                 'unit_issue',
                 DB::raw('SUM(c.consumed_quantity) as consumed_quantity'))
-                  ->whereBetween('c.created_at', [$start, $end])
+                  ->whereBetween('c.created_at', [$start_date, $end_date])
 
                 ->where(function ($query) use ($search){
                   return  $query->where('t.item_name', 'LIKE', "%{$search}%")
@@ -1694,13 +1844,13 @@ break;
 
 case 4:
 //quarter 
-$start = Carbon::now()->firstOfQuarter()->format('Y-m-d');
-$end = Carbon::now()->endOfQuarter()->format('Y-m-d');
+$start_date = Carbon::now()->firstOfQuarter()->format('Y-m-d');
+$end_date = Carbon::now()->endOfQuarter()->format('Y-m-d');
 
   $totalData = DB::table('items as t') 
               ->join('inventories AS l', 'l.item_id', '=', 't.id')
-              ->leftjoin('consumption_details as c','c.item_id','=','l.id') 
-               ->whereBetween('c.created_at', [$start, $end])
+              ->join('consumption_details as c','c.item_id','=','l.id') 
+               ->whereBetween('c.created_at', [$start_date, $end_date])
                 ->orderBy('t.item_name','asc')
             ->groupBy('t.item_name')
               ->count();
@@ -1718,7 +1868,7 @@ $end = Carbon::now()->endOfQuarter()->format('Y-m-d');
            $search = $request->input('search.value');
             $terms =DB::table('items as t') 
               ->join('inventories AS l', 'l.item_id', '=', 't.id')
-              ->leftjoin('consumption_details as c','c.item_id','=','l.id')
+              ->join('consumption_details as c','c.item_id','=','l.id')
               ->select(
                  't.id as item_id',
                 'l.id as id',
@@ -1727,7 +1877,7 @@ $end = Carbon::now()->endOfQuarter()->format('Y-m-d');
                 't.catalog_number',
                 'unit_issue',
                 DB::raw('SUM(c.consumed_quantity) as consumed_quantity'))
-                  ->whereBetween('c.created_at', [$start, $end])
+                  ->whereBetween('c.created_at', [$start_date, $end_date])
 
                 ->where(function ($query) use ($search){
                   return  $query->where('t.item_name', 'LIKE', "%{$search}%")
@@ -1746,13 +1896,13 @@ $end = Carbon::now()->endOfQuarter()->format('Y-m-d');
   break;
 //this year
   case 5:
-$start = Carbon::now()->startOfYear()->format('Y-m-d');
-$end = Carbon::now()->endOfYear()->format('Y-m-d');
+$start_date = Carbon::now()->startOfYear()->format('Y-m-d');
+$end_date = Carbon::now()->endOfYear()->format('Y-m-d');
 
   $totalData = DB::table('items as t') 
               ->join('inventories AS l', 'l.item_id', '=', 't.id')
-              ->leftjoin('consumption_details as c','c.item_id','=','l.id') 
-               ->whereBetween('c.created_at', [$start, $end])
+              ->join('consumption_details as c','c.item_id','=','l.id') 
+               ->whereBetween('c.created_at', [$start_date, $end_date])
                 ->orderBy('t.item_name','asc')
             ->groupBy('t.item_name')
               ->count();
@@ -1770,7 +1920,7 @@ $end = Carbon::now()->endOfYear()->format('Y-m-d');
            $search = $request->input('search.value');
             $terms =DB::table('items as t') 
               ->join('inventories AS l', 'l.item_id', '=', 't.id')
-              ->leftjoin('consumption_details as c','c.item_id','=','l.id')
+              ->join('consumption_details as c','c.item_id','=','l.id')
               ->select(
                  't.id as item_id',
                 'l.id as id',
@@ -1779,7 +1929,7 @@ $end = Carbon::now()->endOfYear()->format('Y-m-d');
                 't.catalog_number',
                 'unit_issue',
                 DB::raw('SUM(c.consumed_quantity) as consumed_quantity'))
-                  ->whereBetween('c.created_at', [$start, $end])
+                  ->whereBetween('c.created_at', [$start_date, $end_date])
 
                 ->where(function ($query) use ($search){
                   return  $query->where('t.item_name', 'LIKE', "%{$search}%")
@@ -1801,13 +1951,13 @@ $end = Carbon::now()->endOfYear()->format('Y-m-d');
   case 6:
 
   //previous week
- $start = Carbon::now()->subWeek()->startOfWeek();
-$end = Carbon::now()->subWeek()->endOfWeek();
+ $start_date = Carbon::now()->subWeek()->startOfWeek();
+$end_date = Carbon::now()->subWeek()->endOfWeek();
 
 $totalData = DB::table('items as t') 
               ->join('inventories AS l', 'l.item_id', '=', 't.id')
-              ->leftjoin('consumption_details as c','c.item_id','=','l.id') 
-               ->whereBetween('c.created_at', [$start, $end])
+              ->join('consumption_details as c','c.item_id','=','l.id') 
+               ->whereBetween('c.created_at', [$start_date, $end_date])
                 ->orderBy('t.item_name','asc')
             ->groupBy('t.item_name')
               ->count();
@@ -1834,7 +1984,7 @@ $totalData = DB::table('items as t')
                 't.catalog_number',
                 'unit_issue',
                 DB::raw('SUM(c.consumed_quantity) as consumed_quantity'))
-                  ->whereBetween('c.created_at', [$start, $end])
+                  ->whereBetween('c.created_at', [$start_date, $end_date])
 
                 ->where(function ($query) use ($search){
                   return  $query->where('t.item_name', 'LIKE', "%{$search}%")
@@ -1855,14 +2005,14 @@ $totalData = DB::table('items as t')
   //previous month
   case 7:
 
-  $start = Carbon::now()->startOfMonth()->subMonthsNoOverflow()->toDateString();
+  $start_date = Carbon::now()->startOfMonth()->subMonthsNoOverflow()->toDateString();
 
-$end = Carbon::now()->subMonthsNoOverflow()->endOfMonth()->toDateString();
+$end_date = Carbon::now()->subMonthsNoOverflow()->endOfMonth()->toDateString();
 
 $totalData = DB::table('items as t') 
               ->join('inventories AS l', 'l.item_id', '=', 't.id')
               ->leftjoin('consumption_details as c','c.item_id','=','l.id') 
-               ->whereBetween('c.created_at', [$start, $end])
+               ->whereBetween('c.created_at', [$start_date, $end_date])
               ->count();
 
 
@@ -1878,7 +2028,7 @@ $totalData = DB::table('items as t')
            $search = $request->input('search.value');
             $terms =DB::table('items as t') 
               ->join('inventories AS l', 'l.item_id', '=', 't.id')
-              ->leftjoin('consumption_details as c','c.item_id','=','l.id')
+              ->join('consumption_details as c','c.item_id','=','l.id')
               ->select(
                  't.id as item_id',
                 'l.id as id',
@@ -1887,7 +2037,7 @@ $totalData = DB::table('items as t')
                 't.catalog_number',
                 'unit_issue',
                 DB::raw('SUM(c.consumed_quantity) as consumed_quantity'))
-                  ->whereBetween('c.created_at', [$start, $end])
+                  ->whereBetween('c.created_at', [$start_date, $end_date])
 
                 ->where(function ($query) use ($search){
                   return  $query->where('t.item_name', 'LIKE', "%{$search}%")
@@ -1909,17 +2059,16 @@ $totalData = DB::table('items as t')
   //previous quarter
   case 8:
 
-$start = Carbon::now()->subMonths(3)->firstOfQuarter()->format('Y-m-d');
-$end = Carbon::now()->subMonths(3)->endOfQuarter()->format('Y-m-d');
+$start_date = Carbon::now()->subMonths(3)->firstOfQuarter()->format('Y-m-d');
+$end_date = Carbon::now()->subMonths(3)->endOfQuarter()->format('Y-m-d');
      
      $totalData = DB::table('items as t') 
               ->join('inventories AS l', 'l.item_id', '=', 't.id')
-              ->leftjoin('consumption_details as c','c.item_id','=','l.id') 
-               ->whereBetween('c.created_at', [$start, $end])
+              ->join('consumption_details as c','c.item_id','=','l.id') 
+               ->whereBetween('c.created_at', [$start_date, $end_date])
                 ->orderBy('t.item_name','asc')
             ->groupBy('t.item_name')
               ->count();
-
 
 
 
@@ -1934,9 +2083,7 @@ $end = Carbon::now()->subMonths(3)->endOfQuarter()->format('Y-m-d');
            $search = $request->input('search.value');
             $terms =DB::table('items as t') 
               ->join('inventories AS l', 'l.item_id', '=', 't.id')
-              ->leftjoin('consumption_details as c','c.item_id','=','l.id')
-               ->whereBetween('c.created_at', [$start, $end])
-
+              ->join('consumption_details as c','c.item_id','=','l.id')
               ->select(
                  't.id as item_id',
                 'l.id as id',
@@ -1945,7 +2092,8 @@ $end = Carbon::now()->subMonths(3)->endOfQuarter()->format('Y-m-d');
                 't.catalog_number',
                 'unit_issue',
                 DB::raw('SUM(c.consumed_quantity) as consumed_quantity'))
-                 
+                  ->whereBetween('c.created_at', [$start_date, $end_date])
+
                 ->where(function ($query) use ($search){
                   return  $query->where('t.item_name', 'LIKE', "%{$search}%")
                   ->orWhere('l.batch_number','LIKE',"%{$search}%");
@@ -1965,13 +2113,13 @@ $end = Carbon::now()->subMonths(3)->endOfQuarter()->format('Y-m-d');
   //previous year
 
   case 9:
- $start = Carbon::now()->subYear()->startOfYear()->format('Y-m-d');
- $end = Carbon::now()->subYear()->endOfYear()->format('Y-m-d');
+ $start_date = Carbon::now()->subYear()->startOfYear()->format('Y-m-d');
+ $end_date = Carbon::now()->subYear()->endOfYear()->format('Y-m-d');
 
 $totalData = DB::table('items as t') 
               ->join('inventories AS l', 'l.item_id', '=', 't.id')
-              ->leftjoin('consumption_details as c','c.item_id','=','l.id') 
-               ->whereBetween('c.created_at', [$start, $end])
+              ->join('consumption_details as c','c.item_id','=','l.id') 
+               ->whereBetween('c.created_at', [$start_date, $end_date])
                 ->orderBy('t.item_name','asc')
             ->groupBy('t.item_name')
               ->count();
@@ -1989,7 +2137,7 @@ $totalData = DB::table('items as t')
            $search = $request->input('search.value');
             $terms =DB::table('items as t') 
               ->join('inventories AS l', 'l.item_id', '=', 't.id')
-              ->leftjoin('consumption_details as c','c.item_id','=','l.id')
+              ->join('consumption_details as c','c.item_id','=','l.id')
               ->select(
                  't.id as item_id',
                 'l.id as id',
@@ -1998,7 +2146,7 @@ $totalData = DB::table('items as t')
                 't.catalog_number',
                 'unit_issue',
                 DB::raw('SUM(c.consumed_quantity) as consumed_quantity'))
-                  ->whereBetween('c.created_at', [$start, $end])
+                  ->whereBetween('c.created_at', [$start_date, $end_date])
 
                 ->where(function ($query) use ($search){
                   return  $query->where('t.item_name', 'LIKE', "%{$search}%")
@@ -2016,13 +2164,13 @@ $totalData = DB::table('items as t')
   break;
 // custom range
   case 10:
-$start=Carbon::createFromFormat('Y-m-d', $request->start_date);
-$end=Carbon::createFromFormat('Y-m-d',$request->end_date);
+$start_date=$expired['start'];
+$end_date=$expired['end'];
 //dd($end);
 $totalData = DB::table('items as t') 
               ->join('inventories AS l', 'l.item_id', '=', 't.id')
-              ->leftjoin('consumption_details as c','c.item_id','=','l.id') 
-               ->whereBetween('c.created_at', [$start, $end])
+              ->join('consumption_details as c','c.item_id','=','l.id') 
+               ->whereBetween('c.created_at', [$start_date, $end_date])
                 ->orderBy('t.item_name','asc')
             ->groupBy('t.item_name')
               ->count();
@@ -2040,7 +2188,7 @@ $totalData = DB::table('items as t')
            $search = $request->input('search.value');
             $terms =DB::table('items as t') 
               ->join('inventories AS l', 'l.item_id', '=', 't.id')
-              ->leftjoin('consumption_details as c','c.item_id','=','l.id')
+              ->join('consumption_details as c','c.item_id','=','l.id')
               ->select(
                  't.id as item_id',
                 'l.id as id',
@@ -2049,7 +2197,7 @@ $totalData = DB::table('items as t')
                 't.catalog_number',
                 'unit_issue',
                 DB::raw('SUM(c.consumed_quantity) as consumed_quantity'))
-                  ->whereBetween('c.created_at', [$start, $end])
+                  ->whereBetween('c.created_at', [$start_date, $end_date])
 
                 ->where(function ($query) use ($search){
                   return  $query->where('t.item_name', 'LIKE', "%{$search}%")
@@ -2067,7 +2215,7 @@ $totalData = DB::table('items as t')
   break;
    }
  
-        
+       
 
           
 //  0 => 'id',
@@ -2108,7 +2256,6 @@ $nestedData['item_id']= $term->item_id;
 
       echo json_encode($json_data);  
 }
-
 
 public function changeFrequency(Request $request){
     switch($request->id){
@@ -2158,10 +2305,8 @@ break;
 }
 
 public function downloadConsumptionReport(Request $request){
-
-      parse_str($request->form_data,$out);
+   parse_str($request->form_data,$out);
  $expired= $out;
-
 
  $period=$expired['period'];
   
@@ -2241,7 +2386,7 @@ $terms =DB::table('items as t')
                     'r.batch_number'
                 )
                   ->where('t.id',$term->item_id)
-             
+              ->where('rd.created_at','=',$date)
                    ->get();
 }
 
@@ -2281,6 +2426,7 @@ $terms =DB::table('items as t')
                     'r.batch_number'
                 )
                   ->where('t.id',$term->item_id)
+                   ->where('rd.created_at','=',$date)
                    ->get();
 }
  
@@ -2317,6 +2463,7 @@ $terms =DB::table('items as t')
                     'r.batch_number'
                 )
                   ->where('t.id',$term->item_id)
+                   ->whereBetween('rd.created_at',[$start,$end])
                    ->get();
 }
 break;
@@ -2361,6 +2508,7 @@ $terms =DB::table('items as t')
                     'r.batch_number'
                 )
                   ->where('t.id',$term->item_id)
+                   ->whereBetween('rd.created_at',[$start,$end])
                    ->get();
 }
 
@@ -2398,6 +2546,7 @@ $terms =DB::table('items as t')
                     'r.batch_number'
                 )
                   ->where('t.id',$term->item_id)
+                   ->whereBetween('rd.created_at',[$start,$end])
                    ->get();
 }
 
@@ -2434,6 +2583,7 @@ $terms =DB::table('items as t')
                     'r.batch_number'
                 )
                   ->where('t.id',$term->item_id)
+                   ->whereBetween('rd.created_at',[$start,$end])
                    ->get();
 }
 
@@ -2470,6 +2620,7 @@ $terms =DB::table('items as t')
                     'r.batch_number'
                 )
                   ->where('t.id',$term->item_id)
+                   ->whereBetween('rd.created_at',[$start,$end])
                    ->get();
 }
 
@@ -2506,6 +2657,7 @@ $terms =DB::table('items as t')
                     'r.batch_number'
                 )
                   ->where('t.id',$term->item_id)
+                   ->whereBetween('rd.created_at',[$start,$end])
                    ->get();
 }
 
@@ -2542,6 +2694,7 @@ $terms =DB::table('items as t')
                     'r.batch_number'
                 )
                   ->where('t.id',$term->item_id)
+                   ->whereBetween('rd.created_at',[$start,$end])
                    ->get();
 }
 
@@ -2578,6 +2731,7 @@ $start = Carbon::now()->subYear()->startOfYear()->format('Y-m-d');
                     'r.batch_number'
                 )
                   ->where('t.id',$term->item_id)
+                   ->whereBetween('rd.created_at',[$start,$end])
                    ->get();
 }
 
@@ -2614,6 +2768,7 @@ $terms =DB::table('items as t')
                     'r.batch_number'
                 )
                   ->where('t.id',$term->item_id)
+                   ->whereBetween('rd.created_at',[$start,$end])
                    ->get();
 }
 
@@ -2776,7 +2931,6 @@ $headers = [
 return response()->download($path,$name, $headers);
        
 }
-
 
 
 public function showRequisitionReport(){
@@ -5035,6 +5189,7 @@ $x=1;
   }
 
   public function stockLevelReport(){
+    $data['laboratories']=Laboratory::get();
        $lab=Laboratory::where('id',auth()->user()->laboratory_id)->select('lab_name')->first();
        $section=LaboratorySection::where('id',auth()->user()->section_id)->select('section_name')->first();
    if($section){
@@ -5048,7 +5203,7 @@ $data['lab_name']='Logged Into: '.$lab->lab_name;
   }
 
   public function loadStockLevelReport(Request $request){
-      
+   /*   
     $columns = array(
             0 =>'id',
             1=>'item_name',
@@ -5062,12 +5217,13 @@ $data['lab_name']='Logged Into: '.$lab->lab_name;
             9=>'status',
           
         );
-    $totalData =DB::table('items as t')
+   $totalData =DB::table('items as t')
                   ->join('inventories as i','i.item_id','=','t.id')
-                   ->groupBy('t.item_name')
+                   //->groupBy('t.id','t.item_name')
+                   ->where('i.is_disposed', '=','no')
                    ->count();
 
-           // ->where('t.expiry_date', '>', date('Y-m-d') )
+           
          
 
             $totalRec = $totalData;
@@ -5094,10 +5250,11 @@ $data['lab_name']='Logged Into: '.$lab->lab_name;
                     't.minimum_level',
                     't.maximum_level',
                     'i.quantity',
+                    'i.expiry_date',
                      DB::raw('SUM(i.quantity) as stock_on_hand'))
                   
                   // ->where([['r.status','=','approved']])
-          //->where('t.expiry_date', '>', date('Y-m-d') )
+          ->where('i.is_disposed', '=','no')
                 ->where(function ($query) use ($search){
                   return  $query->where('t.item_name', 'LIKE', "%{$search}%");
                  
@@ -5126,19 +5283,20 @@ $x=1;
                  $nestedData['unit_issue']= $term->unit_issue;
                $nestedData['min']= $term->minimum_level;
                 $nestedData['max']= $term->maximum_level;
-                 $nestedData['available']='<strong>'.$term->stock_on_hand.'</strong>';
-                 if($term->minimum_level>$term->stock_on_hand){
+                 $nestedData['available']= '<strong>'.$term->stock_on_hand.'</strong>';
+             if($term->minimum_level>$term->stock_on_hand){
                 $nestedData['status']='<span class="badge badge-danger">Below Minimum</span>';
       }
       if($term->stock_on_hand>$term->minimum_level){
-         $nestedData['status']= '<span class="badge badge-green">Good</span>';
+         $nestedData['status']= '<span class="badge badge-warning">Good</span>';
       }
        if($term->stock_on_hand>$term->maximum_level){
-        $nestedData['status']=  '<span class="badge badge-green">More than enough</span>';
+        $nestedData['status']=  '<span class="badge badge-success">More than enough</span>';
       }
       else{
-          $nestedData['status']='<span class="badge badge-green">Good</span>';
+          $nestedData['status']='<span class="badge badge-success">Good</span>';
       }
+      
                 
                
                    $x++;
@@ -5154,7 +5312,48 @@ $x=1;
         "data" => $data,
     );
 
-      echo json_encode($json_data);
+      echo json_encode($json_data);*/
+      
+      
+      
+      $stock_level = DB::table('items as t')
+                  ->join('inventories as i','i.item_id','=','t.id')
+                  ->select(
+                    't.id as id',
+                    't.uln',
+                    't.code',
+                    't.item_name',
+                    'i.batch_number',
+                    't.catalog_number',
+                    't.place_of_purchase',
+                    't.unit_issue',
+                    't.minimum_level',
+                    't.maximum_level',
+                    'i.quantity',
+                     DB::raw('SUM(i.quantity) as stock_on_hand'))
+                     ->where('i.is_disposed','no')
+                  ->where('i.quantity','>',0)
+                   ->groupBy('t.id','t.item_name')
+            ->get();
+return Datatables::of($stock_level)
+                ->addIndexColumn()
+                ->addColumn('status', function($row) {
+                    if($row->stock_on_hand>$row->minimum_level){
+                    return   '<span class="badge badge-info">Good</span>' ;
+            }
+            if ($row->stock_on_hand >$row->maximum_level) {
+                return '<span class="badge badge-success">More than enough</span>';
+            }
+             if ($row->stock_on_hand <$row->minimum_level) {
+                return '<span class="badge badge-danger">Bad</span>';
+            }
+if ($row->stock_on_hand <$row->maximum_level) {
+                return '<span class="badge badge-info">Good</span>';
+            }
+                })
+                 ->rawColumns(['status'])
+                ->make(true);
+
     
   }
   public function loadStockLevelDetails(Request $request){
@@ -5227,7 +5426,8 @@ $data['lab_name']='Logged Into: '.$lab->lab_name;
     $totalData =DB::table('items as t')
                   ->join('inventories as i','i.item_id','=','t.id')
                    ->where([['i.quantity','<=',0]])
-                   ->groupBy('t.item_name')
+                    ->where('i.is_disposed', 'no' )
+                   //->groupBy('t.item_name')
                    ->count();
 
            // ->where('t.expiry_date', '>', date('Y-m-d') )
@@ -5244,7 +5444,7 @@ $data['lab_name']='Logged Into: '.$lab->lab_name;
            $search = $request->input('search.value');
 
             $terms = DB::table('items as t')
-                  ->join('inventories as i','i.item_id','=','t.id')
+                  ->leftjoin('inventories as i','i.item_id','=','t.id')
                   ->select(
                     't.id as id',
                     't.item_name',
@@ -5256,7 +5456,7 @@ $data['lab_name']='Logged Into: '.$lab->lab_name;
                    )
                   ->where([['i.quantity','<=',0]])
                   // ->where([['r.status','=','approved']])
-          //->where('t.expiry_date', '>', date('Y-m-d') )
+          ->where('i.expiry_date', '>', date('Y-m-d') )
                 ->where(function ($query) use ($search){
                   return  $query->where('t.item_name', 'LIKE', "%{$search}%");
                  
@@ -5265,7 +5465,7 @@ $data['lab_name']='Logged Into: '.$lab->lab_name;
             })
             ->offset($start)
             ->limit($limit)
-            ->groupBy('t.id','t.item_name')
+            ->groupBy('t.item_name')
             ->get();
 
           $totalFiltered =  $totalRec ;
@@ -5306,7 +5506,7 @@ $x=1;
       echo json_encode($json_data);
   }
   public function loadOutOfStockDetails(Request $request){
-    $ids=explode(',',$request->id);
+ $ids=explode(',',$request->id);
     
     $data = array();
     for($i=0;$i<count($ids); $i++){
@@ -5352,7 +5552,7 @@ $data[]= $nested;
    'data'=>$data,
   ]);
   }
-  public function stockLevelDownload(Request $request, $name){
+public function stockLevelDownload(Request $request, $name){
 
 
                $terms = DB::table('items as t')
@@ -5499,6 +5699,457 @@ $headers = [
     }
    
   }
+  
+  public function showVarianceReport(){
+            $data['users']=User::where([['laboratory_id','=',auth()->user()->laboratory_id],['authority','=',1]])
+             ->select('id','email')->get();
+              $lab=Laboratory::where('id',auth()->user()->laboratory_id)->select('lab_name')->first();
+                    $section=LaboratorySection::where('id',auth()->user()->section_id)->select('section_name')->first();
+   if($section){
+     $data['lab_name']='Logged Into: '.$lab->lab_name.' / '.$section->section_name;  
+   }
+   else
+   {
+$data['lab_name']='Logged Into: '.$lab->lab_name;
+}
+           $data['laboratories']=Laboratory::get();
+  return view('reports.list.variance',$data);
+}
+public function loadVariance(Request $request){
+
+          $columns = array(
+            0 =>'id',
+            1=>'stock_date',
+            2=>'lab_name',
+            4=>'supervised_by',
+            5=>'approved_by',
+           
+          
+        );
+    $totalData =DB::table('stock_takes as t')
+                  ->join('laboratories as i','i.id','=','t.lab_id')
+                  ->join('users as u','u.id','=','t.supervisor_id')
+                   ->where([['t.is_approved','=','yes']])
+                  
+                   ->count();
+
+           // ->where('t.expiry_date', '>', date('Y-m-d') )
+         
+
+            $totalRec = $totalData;
+          // $totalData = DB::table('appointments')->count();
+
+          $limit = $request->input('length');
+          $start = $request->input('start');
+          $order = $columns[$request->input('order.0.column')];
+          $dir = $request->input('order.0.dir');
+
+           $search = $request->input('search.value');
+
+            $terms = DB::table('stock_takes as t')
+            ->join('laboratories as i','i.id','=','t.lab_id')
+                  ->join('users as u','u.id','=','t.supervisor_id')
+                   ->where([['t.is_approved','=','yes']])
+                  ->select(
+                    't.id as id',  
+                      't.approved_by',
+                    't.stock_date',
+                    'i.lab_name',
+                    'u.name',
+                     'u.last_name'
+                   )
+                
+                  // ->where([['r.status','=','approved']])
+          //->where('t.expiry_date', '>', date('Y-m-d') )
+                ->where(function ($query) use ($search){
+                  return  $query->where('i.lab_name', 'LIKE', "%{$search}%");
+                 
+                      
+                     
+            })
+            ->offset($start)
+            ->limit($limit)
+
+            ->get();
+
+          $totalFiltered =  $totalRec ;
+
+ $data = array();
+          if (!empty($terms)) {
+$x=1;
+
+
+ 
+           
+            foreach ($terms as $term) {
+         $nestedData['id']=$x;
+               $nestedData['item_id']=$term->id;
+                $nestedData['stock_date']=$term->stock_date;
+                $nestedData['lab_name']=$term->lab_name;
+
+                        $nestedData['supervised_by']=$term->name.' '.$term->last_name;
+                 if($term->approved_by !=NULL){
+                    $user=User::where('id',$term->approved_by)->select('name','last_name')->first();
+                     $nestedData['approved_by']=$user->name.' '.$user->last_name;
+                }
+
+    else{
+                 $nestedData['approved_by']= "";
+             }
+             
+               
+                $nestedData['status']="";
+      
+                
+               
+                   $x++;
+             
+                $data[] = $nestedData;
+           }
+      }
+
+      $json_data = array(
+        "draw" => intval($request->input('draw')),
+        "recordsTotal" => intval($totalData),
+        "recordsFiltered" => intval($totalFiltered),
+        "data" => $data,
+    );
+
+      echo json_encode($json_data);
+}
+public function VarianceDetails(Request $request){
+  $data = array();
+$details=DB::table('stock_take_details as s')
+->join('inventories as i','i.id','=','s.item_id')
+
+->where('stock_take_id',$request->id)->get();
+
+ foreach($details as $r)  { 
+ $item=Item::where('id',$r->item_id)->select('item_name')->first();
+ $nested['item_name']=$item->item_name;
+
+$nested['system_quantity']=$r->system_quantity;
+$nested['physical_count']=$r->physical_count;
+if($r->system_quantity==$r->physical_count){
+$nested['status']='<span class="badge badge-success">Good</span>';
+}
+if($r->system_quantity>$r->physical_count){
+$nested['status']='<span class="badge badge-warning">Underage</span>';
+}
+if($r->system_quantity<$r->physical_count){
+$nested['status']='<span class="badge badge-danger">Overage</span>';
+}
+$data[]= $nested;
+ 
+ }
+
+ return response()->json([
+   'data'=>$data,
+  ]);
+}
+public function VarianceByLab(Request $request){
+$lab_id=$request->lab_id;
+//dd($request);
+          $columns = array(
+            0 =>'id',
+            1=>'stock_date',
+            2=>'lab_name',
+            4=>'supervised_by',
+            5=>'approved_by',
+           
+          
+        );
+    $totalData =DB::table('stock_takes as t')
+                  ->join('laboratories as i','i.id','=','t.lab_id')
+                  ->join('users as u','u.id','=','t.supervisor_id')
+                   ->where([['t.is_approved','=','yes']])
+                  ->where('t.lab_id',$lab_id)
+                   ->count();
+
+           // ->where('t.expiry_date', '>', date('Y-m-d') )
+         
+
+            $totalRec = $totalData;
+          // $totalData = DB::table('appointments')->count();
+
+          $limit = $request->input('length');
+          $start = $request->input('start');
+          $order = $columns[$request->input('order.0.column')];
+          $dir = $request->input('order.0.dir');
+
+           $search = $request->input('search.value');
+
+            $terms = DB::table('stock_takes as t')
+            ->join('laboratories as i','i.id','=','t.lab_id')
+                  ->join('users as u','u.id','=','t.supervisor_id')
+                   ->where([['t.is_approved','=','yes']])
+                    ->where('t.lab_id',$lab_id)
+                  ->select(
+                    't.id as id',  
+                      't.approved_by',
+                    't.stock_date',
+                    'i.lab_name',
+                    'u.name',
+                     'u.last_name'
+                   )
+                
+                  // ->where([['r.status','=','approved']])
+          //->where('t.expiry_date', '>', date('Y-m-d') )
+                ->where(function ($query) use ($search){
+                  return  $query->where('i.lab_name', 'LIKE', "%{$search}%");
+                 
+                      
+                     
+            })
+            ->offset($start)
+            ->limit($limit)
+
+            ->get();
+
+          $totalFiltered =  $totalRec ;
+
+ $data = array();
+          if (!empty($terms)) {
+$x=1;
+
+
+ 
+           
+            foreach ($terms as $term) {
+         $nestedData['id']=$x;
+               $nestedData['item_id']=$term->id;
+                $nestedData['stock_date']=$term->stock_date;
+                $nestedData['lab_name']=$term->lab_name;
+
+                        $nestedData['supervised_by']=$term->name.' '.$term->last_name;
+                 if($term->approved_by !=NULL){
+                    $user=User::where('id',$term->approved_by)->select('name','last_name')->first();
+                     $nestedData['approved_by']=$user->name.' '.$user->last_name;
+                }
+
+    else{
+                 $nestedData['approved_by']= "";
+             }
+             
+               
+                $nestedData['status']="";
+      
+                
+               
+                   $x++;
+             
+                $data[] = $nestedData;
+           }
+      }
+
+      $json_data = array(
+        "draw" => intval($request->input('draw')),
+        "recordsTotal" => intval($totalData),
+        "recordsFiltered" => intval($totalFiltered),
+        "data" => $data,
+    );
+
+      echo json_encode($json_data);
+}
+public function labSelectedConsumption(Request $request){
+
+$columns = array(
+            0 =>'id',
+            1=>'item_name',  
+            2=>'catalog_number',
+            3=>'unit_issue',
+            4=>'consumed',
+         
+           
+        );
+$lab=$request->lab_id;
+          $totalData = DB::table('items as t') 
+              ->join('inventories AS l', 'l.item_id', '=', 't.id')
+              ->join('consumption_details as c','c.item_id','=','l.id')
+              ->select(
+                DB::raw('SUM(c.consumed_quantity) as consumed_quantity'))
+                ->orderBy('t.item_name','asc')
+                ->where('l.lab_id',$lab)
+            ->groupBy('t.item_name')
+              ->count();
+
+
+
+            $totalRec = $totalData;
+          // $totalData = DB::table('appointments')->count();
+
+          $limit = $request->input('length');
+          $start = $request->input('start');
+          $order = $columns[$request->input('order.0.column')];
+          $dir = $request->input('order.0.dir');
+
+           $search = $request->input('search.value');
+            $terms =DB::table('items as t') 
+              ->join('inventories AS l', 'l.item_id', '=', 't.id')
+              ->join('consumption_details as c','c.item_id','=','l.id')
+              ->select(
+                 't.id as item_id',
+                'l.id as id',
+                't.item_name',
+                'l.batch_number',
+                't.catalog_number',
+                'unit_issue',
+                DB::raw('SUM(c.consumed_quantity) as consumed_quantity'))
+               ->where('l.lab_id',$lab)
+          //->where('t.expiry_date', '<', $date )
+                ->where(function ($query) use ($search){
+                  return  $query->where('t.item_name', 'LIKE', "%{$search}%")
+                  ->orWhere('l.batch_number','LIKE',"%{$search}%");
+                      
+                     
+            })
+            ->offset($start)
+            ->limit($limit)
+            ->orderBy('t.item_name','asc')
+            ->groupBy('t.item_name')
+            ->get();
+          $totalFiltered =  $totalRec ;
+//  0 => 'id',
+    
+          $data = array();
+          if (!empty($terms)) {
+$x=1;
+ 
+
+
+            foreach ($terms as $term) {
+
+
+
+                $nestedData['item_id']= $term->item_id;
+                $nestedData['id']=$x;
+                $nestedData['item_name']=$term->item_name;
+               
+                $nestedData['catalog_number']= $term->catalog_number;
+                $nestedData['unit_issue']= $term->unit_issue;
+                $nestedData['consumed']= $term->consumed_quantity;
+                
+             
+               
+                   $x++;
+                $data[] = $nestedData;
+              
+           }
+      }
+
+      $json_data = array(
+        "draw" => intval($request->input('draw')),
+        "recordsTotal" => intval($totalData),
+        "recordsFiltered" => intval($totalFiltered),
+        "data" => $data,
+        
+    );
+
+      echo json_encode($json_data);
+}
+public function loadVarianceByLab(Request $request){
+$lab=auth()->user()->laboratory_id;
+          $columns = array(
+            0 =>'id',
+            1=>'stock_date',
+            2=>'lab_name',
+            4=>'supervised_by',
+            5=>'approved_by',
+
+
+        );
+    $totalData =DB::table('stock_takes as t')
+                  ->join('laboratories as i','i.id','=','t.lab_id')
+                  ->join('users as u','u.id','=','t.supervisor_id')
+                   ->where([['t.is_approved','=','yes']])
+                   ->where('t.lab_id',$lab)
+
+                   ->count();
+
+           // ->where('t.expiry_date', '>', date('Y-m-d') )
+
+
+            $totalRec = $totalData;
+          // $totalData = DB::table('appointments')->count();
+
+          $limit = $request->input('length');
+          $start = $request->input('start');
+          $order = $columns[$request->input('order.0.column')];
+          $dir = $request->input('order.0.dir');
+
+           $search = $request->input('search.value');
+
+            $terms = DB::table('stock_takes as t')
+            ->join('laboratories as i','i.id','=','t.lab_id')
+                  ->join('users as u','u.id','=','t.supervisor_id')
+                   ->where([['t.is_approved','=','yes']])
+                   ->where('t.lab_id',$lab)
+                  ->select(
+                    't.id as id',
+                      't.approved_by',
+                    't.stock_date',
+                    'i.lab_name',
+                    'u.name',
+                     'u.last_name'
+                   )
+
+                  // ->where([['r.status','=','approved']])
+          //->where('t.expiry_date', '>', date('Y-m-d') )
+                ->where(function ($query) use ($search){
+                  return  $query->where('i.lab_name', 'LIKE', "%{$search}%");
+
+
+
+            })
+            ->offset($start)
+            ->limit($limit)
+
+            ->get();
+
+          $totalFiltered =  $totalRec ;
+
+ $data = array();
+          if (!empty($terms)) {
+$x=1;
+
+
+
+
+            foreach ($terms as $term) {
+         $nestedData['id']=$x;
+               $nestedData['item_id']=$term->id;
+                $nestedData['stock_date']=$term->stock_date;
+                $nestedData['lab_name']=$term->lab_name;
+
+                        $nestedData['supervised_by']=$term->name.' '.$term->last_name;
+                 if($term->approved_by !=NULL){
+                    $user=User::where('id',$term->approved_by)->select('name','last_name')->first();
+                     $nestedData['approved_by']=$user->name.' '.$user->last_name;
+                }
+
+    else{
+                 $nestedData['approved_by']= "";
+             }
+
+
+                $nestedData['status']="";
+
+
+
+                   $x++;
+
+                $data[] = $nestedData;
+           }
+      }
+
+      $json_data = array(
+        "draw" => intval($request->input('draw')),
+        "recordsTotal" => intval($totalData),
+        "recordsFiltered" => intval($totalFiltered),
+        "data" => $data,
+    );
+
+      echo json_encode($json_data);
 }
 
-
+}

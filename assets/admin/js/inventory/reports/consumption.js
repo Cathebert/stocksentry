@@ -1,6 +1,6 @@
 "use strict"
 var p=""
-var t="";
+
 var y="";
 var consumption_report=$("#consumption_report").val();
 
@@ -344,4 +344,111 @@ function runReport(type){
          },
      });
        
+}
+function getDefaultData(){
+
+ p = $("#consumption_table").DataTable({
+     processing: true,
+     serverSide: true,
+     paging: true,
+     scrollCollapse: true,
+     destroy: true,
+     info: true,
+
+     lengthMenu: [10, 15, 20],
+     responsive: true,
+     order: [[0, "desc"]],
+     oLanguage: {
+         sProcessing:
+             "<div class='loader-container'><div id='loader'></div></div>",
+     },
+     ajax: {
+         url: consumption_report,
+         dataType: "json",
+         type: "GET",
+     },
+
+     AutoWidth: false,
+     columns: [
+         { data: "id" },
+         { data: "item_name" },
+
+         { data: "catalog_number" },
+         { data: "unit_issue" },
+         { data: "consumed" },
+     ],
+     //Set column definition initialisation properties.
+     columnDefs: [
+         {
+             targets: [-1], //last column
+             orderable: false, //set not orderable
+         },
+         {
+             targets: [-2], //last column
+             orderable: false, //set not orderable
+         },
+         {
+             targets: [-3], //last column
+             orderable: false, //set not orderable
+         },
+     ],
+ });   
+}
+function getLabConsumed(id){
+if(id==-1){
+getData();
+return;
+}
+    var filter = $("#lab_selected").val();
+    //let form_data = $("#expiry_form").serialize();
+p = $("#consumption_table").DataTable({
+     processing: true,
+     serverSide: true,
+     paging: true,
+     scrollCollapse: true,
+     destroy:true,
+     info: true,
+
+     lengthMenu: [10, 20, 50],
+     responsive: true,
+     order: [[0, "desc"]],
+     oLanguage: {
+         sProcessing:
+             "<div class='loader-container'><div id='loader'></div></div>",
+     },
+     ajax: {
+         url: filter,
+         dataType: "json",
+         type: "GET",
+         data: {
+             lab_id:id
+         },
+     },
+
+     AutoWidth: false,
+     columns: [
+         {
+            data:"id"
+         },
+         { data: "item_name" },
+         { data: "catalog_number" },
+         { data: "unit_issue" },
+         { data: "consumed" },
+     ],
+     //Set column definition initialisation properties.
+     columnDefs: [
+         {
+             targets: [-1], //last column
+             orderable: false, //set not orderable
+         },
+         {
+             targets: [-2], //last column
+             orderable: false, //set not orderable
+         },
+         {
+             targets: [-3], //last column
+             orderable: false, //set not orderable
+         },
+     ],
+ });
 }

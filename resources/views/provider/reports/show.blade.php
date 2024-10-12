@@ -1,11 +1,11 @@
- @extends('provider.layout.main')
+@extends('provider.layout.main')
 @section('title','Stock Inventory')
 @section('content')
 
  <div class="container-fluid">
 <nav aria-label="breadcrumb">
   <ol class="breadcrumb">
-    <li class="breadcrumb-item"><a href="{{route('admin.home')}}">Home</a></li>
+    <li class="breadcrumb-item"><a href="{{route('moderator.home')}}">Home</a></li>
     <li class="breadcrumb-item"><a href="#">Reports</a></li>
     <li class="breadcrumb-item active" aria-current="page">Available</li>
   </ol>
@@ -20,13 +20,14 @@
   <a href="#" class="list-group-item list-group-item-action active">
    Inventory
   </a>
-  <a href="{{route('lab_manager_report.expiry')}}" class="list-group-item list-group-item-action">Expiry Report</a>
+  <a href="{{route('lab_manager_report.expired')}}" class="list-group-item list-group-item-action">Expired Items Report</a>
+  <a href="{{route('lab_manager_report.expiry')}}" class="list-group-item list-group-item-action">About To Expire Report</a>
  
   <a href="{{route('lab_manager_report.consumption')}}" class="list-group-item list-group-item-action">Consumption Usage Report</a>
   <a href="{{route('lab_manager_report.stock-level')}}" class="list-group-item list-group-item-action">Stock Levels Report</a>
     <a href="{{route('lab_manager_reports.item_out_of_stock')}}" class="list-group-item list-group-item-action">Items out of Stock</a>
-     <a href="#" class="list-group-item list-group-item-action" hidden>Variance Report</a>
-     <a href="#" class="list-group-item list-group-item-action">Stock Disposal Summary</a>
+      <a href="{{route('lab_manager_report.variance')}}" class="list-group-item list-group-item-action" >StockTake Variance Report</a>
+     <a href="{{ route('lab_manager_report.show-disposed') }}" class="list-group-item list-group-item-action">Stock Disposal Summary</a>
    
 </div>
 
@@ -58,7 +59,7 @@
   <a href="#" class="list-group-item list-group-item-action active">
     Activity
   </a>
-  <a href="#" class="list-group-item list-group-item-action">System Mails</a>
+  <a href="{{route('lab.system_mails')}}" class="list-group-item list-group-item-action">System Mails</a>
   <a href="#" class="list-group-item list-group-item-action">Activity Logs</a>
 
 </div>
@@ -68,10 +69,10 @@
 
   <div class="list-group">
   <a href="#" class="list-group-item list-group-item-action active">
-    General
+   Automation
   </a>
-  <a href="#" class="list-group-item list-group-item-action">Supplier Report</a>
-  <a href="#" class="list-group-item list-group-item-action">ABC classification</a>
+ <a href="{{route('labscheduled.show')}}" class="list-group-item list-group-item-action">View/Schedule Reports</a>
+
  
 </div>
 
@@ -82,5 +83,3 @@
           
 </div>
             @endsection
-
- 

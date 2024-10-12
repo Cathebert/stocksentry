@@ -1,4 +1,4 @@
- @extends('clerk.layout.main')
+@extends('clerk.layout.main')
 @section('title','Inventory')
 @push('style')
    
@@ -45,6 +45,7 @@
             <input type="hidden" id="modal_dispose_url" value="{{route('disposal.list')}}"/>
             <input type="hidden" id="items_disposal_list" value="{{route('disposal.load')}}"/>
             <input type="hidden" id="approve_disposal"  value="{{route('disposal.approve')}}"/>
+             <input type="hidden" id="deny_disposal"  value="{{route('disposal.cancel')}}"/>
  
             
             <div class="row">
@@ -95,14 +96,15 @@
 <thead class="thead-light">
     <tr>
        <th scope="col">#</th>
-     <th scope="col">Code</th>
-       <th scope="col">Brand</th>
+     <th scope="col">Item Name</th>
+       <th scope="col">Code</th>
          <th scope="col">Batch Number</th>
-        <th scope="col">Generic Name</th>
+        <th scope="col">Catalog #</th>
         <th scope="col">UOM </th>
         <th scope="col">Quantity Available</th>
+        <th scope="col">Reason</th>
          <th scope="col">Quantity To Dispose</th>
-          <th scope="col">Reason</th>
+          
   
       
       

@@ -1,11 +1,11 @@
- @extends('layouts.main')
+@extends('layouts.main')
 @section('title','Scheduled Reports')
 @section('content')
 <div class="container-fluid">
 <nav aria-label="breadcrumb">
   <ol class="breadcrumb">
     <li class="breadcrumb-item"><a href="{{route('admin.home')}}">Home</a></li>
-    <li class="breadcrumb-item"><a href="#">System</a></li>
+    <li class="breadcrumb-item"><a href="{{route('reports.show')}}">System</a></li>
     <li class="breadcrumb-item active" aria-current="page">Scheduled</li>
   </ol>
 </nav>
@@ -47,7 +47,7 @@
   <option value="1">Weekly</option>
   <option value="2" selected>Monthly</option>
   <option value="3">Quarterly</option>
-  <option value="3">Yearly</option>
+  <option value="4">Yearly</option>
 </select>
     </div>
     <label for="staticEmail" class="col-sm-3 col-form-label" id="report_infor">Report will be generated and sent on a monthly basis.</label>
@@ -56,11 +56,15 @@
     <label for="staticEmail" class="col-sm-3 col-form-label text-danger">Report Type *</label>
     <div class="col-sm-6">
      <select class="form-control" name="report_type" id="report_type" >
+     @if(auth()->user()->lab_id!=0)
   <option value="1">Consumption Report</option>
+  @endif
   <option value="2">Stock Level Report</option>
+  @if(auth()->user()->lab_id!=0)
   <option value="3">Requisition Report</option>
+  @endif
   <option value="4">Stock Disposal Report</option>
-  <option value="5">Issue Report</option>
+  <option value="5">Expiry Report</option>
 </select>
     </div>
     
@@ -137,8 +141,9 @@
 
        
 		<div class="card-body">
-            <input type="hidden" id="scheduled_url" value="{{route('scheduled.load')}}"/>
+            <input type="hidden" id="scheduled_url" value="{{route('labscheduled.load')}}"/>
        <input type="hidden" id="deactivate" value="{{route('scheduled.deactivate')}}"/>
+         <input type="hidden" id="delete" value="{{route('scheduled.delete')}}"/>
      
             <h5 class="card-title"><strong>Scheduled Reports </strong></h5>
         <div class="table-responsive">
@@ -155,7 +160,7 @@
            <th width="10%">File Format</th>
             <th width="10%">Status</th>
               <th width="10%">Action</th>
-         
+            <th width="10%">Delete</th>
 			</tr>
            
   </thead>

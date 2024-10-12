@@ -5,11 +5,11 @@
     <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>{{ config('app.name', 'StockSentry ') }} | Expired</title>
-     <link rel="stylesheet" href="{{ asset('assets/css/pdf.css') }}" type="text/css"> 
+     <link rel="stylesheet" href="https://stocksentry.org/assets/css/pdf.css" type="text/css"> 
 </head>
 <body>
     
-                <img src="{{ asset('assets/icon/logo_black.png') }}" style="margin-bottom: 0px;" height=70px >
+                <img src="https://stocksentry.org/assets/icon/logo_black.png" style="margin-bottom: 0px;" height=70px >
            
            <hr>
     <table class="w-full">
@@ -23,7 +23,7 @@
     </div>
 
     <div class="margin-top">
-         <span class="heading4" style="text-align: center;"><strong>Expired Items List</strong></span> <br> 
+         <span class="heading4" style="text-align: center;"><strong>{{$lab_name??"" }} Expired Items List</strong></span> <br> 
         <table class="products">
             <tr>
                 <th>Sr.</th>

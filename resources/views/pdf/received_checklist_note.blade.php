@@ -94,9 +94,10 @@
      <table class="w-full">
                                
                                     <tr >
-                                        <th>Checked By :   {{$checker}}</th>
-                                          <th>Checked Date:   {{$checker_date}}</th>
-                                             <th>Signature:  <img src="{{ url('/').'/public/upload/signatures/'.$checker_signature}}" width="40px" height="40px"/></th>
+                                        <th>Checked By :   {{$checker??""}}</th>
+                                          <th>Checked Date:   {{$checker_date??""}}</th>
+                                          
+                                             <th>Signature: @if($checker_signature!="") <img src="{{ url('/').'/public/upload/signatures/'.$checker_signature}}" width="40px" height="40px"/>@endif</th>
 </tr>
         
                             </table>
@@ -114,9 +115,9 @@
                        <table class="w-full">
                                 <thead>
                                     <tr >
-                                        <th>Reviewed By:  {{$reviewer}}</th>
-                                          <th>Reviewed Date:   {{$reviewer_date}}</th>
-                                             <th>Signature :  <img src="{{ url('/').'/public/upload/signatures/'.$reviewer_signature}}" width="40px" height="40px"/></th>
+                                        <th>Reviewed By:  {{$reviewer??""}}</th>
+                                          <th>Reviewed Date:   {{$reviewer_date??""}}</th>
+                                             <th>Signature : @if($reviewer_signature!="") <img src="{{ url('/').'/public/upload/signatures/'.$reviewer_signature}}" width="40px" height="40px"/>@endif</th>
 </tr>
 </thead>
                             </table>
@@ -134,9 +135,9 @@
                <table class="w-full">
                                 <thead>
                                     <tr >
-                                        <th>Reviewed By:  {{$received_by}}</th>
-                                          <th>Reviewed Date:   {{$date_received}}</th>
-                                             <th>Signature :  <img src="{{ url('/').'/public/upload/signatures/'.$signature}}" width="40px" height="40px"/></th>
+                                        <th>Reviewed By:  {{$received_by??""}}</th>
+                                          <th>Reviewed Date:   {{$date_received??""}}</th>
+                                             <th>Signature :@if($signature!="")  <img src="{{ url('/').'/public/upload/signatures/'.$signature}}" width="40px" height="40px"/>@endif</th>
 </tr>
 </thead>
                             </table>

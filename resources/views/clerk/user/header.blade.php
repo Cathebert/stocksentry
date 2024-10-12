@@ -1,18 +1,17 @@
-
-    <div class="clearfix"></div>
+<div class="clearfix"></div>
  
   <ul id="myTab" class="nav nav-tabs " role="tablist">
      <li role="presentation" class="@if(Request::segment(2)=='profile')active @ else @endif" role="presentation" >
-        <a class="nav-link @if(Request::segment(2)=='profile')active @ else @endif" role="tab" type="button" href="{{route('userprofile')}}"><strong>User Profile</strong></a>
+        <a class="nav-link @if(Request::segment(2)=='profile')active @ else @endif" role="tab" type="button" href="{{route('labuser.userprofile')}}"><strong>User Profile</strong></a>
         </li>
 
   <li  role="presentation" class="@if(Request::segment(2)=='password')active @ else @endif" >
-    <a class="nav-link @if(Request::segment(2)=='password')active @ else @endif" role="tab" type="button"   href="{{route('password')}}"><strong>Change Password</strong></a>
+    <a class="nav-link @if(Request::segment(2)=='password')active @ else @endif" role="tab" type="button"   href="{{route('labuser.password')}}"><strong>Change Password</strong></a>
   </li>
 
 
   <li role="presentation" class="@if(Request::segment(2)=='signature')active @ else @endif">
-    <a class="nav-link @if(Request::segment(2)=='signature')active @ else @endif"   role="tab" type="button"  href="{{route('signature')}}"><strong>Change Signature</strong></a>
+    <a class="nav-link @if(Request::segment(2)=='signature')active @ else @endif"   role="tab" type="button"  href="{{route('labuser.signature')}}"><strong>Change Signature</strong></a>
   </li>
  
 </ul>

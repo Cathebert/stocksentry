@@ -1,4 +1,4 @@
- @extends('layouts.main')
+@extends('layouts.main')
 @section('title','Item Orders')
 @push('style')
    
@@ -26,7 +26,7 @@
         <form method="post" id="form_id">
           @csrf
          <input type="hidden" id="received_orders" value="{{route('orders.received')}}"/>
-            <input type="hidden" id="show_orders_details" value="{{route('order.show')}}"/>
+            <input type="hidden" id="show_orders_details" value="{{route('order.show_received')}}"/>
             <div class="row">
     <div class="col-md-3 col-sm-12 col-xs-12 form-group" >
   <div class="input-group">
@@ -172,4 +172,6 @@
     @push('js')
      <script src="{{asset('assets/admin/js/inventory/received_orders.js') }}"></script>
 
+  
+   
    @endpush

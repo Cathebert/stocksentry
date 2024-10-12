@@ -1,4 +1,4 @@
- @extends('provider.layout.main')
+@extends('provider.layout.main')
 @section('title','Issues')
 @push('style')
    
@@ -8,7 +8,7 @@
  <div class="container-fluid">
 <nav aria-label="breadcrumb">
   <ol class="breadcrumb">
-    <li class="breadcrumb-item"><a href="{{route('admin.home')}}">Home</a></li>
+    <li class="breadcrumb-item"><a href="{{route('moderator.home')}}">Home</a></li>
     <li class="breadcrumb-item"><a href="#">Inventory</a></li>
     <li class="breadcrumb-item active" aria-current="page">Issue</li>
   </ol>

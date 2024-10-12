@@ -1,4 +1,4 @@
- @extends('layouts.main')
+@extends('layouts.main')
 @section('title','Items')
 @push('style')
        
@@ -47,6 +47,7 @@
          <input type='hidden' class="form-control" id="item-csvlist" value="{{route('item.uploadcsv-itemlist')}}"/>
          <input type="hidden" class="" id="search_url" value="{{route('item.filter-search')}}"/>
          <input type="hidden" id="export"  value="{{route('items.export_items')}}"/>
+         <input type="hidden" id="deleted_items" value="{{route('item.deleted')}}"/>
         <div class="row">
          
               
@@ -73,7 +74,7 @@
     <label class="input-group-text" for="inputGroupSelect01" style="background-color:grey;color:white">Laboratory:</label>
   </div>
   <select class="custom-select" id="inputGroupSelect01" name="item_lab"  onchange="searchByLab(this.value)">
-   <option value="99">All</option>
+   <option value="100">All</option>
      @foreach ($laboratory as $lab)
        <option value="{{$lab->id}}">{{$lab->lab_name}}</option>
    @endforeach
@@ -136,11 +137,13 @@
        
      <button type="button" class="btn btn-primary" id="deactivate_item" style="x" onclick="deactivateItem()" hidden><i class="fa fa-check"></i> Deactivate</button>&nbsp;&nbsp;
           <button type="button" class="btn btn-info" id="print_items" style="x" hidden><i class="fa fa-print" ></i> Print</button>&nbsp;&nbsp;
-          @if (auth()->user()->authority==1)
-               <button type="button" class="btn btn-secondary" id="import_list" style="border-radius: 4px;" onclick="inputFile()"><i class="fa fa-download"></i> Import  List</button>&nbsp;&nbsp;
+           <a href="{{route('items.export_items')}}" type="button" class="btn btn-secondary" id="export_list" style="border-radius: 4px;" ><i class="fa fa-share"></i> Export List</a>&nbsp;&nbsp;
+          @if (auth()->user()->authority==1 ||auth()->user()->authority==2 )
+               <button type="button" class="btn btn-secondary" id="import_list" style="border-radius: 4px;" onclick="inputFile()" hidden><i class="fa fa-download"></i> Import  List</button>&nbsp;&nbsp;
+                <button type="button" class="btn btn-danger"  style="border-radius: 4px;" onclick="deletedItems()" ><i class="fa fa-trash"></i> Deleted Items</button>&nbsp;&nbsp;
                 
           @endif
-   <a href="{{route('items.export_items')}}" type="button" class="btn btn-secondary" id="export_list" style="border-radius: 4px;" ><i class="fa fa-share"></i> Export List</a>&nbsp;&nbsp;
+  
 
 </div>
 </div>

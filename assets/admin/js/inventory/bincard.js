@@ -7,7 +7,8 @@ var item_id;
      
  }
  function CheckBoxSelect(id) {
-    
+    $("#start_date").val("");
+    $("#end_date").val("");
     $(".list-group-item-info").removeClass("list-group-item-info");
   $("#" + id).addClass("list-group-item-info"); 
    item_id = id;

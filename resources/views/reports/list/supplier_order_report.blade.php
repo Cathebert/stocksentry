@@ -1,4 +1,4 @@
- @extends('layouts.main')
+@extends('layouts.main')
 @section('title','Stock Inventory')
 @section('content')
 
@@ -6,12 +6,12 @@
 <nav aria-label="breadcrumb">
   <ol class="breadcrumb">
     <li class="breadcrumb-item"><a href="{{route('admin.home')}}">Home</a></li>
-    <li class="breadcrumb-item"><a href="#">Reports</a></li>
+    <li class="breadcrumb-item"><a href="{{route('reports.show')}}">Reports</a></li>
     <li class="breadcrumb-item active" aria-current="page">Orders Report</li>
   </ol>
 </nav>
    <!-- Page Heading -->
-   <div class="dropdown" style="text-align:right" >
+   <div class="dropdown" style="text-align:right" hidden>
   <button class="dropdown-toggle btn btn-outline-primary btn-sm" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
   <i class="fa fa-upload"> Export As</i>
 </button>
@@ -58,7 +58,7 @@
             
             <div class="row">
               
-    <div class="col-md-4 col-sm-12 col-xs-12 form-group">
+    <div class="col-md-4 col-sm-12 col-xs-12 form-group" hidden>
 <div class="input-group mb-3">
   <div class="input-group-prepend">
     <label class="input-group-text" for="period">Period</label>

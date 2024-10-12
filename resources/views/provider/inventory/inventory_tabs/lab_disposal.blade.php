@@ -1,4 +1,4 @@
- @extends('provider.layout.main')
+@extends('provider.layout.main')
 @section('title','Inventory')
 @push('style')
    
@@ -8,7 +8,7 @@
  <div class="container-fluid">
 <nav aria-label="breadcrumb">
   <ol class="breadcrumb">
-    <li class="breadcrumb-item"><a href="{{route('admin.home')}}">Home</a></li>
+    <li class="breadcrumb-item"><a href="{{route('moderator.home')}}">Home</a></li>
     <li class="breadcrumb-item"><a href="#">Inventory</a></li>
     <li class="breadcrumb-item active" aria-current="page">Disposal</li>
   </ol>
@@ -45,6 +45,7 @@
             <input type="hidden" id="modal_dispose_url" value="{{route('disposal.list')}}"/>
             <input type="hidden" id="items_disposal_list" value="{{route('disposal.load')}}"/>
             <input type="hidden" id="approve_disposal"  value="{{route('disposal.approve')}}"/>
+             <input type="hidden" id="deny_disposal"  value="{{route('disposal.cancel')}}"/>
             
             <div class="row">
 
@@ -94,10 +95,10 @@
 <thead class="thead-light">
     <tr>
        <th scope="col">#</th>
-     <th scope="col">Code</th>
-       <th scope="col">Brand</th>
+     <th scope="col">Item Name</th>
+       <th scope="col">Code</th>
          <th scope="col">Batch Number</th>
-        <th scope="col">Generic Name</th>
+        <th scope="col">Catalog #</th>
         <th scope="col">UOM </th>
         <th scope="col">Quantity Available</th>
          <th scope="col">Reason</th>

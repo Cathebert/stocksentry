@@ -1,4 +1,4 @@
- @extends('provider.layout.main')
+@extends('provider.layout.main')
 @section('title','Stock Inventory')
 @section('content')
 
@@ -21,8 +21,7 @@
     <a class="dropdown-item" href="" ><i class="fa fa-download"></i> PDF File</a>
     <a class="dropdown-item" href=""><i class="fa fa-share"></i>  Excel file</a>
     <hr>
-    <a class="dropdown-item" href=""><i class="fa fa-print"></i> Print Report </a>
-     <a class="dropdown-item" href="#"><i class="fa fa-envelope"></i> Mail To</a>
+   
   </div>
 </div>
                     <div class="d-sm-flex align-items-center justify-content-between mb-4">

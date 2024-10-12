@@ -5,16 +5,16 @@
     <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>{{ config('app.name', 'StockSentry ') }} | Orders</title>
-     <link rel="stylesheet" href="{{ asset('assets/css/pdf.css') }}" type="text/css"> 
+     <link rel="stylesheet" href="https://stocksentry.org/assets/css/pdf.css" type="text/css"> 
 </head>
 <body>
     
-                <img src="{{ asset('assets/icon/logo_black.png') }}" style="margin-bottom: 0px;" height=70px >
+                <img src="https://stocksentry.org/assets/icon/logo_black.png" style="margin-bottom: 0px;" height=70px >
            
            <hr>
     <table class="w-full">
         <tr>
-           <td class="w-half" style="text-align:center">Orders</td>
+           <td class="w-half" style="text-align:center">{{$lab_name??""}}  Orders</td>
         </tr>
     </table>
  
@@ -23,14 +23,14 @@
     </div>
 
     <div class="margin-top">
-         <span class="heading4" style="text-align: center;"><strong>Orders to supplier</strong></span> <br> 
+         <span class="heading4" style="text-align: center;"><strong>Orders List</strong></span> <br> 
         <table class="products">
             <tr>
-                <th>Sr.</th>
+               <th>Order #</th>
                 <th>Ordered By</th>
-                  <th>Order Approved</th>
-                 <th>Consolidation Status</th>
-                 <th>Received By</th>
+                  <th>Is Approved</th>
+                 <th>Is Consolidated</th>
+            
                   <th>Delivery  Status</th>
             </tr>
                           @php $i=1;
@@ -53,9 +53,7 @@
                         
                    
                     
-                    <td>
-                        {{ $i }}
-                    </td>
+                    
                      <td>
                       {{$dat->order_number?? '' }}
                     </td>

@@ -13,8 +13,8 @@ use App\Models\StockTakeEmployeeInvolved;
 use App\Models\Discrepancy;
 use App\Models\Inventory;
 use App\Jobs\updateStockTakenJob;
+use App\Models\UserSetting;
 use App\Notifications\StockCreatedNotification;
-
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Worksheet\AutoFilter;
 use PhpOffice\PhpSpreadsheet\Worksheet\Table;
@@ -32,13 +32,13 @@ class StockTakeController extends Controller
         $data['items']= DB::table('inventories as t') 
               ->join('items AS s', 's.id', '=', 't.item_id')
           ->select('t.id as id','s.item_name')
-             ->where('t.lab_id','=',auth()->user()->laboratory_id);
+             ->where('t.lab_id','=',auth()->user()->laboratory_id)->get();
          
    
         return view('inventory.modal.stock_take',$data);
     }
 public function loadStockInventory(Request $request){
-     
+    
          $columns = array(
             0 =>'id',
             1=>'code',
@@ -47,15 +47,19 @@ public function loadStockInventory(Request $request){
             4=>'name',
             5=>'unit',
             6=>'consumed',
-            7=>'status'
-           
-        ); 
+            7=>'status',
+            8=>'location',
+            9=>'edit',
+            10=>'expiry'
+
+        );
+
    $totalData = DB::table('inventories as t') 
               ->join('items AS s', 's.id', '=', 't.item_id')
               ->select('t.id as id','s.code','s.brand','s.item_description','t.quantity','t.batch_number','t.cost','s.item_name','t.expiry_date')
           ->where('t.lab_id','=',auth()->user()->laboratory_id)
           ->where('t.quantity','>',0)
-           ->where('t.expiry_date', '>', date('Y-m-d') )
+           ->where('t.is_disposed', 'no' )
           ->count();
 
 
@@ -71,10 +75,10 @@ public function loadStockInventory(Request $request){
            $search = $request->input('search.value');
             $terms = DB::table('inventories as t') 
               ->join('items AS s', 's.id', '=', 't.item_id')
-              ->select('t.id as id','s.code','s.brand','s.item_description','t.item_id','t.quantity','t.batch_number','t.cost','s.unit_issue','s.item_name','t.expiry_date')
+              ->select('t.id as id','s.code','s.brand','s.item_description','t.item_id','t.quantity','t.batch_number','t.cost','s.unit_issue','s.location','s.item_name','t.expiry_date')
          ->where('t.lab_id','=',auth()->user()->laboratory_id)
            ->where('t.quantity','>',0)
-          ->where('t.expiry_date', '>', date('Y-m-d') )
+           ->where('t.is_disposed', 'no' )
                 ->where(function ($query) use ($search){
                   return  $query->where('s.code', 'LIKE', "%{$search}%")
                   ->orWhere('s.brand','LIKE',"%{$search}%")
@@ -102,12 +106,19 @@ $x=1;
 $nestedData['item_id']=$term->id;
                 $nestedData['id']="<input type='checkbox' id='se_$term->id' name='selected_check' onclick='AddIdToList(this.id)'/>";
                   $nestedData['batch_number']=$term->batch_number;
+                  if($term->expiry_date!='0000-00-00'){
+                   $nestedData['expiry']=$term->expiry_date;
+                   }
+                   else{
+                    $nestedData['expiry']='N/A';
+                   }
                     $nestedData['brand']= $term->brand;
                 $nestedData['code']=$term->code;
              
                  $nestedData['name']= $term->item_name;
                   $nestedData['unit']= $term->unit_issue;
-               
+                 $nestedData['location']= $term->location;
+                 $nestedData['edit']="<button  id='$term->id' onclick='editEntry(this.id)'> <i class='fa fa-edit' arial-hidden='true' id='fa_$term->id'></i></button>";
                  $nestedData['consumed'] = "<input type='number'  size='5' id='s_$term->id' min='0' class='form-control' placeholder='Enter Here' name='$term->id' onchange='getPhysicalCount(this.id,this.name)'/>";
                   $nestedData['status']="<button class='btn btn-outline-primary' id='$term->id' onclick='saveConsumed(this.id)'> <i class='fa fa-save' arial-hidden='true' id='fa_$term->id'></i></button>";
                    
@@ -144,7 +155,7 @@ $nestedData['item_id']=$term->id;
  $report= DB::table('items as t') 
               ->join('inventories AS s', 's.item_id', '=', 't.id')
           //->select('t.id as id','s.item_name','t.batch_number','t.cost')
-             ->where('t.lab_id','=',auth()->user()->laboratory_id)->get();
+             ->where('s.lab_id','=',auth()->user()->laboratory_id)->get();
      $spreadsheet = new Spreadsheet();
 
     $spreadsheet->getActiveSheet()->getDefaultColumnDimension()->setWidth(100, 'pt');
@@ -186,10 +197,11 @@ $spreadsheet->getActiveSheet()
     ->setCellValue('C10', 'ITEM NAME')
     ->setCellValue('D10', 'BATCH NUMBER')
     ->setCellValue('E10', 'CATALOG NUMBER')
-    ->setCellValue('F10', 'HAZARDOUS')
-    ->setCellValue('G10', 'UNIT OF ISSUE')
-    ->setCellValue('H10', 'STORAGE TEMP.')
-    ->setCellValue('I10', 'QUANTITY AVAILABLE')
+     ->setCellValue('F10', 'LOCATION')
+    ->setCellValue('G10', 'HAZARDOUS')
+    ->setCellValue('H10', 'UNIT OF ISSUE')
+    ->setCellValue('I10', 'STORAGE TEMP.')
+    ->setCellValue('J10', 'QUANTITY AVAILABLE')
  ;
 
 $num=11;
@@ -204,6 +216,7 @@ $num=11;
     $report[$x]->item_name,
     $report[$x]->batch_number,
     $report[$x]->catalog_number,
+    $report[$x]->location,
     $report[$x]->is_hazardous,
     $report[$x]->unit_issue,
     $report[$x]->store_temp,
@@ -241,7 +254,7 @@ $step=$num+1;
 
 // Create Table
 
-$table = new Table('A10:I'.$step, 'Exported');
+$table = new Table('A10:J'.$step, 'Exported');
 // Create Columns
 
 // Create Table Style
@@ -329,11 +342,19 @@ $quantities[]= $items[1];
   }
   DB::commit();
 $approvers=User::where([['authority','=',2],['laboratory_id','=',auth()->user()->laboratory_id]])->get();
+$approver_list=UserSetting::where('lab_id',auth()->user()->laboratory_id)->select('user_id')->get();
 $disposed_by=auth()->user()->name.' '.auth()->user()->last_name;
-
+if(!empty($approver_list) && count($approver_list)>0){
+foreach ($approver_list as $list) {
+$user=User::find($list->user_id);
+ $user->notify(new StockCreatedNotification($disposed_by));
+}
+}
+else{
 foreach($approvers as $user){
 
-  $user->notify(new StockCreatedNotification($disposed_by))
+  $user->notify(new StockCreatedNotification($disposed_by));
+}
 }
 return response()->json([
   'message'=>"Stock take completed Successfully awaiting Approval",
@@ -371,10 +392,27 @@ if (!empty($stock_save_form['employee_involved']) && count($stock_save_form['emp
   $details->updated_at=NULL;
   $details->save();
   DB::commit();
-return response()->json([
+  $approvers=User::where([['authority','=',2],['laboratory_id','=',auth()->user()->laboratory_id]])->get();
+$approver_list=UserSetting::where('lab_id',auth()->user()->laboratory_id)->select('user_id')->get();
+$disposed_by=auth()->user()->name.' '.auth()->user()->last_name;
+if(!empty($approver_list) && count($approver_list)>0){
+foreach ($approver_list as $list) {
+$user=User::find($list->user_id);
+ $user->notify(new StockCreatedNotification($disposed_by));
+}
+}
+else{
+foreach($approvers as $user){
+
+  $user->notify(new StockCreatedNotification($disposed_by));
+}
+
+  }
+  return response()->json([
   'message'=>config('stocksentry.stock_taken'),
   'error'=>false
 ]);
+  
   }
 
   catch(Exception $e){
@@ -384,20 +422,21 @@ return response()->json([
   'error'=>true
 ]);
   }
+
+
 }
 
-
-
 protected function  saveStock($form_details){
-
+$lab=Laboratory::where('id',auth()->user()->laboratory_id)->select('lab_name')->first();
   $stock=new StockTake();
 
 $stock->lab_id= auth()->user()->laboratory_id;
-$stock->section_id=  auth()->user()->section_id;
+$stock->section_id=  NULL;
 $stock->stock_date=$form_details['start_date'];
 $stock->is_approved="no";
+$stock->captured_by=auth()->user()->id;
 $stock->approved_by=NULL;
-$stock->inventory_area='Store';
+$stock->inventory_area=$lab->lab_name;
 $stock->supervisor_id=$form_details['supervisor'];
 $stock->created_at=now();
 $stock->updated_at=NULL;
@@ -445,7 +484,7 @@ protected function checkForDiscrepancies($stock_id,$item_id,$quantity){
 
 }
 public function stockViewHistory(){
-         $lab=Laboratory::where('id',auth()->user()->laboratory_id)->select('lab_name')->first();
+         $lab=Laboratory::where('id',auth()->user()->laboratory_id)->select('lab_name')->withTrashed()->first();
    
    $section=LaboratorySection::where('id',auth()->user()->section_id)->select('section_name')->first();
    if($section){
@@ -508,13 +547,21 @@ $x=1;
   
 
             foreach ($terms as $term) {
-
-$supervisor=User::where('id',$term->supervisor_id)->select('name','last_name')->first();
+$capturer= User::where('id',$term->captured_by)->select('name','last_name')->withTrashed()->first();
+if($capturer!=NULL){
+  $nestedData['capture']=$capturer->name.' '.$capturer->last_name;
+}
+else{
+   $nestedData['capture']="";
+}
+$supervisor=User::where('id',$term->supervisor_id)->select('name','last_name')->withTrashed()->first();
 
                 $nestedData['id']=$x;
                   $nestedData['date']=date('d, M Y',strtotime($term->stock_date));
                     $nestedData['supervisor']= $supervisor->name.'  '.$supervisor->last_name;
                 $nestedData['view']="<a class='btn btn-info btn-sm' id='$term->id' onclick='ViewStockTakeDetails(this.id)'><i class='fa fa-eye'></i> View</a> ";
+                
+                if(auth()->user()->authority==1 ||auth()->user()->authority==2 ||auth()->user()->authority==4){ 
              if($term->is_approved=="no"){
                  $nestedData['action']= "<a class='btn btn-success btn-sm'id='$term->id' onclick='ApproveStockTaken(this.id)' ><i class='fa fa-check'> Approve</i></a> | <a  class='btn btn-danger btn-sm'   id='$term->id' onclick='CancelStockTaken(this.id)'><i class='fa fa-trash'> Cancel</i></a> ";
                  
@@ -525,7 +572,24 @@ $supervisor=User::where('id',$term->supervisor_id)->select('name','last_name')->
                  if($term->is_approved=="cancel"){
                  $nestedData['action']= "<a type='button' id='$term->id' onclick='ViewStockTakeDetails(this.id)'><i class='fa fa-check'> Cancelled</i></a>";
                 }
+               }
+               else{
                
+                if($term->is_approved=="no"){
+                 $nestedData['action']= "<a type='button' id='$term->id' onclick='ViewStockTakeDetails(this.id)'><i class='fa fa-check'>Not Approved</i></a>";
+                 
+               }
+                if($term->is_approved=="yes"){
+                 $nestedData['action']= "<a type='button' id='$term->id' onclick='ViewStockTakeDetails(this.id)'><i class='fa fa-check'> Approved</i></a>";
+                }
+                 if($term->is_approved=="cancel"){
+                 $nestedData['action']= "<a type='button' id='$term->id' onclick='ViewStockTakeDetails(this.id)'><i class='fa fa-check'> Cancelled</i></a>";
+               
+               
+               
+               
+               }
+               }
                
                  
                  
@@ -548,11 +612,21 @@ $supervisor=User::where('id',$term->supervisor_id)->select('name','last_name')->
 
 }
 public function stockViewDetails(Request $request){
-  $details=DB::table('users as u')
+$details=DB::table('users as u')
                 ->join('stock_takes as e','e.supervisor_id','=','u.id')
-                ->select('name','last_name','signature','stock_date','inventory_area','is_approved','approved_by')
+                ->select('name','captured_by','last_name','signature','stock_date','inventory_area','is_approved','approved_by')
                 ->where('e.id',$request->id)->first();
-  $approver=User::where('id',$details->approved_by)->select('name','last_name','signature')->first();
+$approver=User::where('id',$details->approved_by)->select('name','last_name','signature')->withTrashed()->first();
+if($details->captured_by!=NULL){
+$capturer=User::where('id',$details->captured_by)->select('name','last_name','signature')->withTrashed()->first();
+$data['captured_by']=$capturer->name.' '.$capturer->last_name;
+$data['capturer_sig']=$capturer->signature;
+}
+else{
+$data['captured_by']="";
+$data['capturer_sig']='';
+}
+
 $data['supervisor']=$details->name. ' '. $details->last_name;
 $data['date']=date('d,M Y',strtotime($details->stock_date));
 $data['area']=$details->inventory_area;
@@ -685,7 +759,7 @@ updateStockTakenJob::dispatch($stockDetails,$request->id);
   ]);
 }
 public function labViewStockTaken(){
-         $lab=Laboratory::where('id',auth()->user()->laboratory_id)->select('lab_name')->first();
+         $lab=Laboratory::where('id',auth()->user()->laboratory_id)->select('lab_name')->withTrashed()->first();
    
    $section=LaboratorySection::where('id',auth()->user()->section_id)->select('section_name')->first();
    if($section){
@@ -710,9 +784,11 @@ $data['lab_name']='Logged Into: '.$lab->lab_name;
     'error'=>false,
   ]);
     }
-
-public function itemsLoadSelected(Request $request){
-
+    
+    public function itemsLoadSelected(Request $request){
+if($request->values==NULL){
+return;
+}
          $columns = array(
             0 =>'id',
             1=>'code',
@@ -721,29 +797,21 @@ public function itemsLoadSelected(Request $request){
             4=>'name',
             5=>'unit',
             6=>'consumed',
-            7=>'status'
+            7=>'status',
+            8=>'location',
+            9=>'edit',
+            10=>'expiry'
            
         ); 
-        
-        
-        $totalData = DB::table('inventories as t') 
+   $totalData = DB::table('inventories as t') 
               ->join('items AS s', 's.id', '=', 't.item_id')
-              ->select('t.id as id','s.code','s.brand','s.item_description','t.quantity','t.batch_number','t.cost','s.item_name','t.expiry_date')
-              ->whereIn('s.laboratory_id',$request->values)
-              ->count();
-
-            
-
-        
-
-  /* $totalData = DB::table('inventories as t') 
-              ->join('items AS s', 's.id', '=', 't.item_id')
-              ->select('t.id as id','s.code','s.brand','s.item_description','t.quantity','t.batch_number','t.cost','s.item_name','t.expiry_date')
-              ->where('s.laboratory_id','=',$request->id)
-          
-              ->count();*/
-
-
+              ->select('t.id as id','s.code','s.brand','s.item_description','t.quantity','t.batch_number','t.cost','s.location','s.item_name','t.expiry_date')
+         ->whereIn('s.laboratory_id',$request->values)
+            ->where('t.lab_id','=',auth()->user()->laboratory_id)
+         ->where('t.quantity','>',0)
+           ->where('t.is_disposed', 'no' )
+           //->where('t.expiry_date', '>', date('Y-m-d') )
+          ->count();
 
 
 
@@ -758,9 +826,12 @@ public function itemsLoadSelected(Request $request){
            $search = $request->input('search.value');
             $terms = DB::table('inventories as t') 
               ->join('items AS s', 's.id', '=', 't.item_id')
-              ->select('t.id as id','s.code','s.brand','s.item_description','t.item_id','t.quantity','t.batch_number','t.cost','s.unit_issue','s.item_name','t.expiry_date')
+              ->select('t.id as id','s.code','s.brand','s.item_description','t.item_id','t.quantity','t.batch_number','t.cost','s.location','s.unit_issue','s.item_name','t.expiry_date')
          ->whereIn('s.laboratory_id',$request->values)
-          
+           ->where('t.lab_id','=',auth()->user()->laboratory_id)
+          ->where('t.quantity','>',0)
+           ->where('t.is_disposed', 'no' )
+           //->where('t.expiry_date', '>', date('Y-m-d') )
           //->where('t.expiry_date', '>', date('Y-m-d') )
                 ->where(function ($query) use ($search){
                   return  $query->where('s.code', 'LIKE', "%{$search}%")
@@ -786,15 +857,16 @@ $x=1;
             foreach ($terms as $term) {
 
 
-                $nestedData['item_id']=$term->id;
+$nestedData['item_id']=$term->id;
                 $nestedData['id']="<input type='checkbox' id='se_$term->id' name='selected_check' onclick='AddIdToList(this.id)'/>";
                   $nestedData['batch_number']=$term->batch_number;
                     $nestedData['brand']= $term->brand;
                 $nestedData['code']=$term->code;
-             
+                $nestedData['expiry']=$term->expiry_date;
                  $nestedData['name']= $term->item_name;
                   $nestedData['unit']= $term->unit_issue;
-               
+                   $nestedData['location']= $term->location;
+                   $nestedData['edit']="<button  id='$term->id' onclick='editEntry(this.id)'> <i class='fa fa-edit' arial-hidden='true' id='fa_$term->id'></i></button>";
                  $nestedData['consumed'] = "<input type='number'  size='5' id='s_$term->id' min='0' class='form-control' placeholder='Enter Here' name='$term->id' onchange='getPhysicalCount(this.id,this.name)'/>";
                   $nestedData['status']="<button class='btn btn-outline-primary' id='$term->id' onclick='saveConsumed(this.id)'> <i class='fa fa-save' arial-hidden='true' id='fa_$term->id'></i></button>";
                    
@@ -815,19 +887,21 @@ $x=1;
 
 }
 function downloadItemsSelected(Request $request){
-if(count($request->labs)==0){
-  return redirect()->back();
+
+if($request->labs==NULL){
+  return redirect()->back()->with('error','please select a lab');
 }
 $labs=$request->labs;
-
-/*return response()->json([
-  'url'=>route('stock_download',['id'=>$request->id]),
-]);*/
 $report= DB::table('items as t') 
               ->join('inventories AS s', 's.item_id', '=', 't.id')
           //->select('t.id as id','s.item_name','t.batch_number','t.cost')
-             ->whereIn('t.laboratory_id',$labs)->get();
-if(count($report)==0){
+           ->whereIn('t.laboratory_id',$labs)
+            
+            ->where('s.lab_id','=',auth()->user()->laboratory_id)
+          ->where('s.quantity','>',0)
+           ->where('s.expiry_date', '>', date('Y-m-d') )->orderBy('t.item_name','asc')->get();
+           
+           if(count($report)==0){
   return redirect()->back()->with('error','data empty');
 }
      $spreadsheet = new Spreadsheet();
@@ -835,7 +909,7 @@ if(count($report)==0){
     $spreadsheet->getActiveSheet()->getDefaultColumnDimension()->setWidth(100, 'pt');
     $spreadsheet->getActiveSheet()->getColumnDimension('A')->setAutoSize(true);
     $spreadsheet->getActiveSheet()->mergeCells('D6:E6');
-    $spreadsheet->getProperties()->setCreator('cathebert muyila')
+$spreadsheet->getProperties()->setCreator('cathebert muyila')
     ->setLastModifiedBy('cathebert muyila')
     ->setTitle('PhpSpreadsheet Table Test Document')
     ->setSubject('PhpSpreadsheet Table Test Document')
@@ -873,8 +947,9 @@ $spreadsheet->getActiveSheet()
     ->setCellValue('E10', 'CATALOG NUMBER')
     ->setCellValue('F10', 'HAZARDOUS')
     ->setCellValue('G10', 'UNIT OF ISSUE')
-    ->setCellValue('H10', 'STORAGE TEMP.')
-    ->setCellValue('I10', 'QUANTITY AVAILABLE')
+     ->setCellValue('H10', 'LOCATION')
+    ->setCellValue('I10', 'STORAGE TEMP.')
+    ->setCellValue('J10', 'QUANTITY AVAILABLE')
  ;
 
 $num=11;
@@ -891,6 +966,7 @@ $num=11;
     $report[$x]->catalog_number,
     $report[$x]->is_hazardous,
     $report[$x]->unit_issue,
+     $report[$x]->location,
     $report[$x]->store_temp,
     '',
   ],
@@ -926,7 +1002,7 @@ $step=$num+1;
 
 // Create Table
 
-$table = new Table('A10:I'.$step, 'Exported');
+$table = new Table('A10:J'.$step, 'Exported');
 // Create Columns
 
 // Create Table Style
@@ -972,13 +1048,16 @@ function download(Request $request, $id){
   $report= DB::table('items as t') 
               ->join('inventories AS s', 's.item_id', '=', 't.id')
           //->select('t.id as id','s.item_name','t.batch_number','t.cost')
-             ->where('s.lab_id','=',$id)->get();
+              ->where('t.laboratory_id','=',$id)
+            ->where('s.lab_id','=',auth()->user()->laboratory_id)
+          ->where('s.quantity','>',0)
+           ->where('s.expiry_date', '>', date('Y-m-d') )->orderBy('t.item_name','asc')->get();
      $spreadsheet = new Spreadsheet();
 
     $spreadsheet->getActiveSheet()->getDefaultColumnDimension()->setWidth(100, 'pt');
     $spreadsheet->getActiveSheet()->getColumnDimension('A')->setAutoSize(true);
     $spreadsheet->getActiveSheet()->mergeCells('D6:E6');
-    $spreadsheet->getProperties()->setCreator('cathebert muyila')
+$spreadsheet->getProperties()->setCreator('cathebert muyila')
     ->setLastModifiedBy('cathebert muyila')
     ->setTitle('PhpSpreadsheet Table Test Document')
     ->setSubject('PhpSpreadsheet Table Test Document')
@@ -1016,8 +1095,9 @@ $spreadsheet->getActiveSheet()
     ->setCellValue('E10', 'CATALOG NUMBER')
     ->setCellValue('F10', 'HAZARDOUS')
     ->setCellValue('G10', 'UNIT OF ISSUE')
-    ->setCellValue('H10', 'STORAGE TEMP.')
-    ->setCellValue('I10', 'QUANTITY AVAILABLE')
+     ->setCellValue('H10', 'LOCATION')
+    ->setCellValue('I10', 'STORAGE TEMP.')
+    ->setCellValue('J10', 'QUANTITY AVAILABLE')
  ;
 
 $num=11;
@@ -1034,6 +1114,7 @@ $num=11;
     $report[$x]->catalog_number,
     $report[$x]->is_hazardous,
     $report[$x]->unit_issue,
+     $report[$x]->location,
     $report[$x]->store_temp,
     '',
   ],

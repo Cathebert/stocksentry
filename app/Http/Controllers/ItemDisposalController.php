@@ -9,6 +9,7 @@ use App\Models\Inventory;
 use App\Models\User;
 use App\Services\BinCardService;
 use App\Models\Laboratory;
+use App\Models\UserSetting;
 use App\Models\LaboratorySection;
 use App\Notifications\DisposalNotification;
 use DB;
@@ -19,7 +20,7 @@ class ItemDisposalController extends Controller
     // Dispose items
 
     public function runItemDisposal(Request $request){
-  //dd($request);
+ 
     //
     if(!empty($request->quantity) && count($request->quantity)>0){
         $ids=array();
@@ -83,11 +84,21 @@ return response()->json([
 }
 else{
 $approvers=User::where([['authority','=',2],['laboratory_id','=',auth()->user()->laboratory_id]])->get();
+$approver_list=UserSetting::where('lab_id',auth()->user()->laboratory_id)->select('user_id')->get();
+
 $disposed_by=auth()->user()->name.' '.auth()->user()->last_name;
+if(!empty($approver_list) && count($approver_list)>0){
+foreach ($approver_list as $list) {
+$user=User::find($list->user_id);
+  $user->notify(new DisposalNotification($disposed_by));
+}
+}
+else{
 
 foreach($approvers as $user){
 
-  $user->notify(new DisposalNotification($disposed_by))
+  $user->notify(new DisposalNotification($disposed_by));
+}
 }
  return response()->json([
     'message'=>config('stocksentry.disposal.created'),
@@ -118,7 +129,12 @@ protected function UpdateInventoryInfo($ids,$quantity,$reason){
    
      DB::table('inventories')->where([['id','=',$ids[$x]]])
          ->decrement('quantity',$quantity[$x],['updated_at'=>now()]);
+         if($reason[$x]=='expired'){
+         Inventory::where('id',$ids[$x])->update([
+         'is_disposed'=>'yes'
+         ]);
     
+   }
    }
 }
 public function showDisposalList(){
@@ -176,8 +192,8 @@ $x=1;
   
          
             foreach ($terms as $term) {
-             $user_disposer=User::where('id',$term->disposed_by)->select('name','last_name')->first();
-             $user_approver=User::where('id',$term->disposed_by)->select('name','last_name')->first();
+             $user_disposer=User::where('id',$term->disposed_by)->select('name','last_name')->withTrashed()->first();
+             $user_approver=User::where('id',$term->approved_by)->select('name','last_name')->withTrashed()->first();
  if(!$user_approver){
                 $approver="";
              }
@@ -189,31 +205,46 @@ $x=1;
 
                  $nestedData['id']= $x;
                 $nestedData['dispose_date']=date('d, M Y',strtotime($term->disposal_date));
-             
-                 $nestedData['disposed_by']= $user_disposer->name. ' '.$user_disposer->last_name;
+              
+               if(!$user_disposer){
+            $nestedData['disposed_by']= $term->disposed_by;
+               }
+               else{
+               $nestedData['disposed_by']= $user_disposer->name." ".$user_disposer->last_name;
+               }
+                // $nestedData['disposed_by']= $user_disposer->name." ".$user_disposer->last_name;
                    
-                $nestedData['approved_by'] = $user_approver->name.' '.$user_approver->last_name;
+                $nestedData['approved_by'] = $approver;
                 $nestedData['items']=$item_count;
 if(auth()->user()->authority==1 || auth()->user()->authority==2){
                 if($term->is_approved=="no" ){
-                    $nestedData['action']='<button type="button" id='.$term->id.' class="btn btn-success" onclick="ApproveDisposal(this.id)"><i class="fa fa-check" aria-hidden="true"> </i> Approve</button> || <button type="button" id='.$term->id.' class="btn btn-info" onclick="ViewDisposal(this.id)"><i class="fa fa-eye" aria-hidden="true"> </i> View</button>';
+                    $nestedData['action']='<button type="button" id='.$term->id.' class="btn btn-success" onclick="ApproveDisposal(this.id)"><i class="fa fa-check" aria-hidden="true"> </i> Approve</button> |<button type="button" id='.$term->id.' class="btn btn-danger" onclick="DenyDisposal(this.id)"><i class="fa fa-trash" aria-hidden="true"> </i> Cancel</button>
+                    | <button type="button" id='.$term->id.' class="btn btn-info" onclick="ViewDisposal(this.id)"><i class="fa fa-eye" aria-hidden="true"> </i> View</button>';
                 
                      }
-                     else{
+                     if($term->is_approved=="yes"){
                          $nestedData['action']='<i class="fa fa-check" aria-hidden="true"> </i> Approved || <button type="button" id='.$term->id.' class="btn btn-info" onclick="ViewDisposal(this.id)"><i class="fa fa-eye" aria-hidden="true"> </i> View</button>';
                      }
+                     
+                     if($term->is_approved=="cancel"){
+                         $nestedData['action']='<i class="fa fa-trash" aria-hidden="true"> </i> Cancelled || <button type="button" id='.$term->id.' class="btn btn-info" onclick="ViewDisposal(this.id)"><i class="fa fa-eye" aria-hidden="true"> </i> View</button>';
+                     }    
                     
                
               }
               if(auth()->user()->authority==4){
                  if($term->is_approved=="no" ){
-                    $nestedData['action']='<button type="button" id='.$term->id.' class="btn btn-success" onclick="ApproveDisposal(this.id)"><i class="fa fa-check" aria-hidden="true"> </i> Approve</button> || <button type="button" id='.$term->id.' class="btn btn-info" onclick="ViewDisposal(this.id)"><i class="fa fa-eye" aria-hidden="true"> </i> View</button>';
+                    $nestedData['action']='<button type="button" id='.$term->id.' class="btn btn-success" onclick="ApproveDisposal(this.id)"><i class="fa fa-check" aria-hidden="true"> </i> Approve</button> |<button type="button" id='.$term->id.' class="btn btn-danger" onclick="DenyDisposal(this.id)"><i class="fa fa-trash" aria-hidden="true"> </i> Cancel</button>
+                    | <button type="button" id='.$term->id.' class="btn btn-info" onclick="ViewDisposal(this.id)"><i class="fa fa-eye" aria-hidden="true"> </i> View</button>';
                 
                      }
-                     else{
+                              if($term->is_approved=="yes"){
                          $nestedData['action']='<i class="fa fa-check" aria-hidden="true"> </i> Approved || <button type="button" id='.$term->id.' class="btn btn-info" onclick="ViewDisposal(this.id)"><i class="fa fa-eye" aria-hidden="true"> </i> View</button>';
                      }
-                 
+                     
+                     if($term->is_approved=="cancel"){
+                         $nestedData['action']='<i class="fa fa-trash" aria-hidden="true"> </i> Cancelled || <button type="button" id='.$term->id.' class="btn btn-info" onclick="ViewDisposal(this.id)"><i class="fa fa-eye" aria-hidden="true"> </i> View</button>';
+                     }
               }
 
           
@@ -221,9 +252,13 @@ if(auth()->user()->authority==1 || auth()->user()->authority==2){
             if($term->is_approved=='no'){
                 $nestedData['action']='<i class="fa fa-hourglass-half" aria-hidden="true"> </i> Not Approved || <button type="button" id='.$term->id.' class="btn btn-info" onclick="ViewDisposal(this.id)"><i class="fa fa-eye" aria-hidden="true"> </i> View</button>';
         }
-        else{
-           $nestedData['action']='<i class="fa fa-check" aria-hidden="true"> </i> Approved || <button type="button" id='.$term->id.' class="btn btn-info" onclick="ViewDisposal(this.id)"><i class="fa fa-eye" aria-hidden="true"> </i> View</button>'; 
-        }
+                 if($term->is_approved=="yes"){
+                         $nestedData['action']='<i class="fa fa-check" aria-hidden="true"> </i> Approved || <button type="button" id='.$term->id.' class="btn btn-info" onclick="ViewDisposal(this.id)"><i class="fa fa-eye" aria-hidden="true"> </i> View</button>';
+                     }
+                     
+                     if($term->is_approved=="cancel"){
+                         $nestedData['action']='<i class="fa fa-trash" aria-hidden="true"> </i> Cancelled || <button type="button" id='.$term->id.' class="btn btn-info" onclick="ViewDisposal(this.id)"><i class="fa fa-eye" aria-hidden="true"> </i> View</button>';
+                     }
     }
                
                    $x++;
@@ -244,8 +279,9 @@ if(auth()->user()->authority==1 || auth()->user()->authority==2){
 }
 public function viewDisposal(Request $request){
     $disposal=ItemDisposal::where('id',$request->id)->first();
-   $user=User::where('id',$disposal->disposed_by)->select('name','last_name','signature')->first();
-   $lab=Laboratory::where('id',$disposal->lab_id)->select('lab_name')->first();
+   $user=User::where('id',$disposal->disposed_by)->select('name','last_name','signature')->withTrashed()->first();
+  
+   $lab=Laboratory::where('id',$disposal->lab_id)->select('lab_name')->withTrashed()->first();;
    $section=LaboratorySection::where('id',$disposal->section_id)->select('section_name')->first();
    if($section){
        $section_name=$section->section_name;
@@ -254,8 +290,8 @@ public function viewDisposal(Request $request){
    else{
        $lab_name=$lab->lab_name; 
    }
-    $user_approver = User::where('id',$disposal->approved_by)->select('name','last_name','signature')->first();
-    if(!$user_approver){
+    $user_approver = User::where('id',$disposal->approved_by)->select('name','last_name','signature')->withTrashed()->first();;
+    if($user_approver==NULL){
         $name="";
     }
     else{
@@ -273,9 +309,9 @@ $sig=$user_approver->signature;
     $data['is_approved']=$disposal->is_approved;
    $data['date']    =   date('d,M Y',strtotime($disposal->disposal_date));
    $data['disposed_by'] = $user->name.' '.$user->last_name;
-   $data['signature']   = $user->signature;
-   $data['approved_by'] = $name;
-   $data['approver_sign']=$user_approver->signature??"";
+   $data['signature']  = $user->signature??'';
+  $data['approved_by'] = $name;
+   $data['approver_sign']=$sig??"";
    $data['disposal_lab']=$lab_name;
    $data['disposal_details']=DB::table('items as t')
                     ->join('inventories as i','i.item_id','=','t.id')
@@ -410,5 +446,17 @@ foreach($disposed as $disposed){
          ->decrement('quantity',$disposed->dispose_quantity,['updated_at'=>now()]);
 }
    
+}
+public function cancelDisposedItem(Request $request){
+ItemDisposal::where('id',$request->id)->update([
+    'approved_by'=>auth()->user()->id,
+    'is_approved'=>'cancel',
+    'updated_at'=>now(),
+]);
+     
+return response()->json([
+    'message'=>"Disposal Cancelled",
+    'error'=>false
+]);
 }
 }

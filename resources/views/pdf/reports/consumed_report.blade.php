@@ -19,7 +19,7 @@
     </style>
 </head>
 <body>
-       <center>    <img src="{{public_path('/assets/icon/logo_black.png')}}" style="margin-bottom: 0px;" height=70px  ></center>
+       <center>    <img src="https://stocksentry.org/assets/icon/logo_black.png" style="margin-bottom: 0px;" height=70px  ></center>
 <table border="0" cellpadding="0" cellspacing="0" width="100%">
 
     <tr>
@@ -43,7 +43,7 @@
         </td>
     </tr>
 </table>
-<center>Consumption Report  </center>
+<center>{{$lab_name ??"" }} Consumption Report  </center>
 <hr>
 <br>
 

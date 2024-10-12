@@ -1,4 +1,4 @@
- @extends('layouts.main')
+@extends('layouts.main')
 @section('title','Stock Inventory')
 @section('content')
 
@@ -165,10 +165,10 @@
 <thead class="thead-light">
     <tr>
        <th scope="col"></th>
-     <th scope="col">Item</th>
-       <th scope="col">Brand</th>
-        <th scope="col">Batch Number</th>
-        <th scope="col">Generic Name</th>
+     <th scope="col">Item Name</th>
+     
+        <th scope="col">Batch #</th>
+    
           <th scope="col">Location</th>
         <th scope="col">Expiration </th>
         <th scope="col">Quantity</th>

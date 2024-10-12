@@ -73,9 +73,12 @@ function saveConsumedItem(id, quantity, period) {
             consumed: quantity,
             period: period,
         },
-
+  beforeSend: function () {
+                    ajaxindicatorstart("updating data... please wait...");
+                },
         success: function (data) {
             //console.log(data)
+            ajaxindicatorstop();
             if (data.error == false) {
                 toastr.options = {
                     closeButton: true,
@@ -99,6 +102,7 @@ function saveConsumedItem(id, quantity, period) {
                 
              
             } else {
+            ajaxindicatorstop();
                 toastr.options = {
                     closeButton: true,
                     debug: false,
@@ -175,9 +179,12 @@ function doUpdate(period) {
             consumed: quantities,
             period: period,
         },
-
+  beforeSend: function () {
+                    ajaxindicatorstart("updating data... please wait...");
+                },
         success: function (data) {
             //console.log(data)
+            ajaxindicatorstop();
             if (data.error == false) {
                 toastr.options = {
                     closeButton: true,
@@ -201,6 +208,7 @@ function doUpdate(period) {
                
                
             } else {
+            ajaxindicatorstop();
                 toastr.options = {
                     closeButton: true,
                     debug: false,

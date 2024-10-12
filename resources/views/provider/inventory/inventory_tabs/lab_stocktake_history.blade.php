@@ -1,4 +1,4 @@
- @extends('provider.layout.main')
+@extends('provider.layout.main')
 @section('title','Stock History')
 @push('style')
    
@@ -41,6 +41,7 @@
         <input type="hidden" class="form-control" id="stock_taken_history_url" value="{{route('stock.history_load')}}">
        <input type="hidden" id="viewStockTakenDetails" value="{{route('stock.view_details')}}"/>
        <input type="hidden" id="approve_stock" value="{{route('stock.approve_stock_taken')}}"/>
+            <input type="hidden" id="cancel"     value="{{route('stock.cancel_stock_taken')}}"/>
        
           <div class="row">
     <div class="col-md-4 col-sm-12 col-xs-12 form-group" hidden >
@@ -88,6 +89,7 @@
     <tr>
        <th scope="col"></th>
        <th scope="col">Stock Date</th>
+       <th scope="col">Captured By</th>
        <th scope="col">Supervisor</th>
          <th scope="col">View</th>
         <th scope="col">Action</th>

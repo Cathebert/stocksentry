@@ -63,14 +63,13 @@ $data['lab_name']='Logged Into: '.$lab->lab_name;
         }
         $sr_number=Requisition::select('id','sr_number')->orderBy('id', 'desc')->first();
 
-if($sr_number){
 
-             $data['sr_number']=$this->get_order_number($sr_number->id);
-}
-else{
+          
+
+
        
-             $data['sr_number']=   $this->get_order_number(1);
-}
+             $data['sr_number']= 'SR'.str_pad(mt_rand(0, 999999), 6, '0', STR_PAD_LEFT);
+
       
     
     $data['badges']=Issue::where([['from_lab_id','=',auth()->user()->laboratory_id],['approve_status','=','pending']])->count();
@@ -108,10 +107,10 @@ $data['lab_name']='Logged Into: '.$lab->lab_name;
 
   $settings=Setting::find(1);
   if( $issue==NULL){
-          $data['issue']=$settings->issue_prefix.'0001';
+          $data['issue']=$settings->issue_prefix.''.str_pad(mt_rand(0, 999999), 6, '0', STR_PAD_LEFT);
          }
          else{
-          $number=str_pad($issue->id+1, 4, '0', STR_PAD_LEFT);
+          $number=str_pad(mt_rand(0, 999999), 6, '0', STR_PAD_LEFT);
         
           $data['issue']=$settings->issue_prefix.''.$number;
          }

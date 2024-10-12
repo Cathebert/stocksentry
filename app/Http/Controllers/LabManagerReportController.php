@@ -5,6 +5,10 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use DB;
 use Carbon\Carbon;
+use App\Models\Laboratory;
+use App\Models\LaboratorySection;
+use App\Models\LabSection;
+use DataTables;
 
 class LabManagerReportController extends Controller
 {
@@ -76,10 +80,10 @@ $end = Carbon::now()->endOfQuarter()->format('Y-m-d');
                      DB::raw('SUM(i.quantity) as stock_on_hand'))
         
             
-            ->take(5)
+           
             ->orderBy('i.id','desc')
             ->groupBy('t.id','t.item_name')
-            ->get();
+            ->paginate(2);
 
 
     return response()->json(['data'=>$terms]);
@@ -713,5 +717,161 @@ $from =DB::table('items as t')
             break;
     }
 }
+public function itemDetails(Request $request){
+ $low_stock_level = DB::table('inventories')
+    ->join('items', 'inventories.item_id', '=', 'items.id')
+    ->whereColumn('inventories.quantity', '<', 'items.minimum_level')
+    ->count();
+                  
+$medium_stock_level=DB::table('inventories')
+    ->join('items', 'inventories.item_id', '=', 'items.id')
+    ->where([['inventories.quantity', '>', 'items.minimum_level'],['inventories.quantity', '<', 'items.maximum_level']])
+    ->count();
+                  
+$high_stock_level=DB::table('inventories')
+    ->join('items', 'inventories.item_id', '=', 'items.id')
+    ->where('inventories.quantity', '>', 'items.maximum_level')
+    ->count();
+return response()->json([
+    'low'=>$low_stock_level,
+    'medium'=>$medium_stock_level,
+    'high'=>$high_stock_level
+]);
+ 
 }
 
+public function getTopConsumed(Request $request){
+    $topConsumedItems = DB::table('consumption_details as c') 
+              ->join('inventories AS l', 'c.item_id', '=', 'l.id')
+              ->join('items as t','l.item_id','=','t.id')
+              ->select(
+
+                't.item_name',
+                't.item_image',
+               
+                't.code',
+             
+                DB::raw('SUM(c.consumed_quantity) as total_consumed'))
+                 ->groupBy('t.item_name')
+    ->orderByDesc('total_consumed')
+    ->limit(10)
+    ->get();
+
+   // $c=url('/'). "/public/upload/items/".$term->item_image ;
+ 
+    return Datatables::of( $topConsumedItems )
+    ->addIndexColumn()
+->addColumn('preview', function($term) {
+ if(empty($term->item_image)){
+     $default=url('/')."/assets/icon/not_available.jpg";
+
+                       return "<img src='$default' class='img-thumbnail' alt='...' width='50px' height='50px'>";  
+                  }
+                  else{
+                    $c=url('/'). "/public/upload/items/".$term->item_image ;
+                 return "<img src='$c' class='img-thumbnail' alt='...' width='50px' height='50px'>";
+                  }
+    })
+                 ->rawColumns(['preview'])
+                ->make(true)
+    ;
+}
+public function getLatestOrders(Request $request){
+   $columns = array(
+            0 =>'sr',
+            1=>'request_lab',
+            2=>'request_date',
+            3=>'options',
+            4=>'marked',
+          
+        ); 
+
+         $totalData = DB::table('requisitions') 
+          ->where('status','=','approved')
+           // ->where('t.expiry_date', '>', date('Y-m-d') )
+          ->count();
+
+
+
+            $totalRec = $totalData;
+          // $totalData = DB::table('appointments')->count();
+
+          $limit = $request->input('length');
+          $start = $request->input('start');
+          $order = $columns[$request->input('order.0.column')];
+          $dir = $request->input('order.0.dir');
+
+           $search = $request->input('search.value');
+
+            $terms = DB::table('requisitions') 
+          ->where('status','=','approved')
+          //->where('t.expiry_date', '>', date('Y-m-d') )
+                ->where(function ($query) use ($search){
+                  return  $query->where('sr_number', 'LIKE', "%{$search}%");
+                 
+                      
+                     
+            })
+            ->offset($start)
+            ->limit(5)
+            ->orderBy('id','desc')
+            ->get();
+
+          $totalFiltered =  $totalRec ;
+
+
+
+
+        $data = array();
+          if (!empty($terms)) {
+$x=1;
+  $section_name="";
+
+            foreach ($terms as $term) {
+$lab=Laboratory::where('id',$term->lab_id)->select('lab_name','has_section')->first();
+
+if($lab->has_section=="yes"){
+$section=LaboratorySection::where('id',$term->section_id)->select('section_name')->first();
+
+$section_name=$section->section_name??'';
+
+}
+else{
+  $section_name='';
+}
+                $nestedData['sr']="<a class='btn btn-info btn-sm' id='$term->id' onclick='ViewApprovedRequest(this.id)'><i class='fa fa-eye'></i>".$term->sr_number."</a> ";
+                $nestedData['request_lab']=$lab->lab_name;
+                $nestedData['request_date']= date('d, M Y',strtotime($term->requested_date));
+             
+                $nestedData['options']= " <a class='btn btn-info btn-sm' id='$term->id' onclick='ViewApprovedRequest(this.id)'><i class='fa fa-eye'></i> View</a>  | <a class='btn btn-primary btn-sm' id='$term->id' onclick='AcceptApprovedRequest(this.id)'><i class='fa fa-check'></i> Accept</a> | <a class='btn btn-danger  btn-sm' id='$term->id' onclick='Remove(this.id)'><i class='fa fa-check'></i> Remove</a>   ";
+      switch($term->is_marked){
+            case 'no':
+                $nestedData['marked']="<a class='btn btn-success btn-sm'   id='$term->id' onclick='MarkForConsolidation(this.id)' ><i class='fa fa-plus'></i> add</a> ";
+              break;
+             
+           case 'yes':
+             
+ $nestedData['marked']="<a class='btn btn-secondary btn-sm'   id='$term->id' onclick='MarkForConsolidation(this.id)' ><i class='fa fa-minus'></i> Remove </a> ";
+            break;
+          case 'done':
+  $nestedData['marked']="<span class='badge badge-info'>Consolidated</span> ";
+             }
+               
+                   $x++;
+                $data[] = $nestedData;
+           }
+      }
+
+      $json_data = array(
+        "draw" => intval($request->input('draw')),
+        "recordsTotal" => intval($totalData),
+        "recordsFiltered" => intval($totalFiltered),
+        "data" => $data,
+    );
+
+      echo json_encode($json_data);
+
+
+}
+
+}

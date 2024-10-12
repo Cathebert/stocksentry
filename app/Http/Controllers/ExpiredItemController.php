@@ -59,8 +59,9 @@ public function loadExpiredItemsReport(Request $request){
               ->join('items AS s', 's.id', '=', 't.item_id')
               ->join('laboratories as l','l.id','=','t.lab_id')
               ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.quantity','t.cost','s.item_name','t.expiry_date')
-         
+         	->where('t.quantity','>',0)
              ->where('t.expiry_date', '<', $date)
+              ->where('t.expiry_date','<>','0000-00-00')
           ->count();
 
 
@@ -78,9 +79,9 @@ public function loadExpiredItemsReport(Request $request){
               ->join('items AS s', 's.id', '=', 't.item_id')
                ->join('laboratories as l','l.id','=','t.lab_id')
               ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
-      
+      ->where('t.quantity','>',0)
      ->where('t.expiry_date', '<', $date)
-         
+     ->where('t.expiry_date','<>','0000-00-00')
                 ->where(function ($query) use ($search){
                   return  $query->where('s.code', 'LIKE', "%{$search}%")
                   ->orWhere('s.item_name','LIKE',"%{$search}%");
@@ -156,7 +157,7 @@ if($period==-1 && $lab==-1){
 $this->getMoreData($request);
 }
 if($lab!=-1 && $period==-1){
-  $this->loadExpiredByLab($request);
+  $this->loadExpiredByLab($request,$lab);
   
 }
 if($lab==-1 && $period!=-1){
@@ -173,7 +174,7 @@ if($lab==-1 && $period!=-1){
             //last week
         case 2:
            $start = Carbon::now()->subWeek()->endOfWeek();
-            $end = Carbon::now()->addWeek()->startOfWeek();
+            $end = Carbon::now();
             $this->getData($request,$start, $end);
             break;
             //this month
@@ -183,21 +184,19 @@ if($lab==-1 && $period!=-1){
                         ->firstOfMonth()
                         ->format('Y-m-d');
 
-        $end = Carbon::createFromFormat('Y-m-d', $myDate)
-                        ->lastOfMonth()
-                        ->format('Y-m-d');
+        $end = Carbon::now();
             $this->getData($request,$start, $end);
             break;
             //this quarter
         case 4:
             $start = Carbon::now()->firstOfQuarter()->format('Y-m-d');
-$end = Carbon::now()->endOfQuarter()->format('Y-m-d');
+$end = Carbon::now();
 $this->getData($request,$start, $end);
             break;
             //this year
     case 5:
  $start = Carbon::now()->startOfYear()->format('Y-m-d');
-   $end = Carbon::now()->endOfYear()->format('Y-m-d');
+   $end = Carbon::now();
    $this->getData($request,$start, $end);
     break;
     //previous week
@@ -237,12 +236,12 @@ if($lab!=-1 && $period!=-1){
  switch ($expired['period']) {
         case 0:
              $date=date('Y-m-d');
-              $this->getPreviousWithLab($request,$date);
+              $this->getPreviousWithLab($request,$date,$lab);
         break;
         //yesterday
         case 1:
              $date=date('Y-m-d', strtotime("-1 days"));
-           $this->getPreviousWithLab($request,$date);
+           $this->getPreviousWithLab($request,$date,$lab);
             break;
             //last week
         case 2:
@@ -257,53 +256,51 @@ if($lab!=-1 && $period!=-1){
                         ->firstOfMonth()
                         ->format('Y-m-d');
 
-        $end = Carbon::createFromFormat('Y-m-d', $myDate)
-                        ->lastOfMonth()
-                        ->format('Y-m-d');
-            $this->getDataWithLab($request,$start, $end);
+        $end = Carbon::now();
+            $this->getDataWithLab($request,$start, $end,$lab);
             break;
             //this quarter
         case 4:
             $start = Carbon::now()->firstOfQuarter()->format('Y-m-d');
-$end = Carbon::now()->endOfQuarter()->format('Y-m-d');
-$this->getDataWithLab($request,$start, $end);
+$end = Carbon::now();
+$this->getDataWithLab($request,$start, $end,$lab);
             break;
             //this year
     case 5:
  $start = Carbon::now()->startOfYear()->format('Y-m-d');
-   $end = Carbon::now()->endOfYear()->format('Y-m-d');
-   $this->getDataWithLab($request,$start, $end);
+   $end = Carbon::now();
+   $this->getDataWithLab($request,$start, $end,$lab);
     break;
     //previous week
  case 6:
  $start = Carbon::now()->subWeek()->startOfWeek();
 $end = Carbon::now()->subWeek()->endOfWeek();
-$this->getDataWithLab($request,$start, $end);
+$this->getDataWithLab($request,$start, $end,$lab);
         break;
    //previous month     
 case 7:
  $start = Carbon::now()->startOfMonth()->subMonthsNoOverflow()->toDateString();
 $end = Carbon::now()->subMonthsNoOverflow()->endOfMonth()->toDateString();
-$this->getDataWithLab($request,$start, $end);
+$this->getDataWithLab($request,$start, $end,$lab);
 break;
 
 //previous quarter
 case 8:
 $start = Carbon::now()->subMonths(3)->firstOfQuarter()->format('Y-m-d');
 $end = Carbon::now()->subMonths(3)->endOfQuarter()->format('Y-m-d');
-$this->getDataWithLab($request,$start, $end);
+$this->getDataWithLab($request,$start, $end,$lab);
 break;
 
 //previous year
 case 9:
  $start = Carbon::now()->subYear()->startOfYear()->format('Y-m-d');
  $end = Carbon::now()->subYear()->endOfYear()->format('Y-m-d');
- $this->getDataWithLab($request,$start, $end);
+ $this->getDataWithLab($request,$start, $end,$lab);
 break;
 case 10:
  $start =$expired['start'];
  $end = $expired['end'];
- $this->getDataWithLab($request,$start, $end);
+ $this->getDataWithLab($request,$start, $end,$lab);
 break;
     } 
 }
@@ -331,8 +328,9 @@ protected function getMoreData($request){
               ->join('items AS s', 's.id', '=', 't.item_id')
               ->join('laboratories as l','l.id','=','t.lab_id')
               ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.quantity','t.cost','s.item_name','t.expiry_date')
-         
+         ->where('t.quantity','>',0)
              ->where('t.expiry_date', '<', $date)
+              ->where('t.expiry_date','<>','0000-00-00')
           ->count();
 
 
@@ -350,8 +348,9 @@ protected function getMoreData($request){
               ->join('items AS s', 's.id', '=', 't.item_id')
                ->join('laboratories as l','l.id','=','t.lab_id')
               ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
-      
+      ->where('t.quantity','>',0)
      ->where('t.expiry_date', '<', $date)
+      ->where('t.expiry_date','<>','0000-00-00')
          
                 ->where(function ($query) use ($search){
                   return  $query->where('s.code', 'LIKE', "%{$search}%")
@@ -437,6 +436,8 @@ protected function getData($request,$start_date, $end){
               ->join('items AS s', 's.id', '=', 't.item_id')
               ->join('laboratories as l','l.id','=','t.lab_id')
               ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.quantity','t.cost','s.item_name','t.expiry_date')
+              ->where('t.quantity','>',0)
+               ->where('t.expiry_date','<>','0000-00-00')
         //->where('t.lab_id',$lab)
              ->whereBetween('t.expiry_date', [$start_date, $end])
            
@@ -455,6 +456,8 @@ $limit = $request->input('length');
               ->join('items AS s', 's.id', '=', 't.item_id')
                ->join('laboratories as l','l.id','=','t.lab_id')
               ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+              ->where('t.quantity','>',0)
+              
         //->where('t.lab_id',$lab)
      ->whereBetween('t.expiry_date', [$start_date, $end])
  
@@ -523,10 +526,10 @@ $cost=$term->quantity* $term->cost;
 
 }
 
-protected function getDataWithLab($request,$start_date, $end){
+protected function getDataWithLab($request,$start_date, $end,$lab){
      parse_str($request->expiry_form,$out);
  $expired= $out;
- $lab=$expired['lab'];
+ 
      $columns = array(
             0 =>'id',
             1=>'item',
@@ -544,6 +547,7 @@ protected function getDataWithLab($request,$start_date, $end){
               ->join('items AS s', 's.id', '=', 't.item_id')
               ->join('laboratories as l','l.id','=','t.lab_id')
               ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.quantity','t.cost','s.item_name','t.expiry_date')
+              ->where('t.quantity','>',0)
         ->where('t.lab_id',$lab)
              ->whereBetween('t.expiry_date', [$start_date, $end])
            
@@ -562,6 +566,7 @@ $limit = $request->input('length');
               ->join('items AS s', 's.id', '=', 't.item_id')
                ->join('laboratories as l','l.id','=','t.lab_id')
               ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+              ->where('t.quantity','>',0)
         ->where('t.lab_id',$lab)
      ->whereBetween('t.expiry_date', [$start_date, $end])
  
@@ -653,6 +658,7 @@ protected function getPrevious($request,$date){
               ->join('items AS s', 's.id', '=', 't.item_id')
               ->join('laboratories as l','l.id','=','t.lab_id')
               ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.quantity','t.cost','s.item_name','t.expiry_date')
+              ->where('t.quantity','>',0)
            //->where('t.lab_id',$lab)
              ->where('t.expiry_date', '=', $date)
              
@@ -673,6 +679,7 @@ protected function getPrevious($request,$date){
               ->join('items AS s', 's.id', '=', 't.item_id')
                ->join('laboratories as l','l.id','=','t.lab_id')
               ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+              ->where('t.quantity','>',0)
        // ->where('t.lab_id',$lab)
      ->where('t.expiry_date', '=', $date)
           
@@ -741,10 +748,8 @@ $cost=$term->quantity* $term->cost;
 
 }
 
-protected function getPreviousWithLab($request,$date){
-     parse_str($request->expiry_form,$out);
- $expired= $out;
- $lab=$expired['lab'];
+protected function getPreviousWithLab($request,$date,$lab){
+    
     $date=Carbon::now();
          $columns = array(
             0 =>'id',
@@ -764,6 +769,7 @@ protected function getPreviousWithLab($request,$date){
               ->join('items AS s', 's.id', '=', 't.item_id')
               ->join('laboratories as l','l.id','=','t.lab_id')
               ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.quantity','t.cost','s.item_name','t.expiry_date')
+              ->where('t.quantity','>',0)
            ->where('t.lab_id',$lab)
              ->where('t.expiry_date', '=', $date)
              
@@ -784,6 +790,7 @@ protected function getPreviousWithLab($request,$date){
               ->join('items AS s', 's.id', '=', 't.item_id')
                ->join('laboratories as l','l.id','=','t.lab_id')
               ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+              ->where('t.quantity','>',0)
         ->where('t.lab_id',$lab)
      ->where('t.expiry_date', '=', $date)
           
@@ -871,7 +878,7 @@ protected function getTableData($request){
               ->join('items AS s', 's.id', '=', 't.item_id')
               ->join('laboratories as l','l.id','=','t.lab_id')
               ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.quantity','t.cost','s.item_name','t.expiry_date')
-         
+         ->where('t.quantity','>',0)
              ->where('t.expiry_date', '<', $date)
 
           ->count();
@@ -891,7 +898,7 @@ protected function getTableData($request){
               ->join('items AS s', 's.id', '=', 't.item_id')
                ->join('laboratories as l','l.id','=','t.lab_id')
               ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
-      
+      ->where('t.quantity','>',0)
      ->where('t.expiry_date', '<', $date)
          
                 ->where(function ($query) use ($search){
@@ -1051,7 +1058,7 @@ protected function getRangeData($request,$start_date, $end){
               ->join('items AS s', 's.id', '=', 't.item_id')
               ->join('laboratories as l','l.id','=','t.lab_id')
               ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.quantity','t.cost','s.item_name','t.expiry_date')
-      
+      ->where('t.quantity','>',0)
              ->whereBetween('t.expiry_date', [$start_date, $end])
            
           ->count();
@@ -1069,7 +1076,7 @@ $limit = $request->input('length');
               ->join('items AS s', 's.id', '=', 't.item_id')
                ->join('laboratories as l','l.id','=','t.lab_id')
               ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
-     
+     ->where('t.quantity','>',0)
      ->whereBetween('t.expiry_date', [$start_date, $end])
  
          
@@ -1158,7 +1165,7 @@ protected function getRangePrevious($request,$date){
               ->join('items AS s', 's.id', '=', 't.item_id')
               ->join('laboratories as l','l.id','=','t.lab_id')
               ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.quantity','t.cost','s.item_name','t.expiry_date')
-         
+         ->where('t.quantity','>',0)
              ->where('t.expiry_date', '=', $date)
              
           ->count();
@@ -1178,7 +1185,7 @@ protected function getRangePrevious($request,$date){
               ->join('items AS s', 's.id', '=', 't.item_id')
                ->join('laboratories as l','l.id','=','t.lab_id')
               ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
-      
+      ->where('t.quantity','>',0)
      ->where('t.expiry_date', '=', $date)
           
                 ->where(function ($query) use ($search){
@@ -1246,8 +1253,9 @@ $cost=$term->quantity* $term->cost;
 
 }
 
-protected function loadExpiredByLab($request){
-    $lab=$request->lab;
+protected function loadExpiredByLab($request, $lab){
+
+    
 
 
      $date=Carbon::now();
@@ -1269,6 +1277,7 @@ protected function loadExpiredByLab($request){
               ->join('items AS s', 's.id', '=', 't.item_id')
               ->join('laboratories as l','l.id','=','t.lab_id')
               ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.quantity','t.cost','s.item_name','t.expiry_date')
+              ->where('t.quantity','>',0)
            ->where('t.lab_id',$lab)
              ->where('t.expiry_date', '<', $date)
              
@@ -1289,6 +1298,7 @@ protected function loadExpiredByLab($request){
               ->join('items AS s', 's.id', '=', 't.item_id')
                ->join('laboratories as l','l.id','=','t.lab_id')
               ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+              ->where('t.quantity','>',0)
         ->where('t.lab_id',$lab)
      ->where('t.expiry_date', '<', $date)
           
@@ -1372,8 +1382,9 @@ if($lab==-1 && $period==-1){
               ->join('items AS s', 's.id', '=', 't.item_id')
                ->join('laboratories as l','l.id','=','t.lab_id')
               ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
-        
+        ->where('t.quantity','>',0)
      ->where('t.expiry_date', '<', $date)
+      ->where('t.expiry_date','<>','0000-00-00')
      ->get();
 }
 if($lab!=-1 && $period==-1){
@@ -1381,8 +1392,10 @@ if($lab!=-1 && $period==-1){
               ->join('items AS s', 's.id', '=', 't.item_id')
                ->join('laboratories as l','l.id','=','t.lab_id')
               ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+              ->where('t.quantity','>',0)
     ->where('t.lab_id',$lab)
      ->where('t.expiry_date', '<', $date)
+      ->where('t.expiry_date','<>','0000-00-00')
      ->get();
 }
 
@@ -1394,6 +1407,7 @@ if($lab==-1 && $period!=-1){
               ->join('items AS s', 's.id', '=', 't.item_id')
                ->join('laboratories as l','l.id','=','t.lab_id')
               ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+              ->where('t.quantity','>',0)
    // ->where('t.lab_id',$lab)
      ->where('t.expiry_date', '=', $date)
      ->get();
@@ -1405,7 +1419,7 @@ if($lab==-1 && $period!=-1){
               ->join('items AS s', 's.id', '=', 't.item_id')
                ->join('laboratories as l','l.id','=','t.lab_id')
               ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
-    
+    ->where('t.quantity','>',0)
      ->where('t.expiry_date', '=', $date)
      ->get();
             break;
@@ -1419,6 +1433,7 @@ $data['info'] = DB::table('inventories as t')
               ->join('items AS s', 's.id', '=', 't.item_id')
                ->join('laboratories as l','l.id','=','t.lab_id')
               ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+              ->where('t.quantity','>',0)
     //->where('t.lab_id',$lab)
      ->whereBetween('t.expiry_date', [$start,$end])
      ->get();
@@ -1437,6 +1452,7 @@ $data['info'] = DB::table('inventories as t')
               ->join('items AS s', 's.id', '=', 't.item_id')
                ->join('laboratories as l','l.id','=','t.lab_id')
               ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+              ->where('t.quantity','>',0)
     //->where('t.lab_id',$lab)
      ->whereBetween('t.expiry_date', [$start, $end])
      ->get();
@@ -1450,6 +1466,7 @@ $data['info'] = DB::table('inventories as t')
               ->join('items AS s', 's.id', '=', 't.item_id')
                ->join('laboratories as l','l.id','=','t.lab_id')
               ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+              ->where('t.quantity','>',0)
     //->where('t.lab_id',$lab)
      ->whereBetween('t.expiry_date', [$start, $end])
      ->get();
@@ -1462,6 +1479,7 @@ $data['info'] = DB::table('inventories as t')
               ->join('items AS s', 's.id', '=', 't.item_id')
                ->join('laboratories as l','l.id','=','t.lab_id')
               ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+              ->where('t.quantity','>',0)
     //->where('t.lab_id',$lab)
      ->whereBetween('t.expiry_date', [$start, $end])
      ->get();
@@ -1500,6 +1518,7 @@ $data['info'] = DB::table('inventories as t')
               ->join('items AS s', 's.id', '=', 't.item_id')
                ->join('laboratories as l','l.id','=','t.lab_id')
               ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+              ->where('t.quantity','>',0)
     //->where('t.lab_id',$lab)
      ->whereBetween('t.expiry_date', [$start, $end])
      ->get();
@@ -1513,6 +1532,7 @@ $start = Carbon::now()->subYear()->startOfYear()->format('Y-m-d');
               ->join('items AS s', 's.id', '=', 't.item_id')
                ->join('laboratories as l','l.id','=','t.lab_id')
               ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+              ->where('t.quantity','>',0)
     //->where('t.lab_id',$lab)
      ->whereBetween('t.expiry_date', [$start, $end])
      ->get();
@@ -1525,6 +1545,7 @@ $data['info'] = DB::table('inventories as t')
               ->join('items AS s', 's.id', '=', 't.item_id')
                ->join('laboratories as l','l.id','=','t.lab_id')
               ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+              ->where('t.quantity','>',0)
     //->where('t.lab_id',$lab)
      ->whereBetween('t.expiry_date', [$start, $end])
      ->get();
@@ -1540,6 +1561,7 @@ if($lab!=-1 && $period!=-1){
               ->join('items AS s', 's.id', '=', 't.item_id')
                ->join('laboratories as l','l.id','=','t.lab_id')
               ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+              ->where('t.quantity','>',0)
     ->where('t.lab_id',$lab)
      ->where('t.expiry_date', '=', $date)
      ->get();
@@ -1551,6 +1573,8 @@ if($lab!=-1 && $period!=-1){
               ->join('items AS s', 's.id', '=', 't.item_id')
                ->join('laboratories as l','l.id','=','t.lab_id')
               ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+              ->where('t.quantity','>',0)
+               ->where('t.expiry_date','<>','0000-00-00')
       ->where('t.lab_id',$lab)
      ->where('t.expiry_date', '=', $date)
      ->get();
@@ -1565,6 +1589,7 @@ $data['info'] = DB::table('inventories as t')
               ->join('items AS s', 's.id', '=', 't.item_id')
                ->join('laboratories as l','l.id','=','t.lab_id')
               ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+              ->where('t.quantity','>',0)
     ->where('t.lab_id',$lab)
      ->whereBetween('t.expiry_date', [$start, $end])
      ->get();
@@ -1584,6 +1609,7 @@ $data['info'] = DB::table('inventories as t')
               ->join('items AS s', 's.id', '=', 't.item_id')
                ->join('laboratories as l','l.id','=','t.lab_id')
               ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+              ->where('t.quantity','>',0)
     ->where('t.lab_id',$lab)
      ->whereBetween('t.expiry_date', [$start, $end])
      ->get();
@@ -1609,6 +1635,7 @@ $data['info'] = DB::table('inventories as t')
               ->join('items AS s', 's.id', '=', 't.item_id')
                ->join('laboratories as l','l.id','=','t.lab_id')
               ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+              ->where('t.quantity','>',0)
     ->where('t.lab_id',$lab)
      ->whereBetween('t.expiry_date', [$start, $end])
      ->get();
@@ -1621,6 +1648,7 @@ $data['info'] = DB::table('inventories as t')
               ->join('items AS s', 's.id', '=', 't.item_id')
                ->join('laboratories as l','l.id','=','t.lab_id')
               ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+              ->where('t.quantity','>',0)
     ->where('t.lab_id',$lab)
      ->whereBetween('t.expiry_date', [$start, $end])
      ->get();
@@ -1634,6 +1662,7 @@ $data['info'] = DB::table('inventories as t')
               ->join('items AS s', 's.id', '=', 't.item_id')
                ->join('laboratories as l','l.id','=','t.lab_id')
               ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+              ->where('t.quantity','>',0)
     ->where('t.lab_id',$lab)
      ->whereBetween('t.expiry_date', [$start, $end])
      ->get();
@@ -1647,6 +1676,7 @@ $data['info'] = DB::table('inventories as t')
               ->join('items AS s', 's.id', '=', 't.item_id')
                ->join('laboratories as l','l.id','=','t.lab_id')
               ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+              ->where('t.quantity','>',0)
     ->where('t.lab_id',$lab)
      ->whereBetween('t.expiry_date', [$start, $end])
      ->get();
@@ -1660,6 +1690,7 @@ $start = Carbon::now()->subYear()->startOfYear()->format('Y-m-d');
               ->join('items AS s', 's.id', '=', 't.item_id')
                ->join('laboratories as l','l.id','=','t.lab_id')
               ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+              ->where('t.quantity','>',0)
     ->where('t.lab_id',$lab)
      ->whereBetween('t.expiry_date', [$start, $end])
      ->get();
@@ -1672,6 +1703,7 @@ $data['info'] = DB::table('inventories as t')
               ->join('items AS s', 's.id', '=', 't.item_id')
                ->join('laboratories as l','l.id','=','t.lab_id')
               ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+              ->where('t.quantity','>',0)
     ->where('t.lab_id',$lab)
      ->whereBetween('t.expiry_date', [$start, $end])
      ->get();
@@ -1838,7 +1870,7 @@ return response()->download($path,$name, $headers);
 public function getExpiredExcelFile($name){
    
     $path=public_path('reports').'/'.$name;
-$name=now().'_about_expired_items_report.xlsx';
+$name=now().'_'.$name;;
 $headers = [
   'Content-type' => 'application/vnd.ms-excel', 
   'Content-Disposition' => sprintf('attachment; filename="%s"', $name),

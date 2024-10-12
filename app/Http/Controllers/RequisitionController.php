@@ -14,6 +14,8 @@ use App\Notifications\PendingRequsitionNotification;
 use App\Notifications\ApprovedRequestNotification;
 use App\Notifications\StoreRequestNotification;
 use App\Models\ConsolidateHistory;
+use App\Models\UserSetting;
+use App\Services\LogActivityService;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Worksheet\AutoFilter;
 use PhpOffice\PhpSpreadsheet\Worksheet\Table;
@@ -262,10 +264,12 @@ $headers = [
 
 ]; 
 //Update Requsition status
+ 
 Requisition::where('is_marked','yes')->update([
  'is_marked'=>'done',
 ]);
 $this->saveConsolidationHistory($orders,$db_name);
+LogActivityService::saveToLog('Consolidation File Generated',auth()->user()->name.' '.auth()->user()->last_name,'low');
 return response()->download($path,$name, $headers);
        
    }
@@ -391,7 +395,7 @@ $headers = [
 //Requisition::where('is_marked','yes')->update([
   //'is_marked'=>'done',
 //]);
-
+LogActivityService::saveToLog('downloaded Consolidated File',auth()->user()->name.' '.auth()->user()->last_name,'low');
 return response()->download($path,$name, $headers);
 
 
@@ -446,7 +450,9 @@ return response()->download($path,$name, $headers);
             })
             ->offset($start)
             ->limit($limit)
+              ->orderBy('t.expiry_date','asc')
             ->orderBy('s.item_name','asc')
+           
             ->get();
 
           $totalFiltered =  $totalRec ;
@@ -553,19 +559,30 @@ $issueDetails->quantity_requested=$quantities[$i];
 $issueDetails->created_at=now();
 $issueDetails->updated_at=NULL;
 $issueDetails->save();
-$number=str_pad($issue_id, 4, '0', STR_PAD_LEFT);
+$number=str_pad(mt_rand(0, 999999), 6, '0', STR_PAD_LEFT);
 }
 
 DB::commit();
 
 $approvers=User::where([['authority','=',2],['laboratory_id','=',auth()->user()->laboratory_id]])->get();
+$approver_list=UserSetting::where('lab_id',auth()->user()->laboratory_id)->select('user_id')->get();
+
 $requested_by=auth()->user()->name.' '.auth()->user()->last_name;
 $request_no=$request->form_data['sr_number'];
+if(!empty($approver_list) && count($approver_list)>0){
+foreach ($approver_list as $list) {
+$user=User::find($list->user_id);
+ $user->notify(new PendingRequsitionNotification($request_no,$requested_by));
+}
+}
+else{
 foreach($approvers as $user){
 
-  $user->notify(new PendingRequsitionNotification($request_no,$requested_by))
+  $user->notify(new PendingRequsitionNotification($request_no,$requested_by));
+}
 }
 $test="Request  has been made, pending Approval";
+LogActivityService::saveToLog('Item Request Made',auth()->user()->name.' '.auth()->user()->last_name,'low');
   return response([
 'message'=> $test,
 'sr_number'=>'SR '.$number,
@@ -653,10 +670,10 @@ else{
   $section_name='';
 }
                 $nestedData['sr']=$term->sr_number;
-                $nestedData['request_lab']=$lab->lab_name.' | '.$section_name;
+                $nestedData['request_lab']=$lab->lab_name;
                 $nestedData['request_date']= date('d, M Y',strtotime($term->requested_date));
              
-                $nestedData['options']= " <a class='btn btn-primary btn-sm' id='$term->id' onclick='AcceptApprovedRequest(this.id)'><i class='fa fa-check'></i> Accept</a> |  <a class='btn btn-info btn-sm' id='$term->id' onclick='ViewApprovedRequest(this.id)'><i class='fa fa-eye'></i> View</a>  ";
+                $nestedData['options']= " <a class='btn btn-info btn-sm' id='$term->id' onclick='ViewApprovedRequest(this.id)'><i class='fa fa-eye'></i> View</a>  | <a class='btn btn-primary btn-sm' id='$term->id' onclick='AcceptApprovedRequest(this.id)'><i class='fa fa-check'></i> Accept</a> | <a class='btn btn-danger  btn-sm' id='$term->id' onclick='Remove(this.id)'><i class='fa fa-check'></i> Remove</a>   ";
       switch($term->is_marked){
             case 'no':
                 $nestedData['marked']="<a class='btn btn-success btn-sm'   id='$term->id' onclick='MarkForConsolidation(this.id)' ><i class='fa fa-plus'></i> add</a> ";
@@ -714,7 +731,7 @@ $data['approver_sign']=$approver->signature??'';
 $section=LaboratorySection::where('id',$requisition->section_id)->select('section_name')->first();
 if($section){
     $section_name=$section->section_name;
-    $data['lab']=$requisition->lab_name.'/'.$section_name;
+    $data['lab']=$requisition->lab_name;
     
 }
 else{
@@ -773,7 +790,7 @@ $data['requested_by']='';
 $section=LaboratorySection::where('id',$requisition->section_id)->select('section_name')->first();
 if($section){
     $section_name=$section->section_name;
-    $data['lab']=$requisition->lab_name.'/'.$section_name;
+    $data['lab']=$requisition->lab_name;
     
 }
 else{
@@ -784,7 +801,7 @@ else{
       ->join('requisition_details  as d','itm.id','=','d.requisition_id')
        ->join('inventories as inv','inv.id','=','d.item_id')
        ->join('items as iss','iss.id','=','inv.item_id')
-      ->select('itm.sr_number','iss.item_name','iss.unit_issue','d.quantity_requested','inv.cost','inv.batch_number')
+      ->select('d.id as id','itm.sr_number','iss.item_name','iss.unit_issue','d.quantity_requested','inv.cost','inv.batch_number')
      ->where('itm.id','=',$request->id)
       ->groupBy('d.item_id')
      
@@ -793,6 +810,7 @@ else{
 
   return view('provider.issues.modals.view_request',$data);
     }
+
 
     /**
      * Update the specified resource in storage.
@@ -805,17 +823,26 @@ else{
 'approved_by'=>auth()->user()->id,
 'updated_at'=>now()
   ]);
+   $requested_by=Requisition::where('id',$request->id)->select('requested_by','sr_number')->first();
+  $user=User::where('id', $requested_by->requested_by)->first();
+  $approved_by=auth()->user()->name.' '.auth()->user()->last_name;
+  $user->notify(new ApprovedRequestNotification($requested_by->sr_number, strtoupper($approved_by)));
   $lab=Laboratory::where('id',auth()->user()->laboratory_id)->first();
-  $requested_by=Requisition::where('id',$request->id)->select('requested_by','sr_number')->first();
-  $user=User::where('id',auth()->user()->id)->select('name','last_name')->first();
-  $approved_by=$user->name.' '.$user->last_name;
-  $user->notify(new ApprovedRequestNotification($requested_by->sr_number,$approved_by));
+  $approver_list=UserSetting::where('lab_id',0)->select('user_id')->get();
   $store_users=User::where([['laboratory_id','=',0],['authority','=',1]])->get();
-
-  for($store_users as $user){
-    $user->notify(new StoreRequestNotification($requested_by->sr_number,$approved_by,$lab->lab_name));
+if(!empty($approver_list) && count($approver_list)>0){
+foreach ($approver_list as $list) {
+$user=User::find($list->user_id);
+   $user->notify(new StoreRequestNotification($requested_by->sr_number,$approved_by,$lab->lab_name));
+}
+}
+else{
+  foreach($store_users as $storeuser){
+   $storeuser->notify(new StoreRequestNotification($requested_by->sr_number,$approved_by,$lab->lab_name));
   }
-  $requisition= Requisition::where([['lab_id','=',auth()->user()->laboratory_id],['status','=','approved']])->count();
+  }
+  $requisition= Requisition ::where([['lab_id','=',auth()->user()->laboratory_id],['status','=','approved']])->count();
+  LogActivityService::saveToLog('Request Approved',auth()->user()->name.' '.auth()->user()->last_name,'low');
   return response()->json([
 'message'=>"Order  been  approved  successfully",
 'count'=>$requisition,
@@ -829,6 +856,7 @@ public function updateApproved(Request $request){
 try{
   //dd($requisition);
  updateStore::dispatch($data);
+  LogActivityService::saveToLog('Requested Items processed at Store',auth()->user()->name.' '.auth()->user()->last_name,'low');
  return response()->json([
   'message'=>"Order has been processed successfully",
   'error'=>false
@@ -860,6 +888,7 @@ catch(Exception $e){
 'updated_at'=>now()
   ]);
   $requisition= Requisition ::where([['lab_id','=',auth()->user()->laboratory_id],['status','=','not approved']])->count();
+   LogActivityService::saveToLog('Requested to ordered Items cancelled',auth()->user()->name.' '.auth()->user()->last_name,'low');
   return response()->json([
 'message'=>"Order  been  Cancelled Successfully",
 'count'=>$requisition,
@@ -1564,6 +1593,16 @@ $data[]= $nested;
 //dd($data);
   return response()->json([
    'data'=>$data,
+  ]);
+}
+public function removeRequisition(Request $request){
+
+RequisitionDetails::where('requisition_id',$request->id)->delete();
+     Requisition::where('id',$request->id)->delete();
+  
+  return response()->json([
+    'message'=>"Requisition removed successfully",
+    'error' =>false
   ]);
 }
 }

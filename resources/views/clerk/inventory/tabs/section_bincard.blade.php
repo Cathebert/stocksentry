@@ -1,4 +1,4 @@
- @extends('clerk.layout.main')
+@extends('clerk.layout.main')
 @section('title','Lab Inventory')
 @push('style')
    
@@ -28,10 +28,10 @@
         <h5 class="card-title"> <strong>Bin Card</strong></h5>
       
    @include('clerk.inventory.tabs.section_inventory_header')  
-    <div class="clearfix"></div>  
+   <div class="clearfix"></div>  
 <div class="row">
     <div class="col-3">
-        <input type="hidden" id="get_bincard" value="{{route('section_bincard')}}"/>
+      <input type="hidden" id="get_bincard" value="{{route('bincard')}}"/>
       <input type="hidden" id="filter_by_date" value="{{route('bincard.search')}}"/>
       <input type="hidden" id="url" value="{{url('/')}}"/>
       <input type="hidden" id="search_result" value="{{route('inventory.search')}}"/>
@@ -42,7 +42,7 @@
      <div class="dropdown" style="text-align:right" >
   <form class="form-inline my-2 my-lg-0" id="search_form">
       <input class="form-control mr-sm-2" type="search" placeholder="Search Item" aria-label="Search" id="search_term">
-      <button class="btn btn-outline-primary my-2 my-sm-0" type="submit" onclick="searchTerm()" id="search_button">Search</button>
+      <button class="btn btn-outline-primary my-2 my-sm-0" id="search_button" type="submit" onclick="searchTerm()"><i class="fa fa-search" aria-hidden="true"></i></button>
     </form>
 </div>
   <div class="dropdown" style="text-align:left"  hidden>
@@ -61,7 +61,7 @@
 
   </div>
   <div class="card-body">
-     @php
+    @php
       $x=1;
     @endphp
       @if(!empty($items) && count($items)>0)
@@ -70,12 +70,12 @@
   @foreach ($items as $item )
   <div class="input-group-prepend">
     <span class="input-group-text">{{$x}}</span>
-          <li class="list-group-item list-group-item-action list-group-flush" style="text-align:left"  id="{{$item->id}}" onclick="CheckBoxSelect(this.id)"><a> {{$item->item_name}}</a></li>
+     <li class="list-group-item list-group-item-action list-group-flush" style="text-align:left"  id="{{$item->id}}" onclick="CheckBoxSelect(this.id)"><a> {{$item->item_name}}</a></li>
   </div>
     @php
       $x++
     @endphp
-     @endforeach
+  @endforeach
  
 
 </ul>
@@ -84,7 +84,7 @@
 
   </div>
   <div class="card-footer text-muted">
-    {{ $items->links()}}
+    {{ $items->onEachSide(1)->links()}}
   </div>
   @else
 <h6> No Inventory available </h6>
@@ -107,9 +107,9 @@
     <div class="card">
   <div class="card-body">
                 <div class="row">
-    
-         <div class="col-md-8 col-sm-12 col-xs-12 form-group" >
- <div class="input-group">
+
+  <div class="col-md-8 col-sm-12 col-xs-12 form-group" >
+  <div class="input-group">
   <span class="input-group-text btn btn-secondary">Start date:</span> 
   <input type="date" aria-label="First name" class="form-control" id="start_date" name="start_date">
    <span class="input-group-text  btn btn-secondary">End date:</span>
@@ -120,7 +120,7 @@
 </div>
 </div>
   <div class="row">
-    <div class="col col-lg-12">
+    <div class="co-8 col-lg-12">
     <br>
 <div class="table-responsive">
         <table class="table table-sm" id="bin_card" width="100%">
@@ -141,7 +141,7 @@
   <tbody>
 </table>
       </div>
-       <form class="form-inline" style="float:right">
+      <form class="form-inline" style="float:right">
   <div class="form-group mb-2">
     <label for="staticEmail2" class="sr-only">Total Remaining Balance:</label>
     <input type="text" readonly class="form-control-plaintext"style="font-weight: bold;" id="staticEmail2" value="Total Remaining Balance:">
@@ -157,24 +157,18 @@
    
 
   </div>
-    </div>
-    
-   
-
-  </div>
   <br>
-       <div class="card" style="width: 18rem; float:left">
+       <div class="card" style="width: 18rem; float:left" >
+        
   <h5 class="card-title">Summary</h5>
   <ul class="list-group list-group-flush">
-     <ul class="list-group list-group-flush">
     <li class="list-group-item"><strong>Opening Stock:  <span id="open"></span> </strong></li>
-    <li class="list-group-item">Consumed : <span id="consumed"></span> </li>
-    <li class="list-group-item">Issued Out: <span ><a id="out"></a></span></li>
+    <li class="list-group-item" hidden>Consumed : <span id="consumed"></span> </li>
+    <li class="list-group-item">Issued Out: <span ><a id="out"> </a></span></li>
   </ul>
     <div class="card-footer text-muted">
     <img class="card-img-top"  id='img_card' src="{{ asset('assets/icon/not_available.jpg') }}" alt="Card image cap" style="width: 17rem; height:12rem"  >
 </div>
- 
 </div>
 </div>
   
@@ -191,7 +185,6 @@
 
     @push('js')
    
-  <script src="{{asset('assets/admin/js/section/section_bincard.js')}}"> </script>
-  
+   <script src="{{asset('assets/admin/js/inventory/bincard.js')}}"> </script>
   
 @endpush

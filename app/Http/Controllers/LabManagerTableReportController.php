@@ -11,6 +11,7 @@ use App\Models\Supplier;
 use DB;
 use PDF;
 use Carbon\Carbon;
+use DataTables;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Worksheet\AutoFilter;
 use PhpOffice\PhpSpreadsheet\Worksheet\Table;
@@ -80,6 +81,7 @@ return view('provider.reports.list.expiry',$data);
 
               ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.quantity','t.cost','s.item_name','t.expiry_date')
          ->where('t.lab_id',auth()->user()->laboratory_id)
+           ->where('t.quantity','>',0)
              ->whereBetween(DB::raw('DATE(t.expiry_date)'), array($from_date, $date))
           ->count();
 
@@ -98,6 +100,7 @@ return view('provider.reports.list.expiry',$data);
               ->join('items AS s', 's.id', '=', 't.item_id')
                ->join('laboratories as l','l.id','=','t.lab_id')
               ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+                ->where('t.quantity','>',0)
          ->where('t.lab_id','=',auth()->user()->laboratory_id)
         ->whereBetween(DB::raw('DATE(t.expiry_date)'), array($from_date, $date))
           //->where('t.expiry_date', '<', $date )
@@ -228,6 +231,7 @@ $cost=$term->quantity* $term->cost;
               ->join('items AS s', 's.id', '=', 't.item_id')
               ->join('laboratories as l','l.id','=','t.lab_id')
               ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.quantity','t.cost','s.item_name','t.expiry_date')
+                ->where('t.quantity','>',0)
          ->where('t.lab_id','=',$expiry_details['lab'])
              ->whereBetween(DB::raw('DATE(t.expiry_date)'), array($from_date, $to_date))
           ->count();
@@ -247,6 +251,7 @@ $cost=$term->quantity* $term->cost;
               ->join('items AS s', 's.id', '=', 't.item_id')
                ->join('laboratories as l','l.id','=','t.lab_id')
               ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+                ->where('t.quantity','>',0)
           ->where('t.lab_id','=',$expiry_details['lab'])
         ->whereBetween(DB::raw('DATE(t.expiry_date)'), array($from_date, $to_date))
           //->where('t.expiry_date', '<', $date )
@@ -358,6 +363,7 @@ $cost=$term->quantity* $term->cost;
               ->join('items AS s', 's.id', '=', 't.item_id')
               ->join('laboratories as l','l.id','=','t.lab_id')
               ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.quantity','t.cost','s.item_name','t.expiry_date')
+                ->where('t.quantity','>',0)
          ->where('t.lab_id',auth()->user()->laboratory_id)
              ->whereBetween(DB::raw('DATE(t.expiry_date)'), array($from_date, $date))
           ->count();
@@ -377,6 +383,7 @@ $cost=$term->quantity* $term->cost;
               ->join('items AS s', 's.id', '=', 't.item_id')
                ->join('laboratories as l','l.id','=','t.lab_id')
               ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+                ->where('t.quantity','>',0)
         ->where('t.lab_id','=',auth()->user()->laboratory_id)
         ->whereBetween(DB::raw('DATE(t.expiry_date)'), array($from_date, $date))
           //->where('t.expiry_date', '<', $date )
@@ -509,6 +516,7 @@ $cost=$term->quantity* $term->cost;
               ->join('items AS s', 's.id', '=', 't.item_id')
                ->join('laboratories as l','l.id','=','t.lab_id')
               ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+                ->where('t.quantity','>',0)
          ->where('t.lab_id','=',auth()->user()->laboratory_id)
         ->whereBetween(DB::raw('DATE(t.expiry_date)'), array($from_date, $date))->get();
           //->where('t.expiry_date', '<', $date )
@@ -649,7 +657,7 @@ $data['lab_name']='Logged Into: '.$lab->lab_name;
 
  public function loadIssueTable(Request $request){
      
-  
+  $lab=auth()->user()->laboratory_id;
          $columns = array(
             0 =>'id',
             1=>'siv',
@@ -665,6 +673,7 @@ $data['lab_name']='Logged Into: '.$lab->lab_name;
     
    $totalData = DB::table('issues as t') 
               //->join('laboratories AS l', 'l.id', '=', 't.from_lab_id')
+            ->where('t.from_lab_id',$lab)
           ->count();
 
 
@@ -680,6 +689,7 @@ $data['lab_name']='Logged Into: '.$lab->lab_name;
            $search = $request->input('search.value');
             $terms = DB::table('issues as t') 
              // ->join('laboratories AS l', 'l.id', '=', 't.from_lab_id')
+              ->where('t.from_lab_id',$lab)
               ->select(
                  't.id as id',
                  't.siv_number',
@@ -693,8 +703,7 @@ $data['lab_name']='Logged Into: '.$lab->lab_name;
                 
                  't.issuing_date',
                  't.approve_status')
-          ->where('t.from_lab_id','=',auth()->user()->laboratory_id)
-          //->where('t.expiry_date', '<', $date )
+                    //->where('t.expiry_date', '<', $date )
                 ->where(function ($query) use ($search){
                   return  $query->where('t.siv_number', 'LIKE', "%{$search}%")
                   ->orWhere('t.issuing_date','LIKE',"%{$search}%");
@@ -791,7 +800,6 @@ public  function loadConsumptionTable(Request $request){
          $columns = array(
             0 =>'id',
             1=>'item_name',
-            
             2=>'catalog_number',
             3=>'unit_issue',
             4=>'consumed',
@@ -853,7 +861,7 @@ $x=1;
 
 
 
-$nestedData['item_id']= $term->item_id;
+               $nestedData['item_id']= $term->item_id;
                 $nestedData['id']=$x;
                 $nestedData['item_name']=$term->item_name;
                
@@ -881,7 +889,7 @@ $nestedData['item_id']= $term->item_id;
 }
 public function consumptionMoreDetails(Request $request){
    
-    if($request->period!=99){
+    if($request->period!=-1){
 switch($request->period){
     //today
     case 0:
@@ -1827,14 +1835,18 @@ break;
 }
 
 public function downloadConsumptionReport(Request $request){
-   switch($request->type){
 
-    case 'download':
-switch($request->period){
-    case 99:
+   parse_str($request->form_data,$out);
+ $expired= $out;
+
+$lab=auth()->user()->laboratory_id;
+ $period=$expired['period'];
+  
+switch($period){
+    case -1:
  $terms =DB::table('items as t') 
               ->join('inventories AS l', 'l.item_id', '=', 't.id')
-              ->leftjoin('consumption_details as c','c.item_id','=','l.id')
+              ->join('consumption_details as c','c.item_id','=','l.id')
               ->select(
                  't.id as item_id',
                 'l.id as id',
@@ -1842,38 +1854,45 @@ switch($request->period){
                 'l.batch_number',
                 't.catalog_number',
                 'unit_issue',
+                 DB::raw('GROUP_CONCAT(c.id) as requisitions_ids'),
                 DB::raw('SUM(c.consumed_quantity) as consumed_quantity'))
-               ->where('c.lab_id',auth()->user()->laboratory_id) 
+               ->where('c.lab_id',$lab)
+                ->orderBy('t.item_name','asc')
+            ->groupBy('t.item_name')
                  ->get();
+                 
+       
+       $data=array();
                  foreach($terms as $term){
+             $ids=explode(',',$term->requisitions_ids);  
+             for($x=0;$x<count($ids);$x++){
  $consum=DB::table('items as t')
                   ->join('inventories  as r','r.item_id','=','t.id')
                   ->join('consumption_details as rd','rd.item_id','=','r.id')
                   ->join('consumptions as u','u.id','=','rd.consumption_id')
                   ->join('laboratories as l','l.id','=','u.lab_id')
                   ->select(
+                      't.item_name',
                     'l.lab_name',
                     'u.section_id',
                     'rd.consumed_quantity',
                     'r.batch_number'
                 )
-                  ->where('t.id',$term->item_id)
+                  ->where('rd.id',$ids[$x])
                    ->get();
-}
-$name="consumption_Expiry.pdf";
-    $path=public_path('reports').'/'.$name;
-      $url=route('redirect_download',['name'=>$name]) ; 
-    $pdf=PDF::loadView('pdf.reports.consumed_report',['items'=>$terms,'consumed'=>$consum])->save($path);
+                   
+                   $data[]=$consum;
+                 }
 
-                  return response()->json([
-                    'path'=>$url,
-                    
-                  ]);  
-    //dd($terms);               
+
+                
+}
+               
     break;
 //download today
 case 0:
 $date=Carbon::now()->format('Y-m-d');
+$consum=array();
 $terms =DB::table('items as t') 
               ->join('inventories AS l', 'l.item_id', '=', 't.id')
               ->leftjoin('consumption_details as c','c.item_id','=','l.id')
@@ -1885,8 +1904,10 @@ $terms =DB::table('items as t')
                 't.catalog_number',
                 'unit_issue',
                 DB::raw('SUM(c.consumed_quantity) as consumed_quantity'))
-               ->where('c.lab_id',auth()->user()->laboratory_id) 
+               ->where('c.lab_id',$lab)
               ->where('c.created_at','=',$date)
+              ->orderBy('t.item_name','asc')
+            ->groupBy('t.item_name')
                  ->get();
                  foreach($terms as $term){
  $consum=DB::table('items as t')
@@ -1901,17 +1922,11 @@ $terms =DB::table('items as t')
                     'r.batch_number'
                 )
                   ->where('t.id',$term->item_id)
+             
                    ->get();
 }
-$name="consumption_Expiry.pdf";
-    $path=public_path('reports').'/'.$name;
-      $url=route('redirect_download',['name'=>$name]) ; 
-    $pdf=PDF::loadView('pdf.reports.consumed_report',['items'=>$terms,'consumed'=>$consum])->save($path);
 
-                  return response()->json([
-                    'path'=>$url,
-                    
-                  ]);  
+  
 
  break;
 
@@ -1921,7 +1936,7 @@ case 1:
   $date=date('Y-m-d', strtotime("-1 days"));
 $terms =DB::table('items as t') 
               ->join('inventories AS l', 'l.item_id', '=', 't.id')
-              ->leftjoin('consumption_details as c','c.item_id','=','l.id')
+              ->join('consumption_details as c','c.item_id','=','l.id')
               ->select(
                  't.id as item_id',
                 'l.id as id',
@@ -1930,7 +1945,10 @@ $terms =DB::table('items as t')
                 't.catalog_number',
                 'unit_issue',
                 DB::raw('SUM(c.consumed_quantity) as consumed_quantity'))
+               ->where('c.lab_id',$lab)
               ->where('c.created_at','=',$date)
+              ->orderBy('t.item_name','asc')
+            ->groupBy('t.item_name')
                  ->get();
                  foreach($terms as $term){
  $consum=DB::table('items as t')
@@ -1947,7 +1965,364 @@ $terms =DB::table('items as t')
                   ->where('t.id',$term->item_id)
                    ->get();
 }
-$name="consumption_Expiry.pdf";
+ 
+break;
+
+case 2:
+$start = Carbon::now()->subWeek()->endOfWeek();
+$end = Carbon::now()->addWeek()->startOfWeek();
+$terms =DB::table('items as t') 
+              ->join('inventories AS l', 'l.item_id', '=', 't.id')
+              ->join('consumption_details as c','c.item_id','=','l.id')
+              ->select(
+                 't.id as item_id',
+                'l.id as id',
+                't.item_name',
+                'l.batch_number',
+                't.catalog_number',
+                'unit_issue',
+                DB::raw('SUM(c.consumed_quantity) as consumed_quantity'))
+               ->where('c.lab_id',$lab)
+              ->whereBetween('c.created_at',[$start,$end])
+              ->orderBy('t.item_name','asc')
+            ->groupBy('t.item_name')
+                 ->get();
+                 foreach($terms as $term){
+ $consum=DB::table('items as t')
+                  ->join('inventories  as r','r.item_id','=','t.id')
+                  ->join('consumption_details as rd','rd.item_id','=','r.id')
+                  ->join('consumptions as u','u.id','=','rd.consumption_id')
+                  ->join('laboratories as l','l.id','=','u.lab_id')
+                  ->select(
+                    'l.lab_name',
+                    'u.section_id',
+                    'rd.consumed_quantity',
+                    'r.batch_number'
+                )
+                  ->where('t.id',$term->item_id)
+                   ->get();
+}
+break;
+
+
+case 3:
+ $myDate = date('Y-m-d');
+$start = Carbon::createFromFormat('Y-m-d', $myDate)
+                        ->firstOfMonth()
+                        ->format('Y-m-d');
+
+$end = Carbon::createFromFormat('Y-m-d', $myDate)
+                        ->lastOfMonth()
+                        ->format('Y-m-d');
+
+
+$terms =DB::table('items as t') 
+              ->join('inventories AS l', 'l.item_id', '=', 't.id')
+              ->join('consumption_details as c','c.item_id','=','l.id')
+              ->select(
+                 't.id as item_id',
+                'l.id as id',
+                't.item_name',
+                'l.batch_number',
+                't.catalog_number',
+                'unit_issue',
+                DB::raw('SUM(c.consumed_quantity) as consumed_quantity'))
+               ->where('c.lab_id',$lab)
+              ->whereBetween('c.created_at',[$start,$end])
+              ->orderBy('t.item_name','asc')
+            ->groupBy('t.item_name')
+                 ->get();
+                 foreach($terms as $term){
+ $consum=DB::table('items as t')
+                  ->join('inventories  as r','r.item_id','=','t.id')
+                  ->join('consumption_details as rd','rd.item_id','=','r.id')
+                  ->join('consumptions as u','u.id','=','rd.consumption_id')
+                  ->join('laboratories as l','l.id','=','u.lab_id')
+                  ->select(
+                    'l.lab_name',
+                    'u.section_id',
+                    'rd.consumed_quantity',
+                    'r.batch_number'
+                )
+                  ->where('t.id',$term->item_id)
+                   ->get();
+}
+
+break;
+
+
+case 4:
+$start = Carbon::now()->firstOfQuarter()->format('Y-m-d');
+$end = Carbon::now()->endOfQuarter()->format('Y-m-d');
+$terms =DB::table('items as t') 
+              ->join('inventories AS l', 'l.item_id', '=', 't.id')
+              ->join('consumption_details as c','c.item_id','=','l.id')
+              ->select(
+                 't.id as item_id',
+                'l.id as id',
+                't.item_name',
+                'l.batch_number',
+                't.catalog_number',
+                'unit_issue',
+                DB::raw('SUM(c.consumed_quantity) as consumed_quantity'))
+               ->where('c.lab_id',$lab)
+              ->whereBetween('c.created_at',[$start,$end])
+              ->orderBy('t.item_name','asc')
+            ->groupBy('t.item_name')
+                 ->get();
+                 foreach($terms as $term){
+ $consum=DB::table('items as t')
+                  ->join('inventories  as r','r.item_id','=','t.id')
+                  ->join('consumption_details as rd','rd.item_id','=','r.id')
+                  ->join('consumptions as u','u.id','=','rd.consumption_id')
+                  ->join('laboratories as l','l.id','=','u.lab_id')
+                  ->select(
+                    'l.lab_name',
+                    'u.section_id',
+                    'rd.consumed_quantity',
+                    'r.batch_number'
+                )
+                  ->where('t.id',$term->item_id)
+                   ->get();
+}
+
+break;
+
+case 5:
+$start = Carbon::now()->startOfYear()->format('Y-m-d');
+$end = Carbon::now()->endOfYear()->format('Y-m-d');
+$terms =DB::table('items as t') 
+              ->join('inventories AS l', 'l.item_id', '=', 't.id')
+              ->join('consumption_details as c','c.item_id','=','l.id')
+              ->select(
+                 't.id as item_id',
+                'l.id as id',
+                't.item_name',
+                'l.batch_number',
+                't.catalog_number',
+                'unit_issue',
+                DB::raw('SUM(c.consumed_quantity) as consumed_quantity'))
+               ->where('c.lab_id',$lab)
+              ->whereBetween('c.created_at',[$start,$end])
+              ->orderBy('t.item_name','asc')
+            ->groupBy('t.item_name')
+                 ->get();
+                 foreach($terms as $term){
+ $consum=DB::table('items as t')
+                  ->join('inventories  as r','r.item_id','=','t.id')
+                  ->join('consumption_details as rd','rd.item_id','=','r.id')
+                  ->join('consumptions as u','u.id','=','rd.consumption_id')
+                  ->join('laboratories as l','l.id','=','u.lab_id')
+                  ->select(
+                    'l.lab_name',
+                    'u.section_id',
+                    'rd.consumed_quantity',
+                    'r.batch_number'
+                )
+                  ->where('t.id',$term->item_id)
+                   ->get();
+}
+
+break;
+
+case 6:
+$start = Carbon::now()->subWeek()->startOfWeek();
+$end = Carbon::now()->subWeek()->endOfWeek();
+$terms =DB::table('items as t') 
+              ->join('inventories AS l', 'l.item_id', '=', 't.id')
+              ->join('consumption_details as c','c.item_id','=','l.id')
+              ->select(
+                 't.id as item_id',
+                'l.id as id',
+                't.item_name',
+                'l.batch_number',
+                't.catalog_number',
+                'unit_issue',
+                DB::raw('SUM(c.consumed_quantity) as consumed_quantity'))
+               ->where('c.lab_id',$lab)
+              ->whereBetween('c.created_at',[$start,$end])
+              ->orderBy('t.item_name','asc')
+            ->groupBy('t.item_name')
+                 ->get();
+                 foreach($terms as $term){
+ $consum=DB::table('items as t')
+                  ->join('inventories  as r','r.item_id','=','t.id')
+                  ->join('consumption_details as rd','rd.item_id','=','r.id')
+                  ->join('consumptions as u','u.id','=','rd.consumption_id')
+                  ->join('laboratories as l','l.id','=','u.lab_id')
+                  ->select(
+                    'l.lab_name',
+                    'u.section_id',
+                    'rd.consumed_quantity',
+                    'r.batch_number'
+                )
+                  ->where('t.id',$term->item_id)
+                   ->get();
+}
+
+break;
+
+case 7:
+ $start = Carbon::now()->startOfMonth()->subMonthsNoOverflow()->toDateString();
+$end = Carbon::now()->subMonthsNoOverflow()->endOfMonth()->toDateString();
+$terms =DB::table('items as t') 
+              ->join('inventories AS l', 'l.item_id', '=', 't.id')
+              ->join('consumption_details as c','c.item_id','=','l.id')
+              ->select(
+                 't.id as item_id',
+                'l.id as id',
+                't.item_name',
+                'l.batch_number',
+                't.catalog_number',
+                'unit_issue',
+                DB::raw('SUM(c.consumed_quantity) as consumed_quantity'))
+               ->where('c.lab_id',$lab)
+              ->whereBetween('c.created_at',[$start,$end])
+              ->orderBy('t.item_name','asc')
+            ->groupBy('t.item_name')
+                 ->get();
+                 foreach($terms as $term){
+ $consum=DB::table('items as t')
+                  ->join('inventories  as r','r.item_id','=','t.id')
+                  ->join('consumption_details as rd','rd.item_id','=','r.id')
+                  ->join('consumptions as u','u.id','=','rd.consumption_id')
+                  ->join('laboratories as l','l.id','=','u.lab_id')
+                  ->select(
+                    'l.lab_name',
+                    'u.section_id',
+                    'rd.consumed_quantity',
+                    'r.batch_number'
+                )
+                  ->where('t.id',$term->item_id)
+                   ->get();
+}
+
+break;
+
+case 8:
+$start = Carbon::now()->subMonths(3)->firstOfQuarter()->format('Y-m-d');
+$end = Carbon::now()->subMonths(3)->endOfQuarter()->format('Y-m-d');
+$terms =DB::table('items as t') 
+              ->join('inventories AS l', 'l.item_id', '=', 't.id')
+              ->join('consumption_details as c','c.item_id','=','l.id')
+              ->select(
+                 't.id as item_id',
+                'l.id as id',
+                't.item_name',
+                'l.batch_number',
+                't.catalog_number',
+                'unit_issue',
+                DB::raw('SUM(c.consumed_quantity) as consumed_quantity'))
+               ->where('c.lab_id',$lab)
+              ->whereBetween('c.created_at',[$start,$end])
+              ->orderBy('t.item_name','asc')
+            ->groupBy('t.item_name')
+                 ->get();
+                 foreach($terms as $term){
+ $consum=DB::table('items as t')
+                  ->join('inventories  as r','r.item_id','=','t.id')
+                  ->join('consumption_details as rd','rd.item_id','=','r.id')
+                  ->join('consumptions as u','u.id','=','rd.consumption_id')
+                  ->join('laboratories as l','l.id','=','u.lab_id')
+                  ->select(
+                    'l.lab_name',
+                    'u.section_id',
+                    'rd.consumed_quantity',
+                    'r.batch_number'
+                )
+                  ->where('t.id',$term->item_id)
+                   ->get();
+}
+
+break;
+
+case 9:
+$start = Carbon::now()->subYear()->startOfYear()->format('Y-m-d');
+ $end = Carbon::now()->subYear()->endOfYear()->format('Y-m-d');
+ $terms =DB::table('items as t') 
+              ->join('inventories AS l', 'l.item_id', '=', 't.id')
+              ->join('consumption_details as c','c.item_id','=','l.id')
+              ->select(
+                 't.id as item_id',
+                'l.id as id',
+                't.item_name',
+                'l.batch_number',
+                't.catalog_number',
+                'unit_issue',
+                DB::raw('SUM(c.consumed_quantity) as consumed_quantity'))
+               ->where('c.lab_id',$lab)
+              ->whereBetween('c.created_at',[$start,$end])
+              ->orderBy('t.item_name','asc')
+            ->groupBy('t.item_name')
+                 ->get();
+                 foreach($terms as $term){
+ $consum=DB::table('items as t')
+                  ->join('inventories  as r','r.item_id','=','t.id')
+                  ->join('consumption_details as rd','rd.item_id','=','r.id')
+                  ->join('consumptions as u','u.id','=','rd.consumption_id')
+                  ->join('laboratories as l','l.id','=','u.lab_id')
+                  ->select(
+                    'l.lab_name',
+                    'u.section_id',
+                    'rd.consumed_quantity',
+                    'r.batch_number'
+                )
+                  ->where('t.id',$term->item_id)
+                   ->get();
+}
+
+break;
+
+case 10:
+$start= $expired['start'];
+$end=   $expired['end'];
+$terms =DB::table('items as t') 
+              ->join('inventories AS l', 'l.item_id', '=', 't.id')
+              ->join('consumption_details as c','c.item_id','=','l.id')
+              ->select(
+                 't.id as item_id',
+                'l.id as id',
+                't.item_name',
+                'l.batch_number',
+                't.catalog_number',
+                'unit_issue',
+                DB::raw('SUM(c.consumed_quantity) as consumed_quantity'))
+              ->where('c.lab_id',$lab)
+              ->whereBetween('c.created_at',[$start,$end])
+              ->orderBy('t.item_name','asc')
+            ->groupBy('t.item_name')
+                 ->get();
+                 foreach($terms as $term){
+ $consum=DB::table('items as t')
+                  ->join('inventories  as r','r.item_id','=','t.id')
+                  ->join('consumption_details as rd','rd.item_id','=','r.id')
+                  ->join('consumptions as u','u.id','=','rd.consumption_id')
+                  ->join('laboratories as l','l.id','=','u.lab_id')
+                  ->select(
+                    'l.lab_name',
+                    'u.section_id',
+                    'rd.consumed_quantity',
+                    'r.batch_number'
+                )
+                  ->where('t.id',$term->item_id)
+                   ->get();
+}
+
+break;
+//end  inner switch
+}
+if(count($terms)==0){
+    return response()->json([
+        'message'=>"empty data",
+        'error'=>true
+    ]);
+
+}
+dd(count($terms));
+ switch ($request->type) {
+     case 'download':
+
+        $name="consumed_items.pdf";
     $path=public_path('reports').'/'.$name;
       $url=route('redirect_download',['name'=>$name]) ; 
     $pdf=PDF::loadView('pdf.reports.consumed_report',['items'=>$terms,'consumed'=>$consum])->save($path);
@@ -1955,14 +2330,127 @@ $name="consumption_Expiry.pdf";
                   return response()->json([
                     'path'=>$url,
                     
-                  ]);  
-break;
+                  ]); 
+         break;
+     
+     case 'excel':
+       $spreadsheet = new Spreadsheet();
 
-//end  inner switch
+     $spreadsheet->getActiveSheet()->getDefaultColumnDimension()->setWidth(100, 'pt');
+    $spreadsheet->getActiveSheet()->getColumnDimension('A')->setAutoSize(true);
+      $drawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
+ $image = file_get_contents(url('/').'/assets/icon/logo_black.png');
+$imageName = 'logo.png';
+$temp_image=tempnam(sys_get_temp_dir(), $imageName);
+file_put_contents($temp_image, $image);
+$drawing->setName('Logo');
+$drawing->setDescription('Logo');
+$drawing->setPath($temp_image); 
+$drawing->setHeight(70);
+$drawing->setCoordinates('A2');
+$drawing->setOffsetX(110);
+
+
+$drawing->getShadow()->setDirection(45);
+$drawing->setWorksheet($spreadsheet->getActiveSheet());
+
+$spreadsheet->setActiveSheetIndex(0);
+$spreadsheet->getActiveSheet()->setCellValue('B7', ' Consumed List ');
+$spreadsheet->getActiveSheet()->getStyle('B7')->getFont()->setBold(true);
+     
+$spreadsheet->getProperties()->setCreator('cathebert muyila')
+    ->setLastModifiedBy('Cathebert muyila')
+    ->setTitle('PhpSpreadsheet Table Test Document')
+    ->setSubject('PhpSpreadsheet Table Test Document')
+    ->setDescription('Test document for PhpSpreadsheet, generated using PHP classes.')
+    ->setKeywords('office PhpSpreadsheet php')
+    ->setCategory('Table');
+
+// Create the worksheet
+
+    
+
+$spreadsheet->setActiveSheetIndex(0);
+$spreadsheet->getActiveSheet()
+    ->setCellValue('A8', 'Name')
+    ->setCellValue('B8', 'Catalog Number')
+    ->setCellValue('C8', 'Unit Issue')
+    ->setCellValue('D8', 'Total Consumed');
+
+$num=9;
+$total=0;
+$overall_total=0;
+
+  for ($x=0; $x<count($terms); $x++){
+
+  $dat=[
+
+    [
+    $terms[$x]->item_name,
+  
+  $terms[$x]->catalog_number,
+  $terms[$x]->unit_issue,
+  $terms[$x]->consumed_quantity,
+   
+
+]
+  
+
+  ];
+ $spreadsheet->getActiveSheet()->fromArray($dat, null, 'A'.$num);
+$num++;
 }
 
-   //outer switch
-   }
+$step=$num+1;
+//$spreadsheet->getActiveSheet()->fromArray($data, null, 'A2');
+
+
+// Create Table
+
+$table = new Table('A8:D'.$num, 'Expired_Data');
+
+// Create Columns
+
+// Create Table Style
+
+$tableStyle = new TableStyle();
+$tableStyle->setTheme(TableStyle::TABLE_STYLE_MEDIUM2);
+$tableStyle->setShowRowStripes(true);
+$tableStyle->setShowColumnStripes(true);
+$tableStyle->setShowFirstColumn(true);
+$tableStyle->setShowLastColumn(true);
+$table->setStyle($tableStyle);
+
+// Add Table to Worksheet
+
+$spreadsheet->getActiveSheet()->addTable($table);
+
+
+
+// Save
+
+$writer = new Xlsx($spreadsheet);
+$writer->save(public_path('reports').'/consumed_itrems.xlsx');
+$path=public_path('reports').'/consumed_itrems.xlsx';
+$name='consumed_itrems.xlsx';
+$headers = [
+  'Content-type' => 'application/vnd.ms-excel', 
+  'Content-Disposition' => sprintf('attachment; filename="%s"', $name),
+  'Content-Length' => strlen($path)
+
+];
+$url=route('report.consumed_download-excel',['name'=>$name]); 
+return response()->json([
+    'path'=>$name,
+    'url'=>$url,
+]);
+
+         break;
+ }
+
+
+
+
 }
 public function download($name){
     $path=public_path('reports').'/'.$name;
@@ -2485,7 +2973,7 @@ $end = Carbon::now()->addWeek()->startOfWeek();
                     'r.status',
                      DB::raw('GROUP_CONCAT(rd.id) as requisitions_ids'),
                      DB::raw('SUM(rd.quantity_requested) as quantity_requested'))
-                   ->where('c.lab_id',auth()->user()->laboratory_id) 
+                   ->where('r.lab_id',auth()->user()->laboratory_id) 
                   ->whereBetween('r.requested_date', [$start, $end])
           //->where('t.expiry_date', '>', date('Y-m-d') )
                 ->where(function ($query) use ($search){
@@ -2683,7 +3171,7 @@ $end = Carbon::now()->endOfQuarter()->format('Y-m-d');
                     'r.status',
                      DB::raw('GROUP_CONCAT(rd.id) as requisitions_ids'),
                      DB::raw('SUM(rd.quantity_requested) as quantity_requested'))
-                   ->where('c.lab_id',auth()->user()->laboratory_id) 
+                   ->where('r.lab_id',auth()->user()->laboratory_id) 
                   ->whereBetween('r.requested_date', [$start, $end])
           //->where('t.expiry_date', '>', date('Y-m-d') )
                 ->where(function ($query) use ($search){
@@ -2710,7 +3198,7 @@ $end = Carbon::now()->subWeek()->endOfWeek();
                   ->join('inventories as i','i.item_id','=','t.id')
                   ->join('requisition_details as rd','rd.item_id','=','i.id')
                   ->join('requisitions as r','r.id','=','rd.requisition_id')
-                   ->where('c.lab_id',auth()->user()->laboratory_id) 
+                   ->where('r.lab_id',auth()->user()->laboratory_id) 
                    ->whereBetween('r.requested_date', [$start, $end])
                    ->groupBy('t.item_name')
                    ->count();
@@ -2773,7 +3261,7 @@ $totalData =DB::table('items as t')
                   ->join('inventories as i','i.item_id','=','t.id')
                   ->join('requisition_details as rd','rd.item_id','=','i.id')
                   ->join('requisitions as r','r.id','=','rd.requisition_id')
-                   ->where('rd.lab_id',auth()->user()->laboratory_id) 
+                   ->where('r.lab_id',auth()->user()->laboratory_id) 
                    ->whereBetween('r.requested_date', [$start, $end])
                    ->groupBy('t.item_name')
                    ->count();
@@ -4286,7 +4774,7 @@ $data['lab_name']='Logged Into: '.$lab->lab_name;
 
   public function loadStockLevelReport(Request $request){
       
-    $columns = array(
+    /*$columns = array(
             0 =>'id',
             1=>'item_name',
             2=>'catalog_number',
@@ -4301,7 +4789,9 @@ $data['lab_name']='Logged Into: '.$lab->lab_name;
     $totalData =DB::table('items as t')
                   ->join('inventories as i','i.item_id','=','t.id')
                   ->where('i.lab_id',auth()->user()->laboratory_id) 
-                   ->groupBy('t.item_name')
+                   ->where('i.expiry_date', '>', date('Y-m-d') )
+                    ->select(DB::raw('SUM(i.quantity) as stock_on_hand'))
+                   ->groupBy('t.id','t.item_name')
                    ->count();
 
            // ->where('t.expiry_date', '>', date('Y-m-d') )
@@ -4331,10 +4821,11 @@ $data['lab_name']='Logged Into: '.$lab->lab_name;
                     't.minimum_level',
                     't.maximum_level',
                     'i.quantity',
+                    'i.expiry_date',
                      DB::raw('SUM(i.quantity) as stock_on_hand'))
                   ->where('i.lab_id',auth()->user()->laboratory_id) 
                   // ->where([['r.status','=','approved']])
-          //->where('t.expiry_date', '>', date('Y-m-d') )
+          ->where('i.expiry_date', '>', date('Y-m-d') )
                 ->where(function ($query) use ($search){
                   return  $query->where('t.item_name', 'LIKE', "%{$search}%");
                  
@@ -4364,11 +4855,17 @@ $x=1;
                $nestedData['min']= $term->minimum_level;
                 $nestedData['max']= $term->maximum_level;
                  $nestedData['available']= '<strong>'.$term->stock_on_hand.'</strong>';
-                 if($term->stock_on_hand<=$term->minimum_level ){
-                $nestedData['status']='<span class="badge badge-danger">Re-stock</span>';
+                if($term->minimum_level>$term->stock_on_hand){
+                $nestedData['status']='<span class="badge badge-danger">Below Minimum</span>';
+      }
+      if($term->stock_on_hand>$term->minimum_level){
+         $nestedData['status']= '<span class="badge badge-warning">Good</span>';
+      }
+       if($term->stock_on_hand>$term->maximum_level){
+        $nestedData['status']=  '<span class="badge badge-success">More than enough</span>';
       }
       else{
-         $nestedData['status']='<span class="badge badge-success">Good Level</span>';
+          $nestedData['status']='<span class="badge badge-success">Good</span>';
       }
       
                 
@@ -4387,7 +4884,51 @@ $x=1;
     );
 
       echo json_encode($json_data);
-    
+      */
+        if ($request->ajax()) {
+    $stock_level = DB::table('items as t')
+                  ->join('inventories as i','i.item_id','=','t.id')
+                  ->select(
+                    't.id as id',
+                    't.uln',
+                    't.code',
+                    't.item_name',
+                    'i.batch_number',
+                    't.catalog_number',
+                    't.place_of_purchase',
+                    't.unit_issue',
+                    't.minimum_level',
+                    't.maximum_level',
+                    'i.quantity',
+                    'i.expiry_date',
+                     DB::raw('SUM(i.quantity) as stock_on_hand'))
+                  ->where('i.lab_id',auth()->user()->laboratory_id)
+                  ->where('i.quantity','>',0)
+                  ->groupBy('t.id','t.item_name')
+                  ->get();
+ return Datatables::of($stock_level)
+                ->addIndexColumn()
+                
+                ->addColumn('status', function($row) {
+                    if($row->stock_on_hand>$row->minimum_level){
+                    return   '<span class="badge badge-info">Good</span>' ;
+            }
+            if ($row->stock_on_hand >$row->maximum_level) {
+                return '<span class="badge badge-success">More than enough</span>';
+            }
+             if ($row->stock_on_hand <$row->minimum_level) {
+                return '<span class="badge badge-danger">Bad</span>';
+            }
+if ($row->stock_on_hand <$row->maximum_level) {
+                return '<span class="badge badge-info">Good</span>';
+            }
+                })
+                
+                   ->rawColumns(['status'])
+                ->make(true);
+
+}
+            
   }
   public function loadStockLevelDetails(Request $request){
    
@@ -4589,6 +5130,2417 @@ $data[]= $nested;
    'data'=>$data,
   ]);
   }
+
+  public function showExpiredReport(){
+$data['users']=User::where([['laboratory_id','=',auth()->user()->laboratory_id],['authority','=',1]])
+             ->select('id','email')->get();
+           $data['laboratories']=Laboratory::get();
+           
+                $lab=Laboratory::where('id',auth()->user()->laboratory_id)->select('lab_name')->first();
+   
+   
+$data['lab_name']='Logged Into: '.$lab->lab_name;
+return view('provider.reports.list.expired',$data);
+
+  }
+  public function loadExpired(Request $request){
+    $lab=auth()->user()->laboratory_id;
+
+
+     $date=Carbon::now();
+  $columns = array(
+            0 =>'id',
+            1=>'item',
+            2=> 'brand',
+            3=>'batch_number',
+            4=>'Name',
+            5=>'location',
+            6=>'expire_date',
+            7=>'quantity',
+            8=>'cost',
+            9=>'est_loss',
+            10=>'status',
+        ); 
+    
+   $totalData = DB::table('inventories as t') 
+              ->join('items AS s', 's.id', '=', 't.item_id')
+              ->join('laboratories as l','l.id','=','t.lab_id')
+              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.quantity','t.cost','s.item_name','t.expiry_date')
+                ->where('t.quantity','>',0)
+           ->where('t.lab_id',$lab)
+             ->where('t.expiry_date', '<', $date)
+             
+          ->count();
+
+
+
+            $totalRec = $totalData;
+          // $totalData = DB::table('appointments')->count();
+
+          $limit = $request->input('length');
+          $start = $request->input('start');
+          $order = $columns[$request->input('order.0.column')];
+          $dir = $request->input('order.0.dir');
+
+           $search = $request->input('search.value');
+            $terms = DB::table('inventories as t') 
+              ->join('items AS s', 's.id', '=', 't.item_id')
+               ->join('laboratories as l','l.id','=','t.lab_id')
+              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+                ->where('t.quantity','>',0)
+        ->where('t.lab_id',$lab)
+     ->where('t.expiry_date', '<', $date)
+          
+                ->where(function ($query) use ($search){
+                  return  $query->where('s.code', 'LIKE', "%{$search}%")
+                  ->orWhere('s.item_name','LIKE',"%{$search}%");
+                      
+                     
+            })
+            ->offset($start)
+            ->limit($limit)
+            ->orderBy('t.expiry_date','asc')
+            ->get();
+
+          $totalFiltered =  $totalRec ;
+//  0 => 'id',
+    
+          $data = array();
+          if (!empty($terms)) {
+$x=1;
+ 
+ $t=0;
+$total=0;
+            foreach ($terms as $term) {
+
+
+$cost=$term->quantity* $term->cost;
+                $nestedData['id']=$x;
+                $nestedData['item']=$term->code;
+                $nestedData['brand']= $term->brand;
+                    $nestedData['batch_number']= $term->batch_number;
+                 $nestedData['name']= $term->item_name;
+                    $nestedData['location']= $term->lab_name;
+                 $nestedData['expire_date'] = $term->expiry_date;
+              $nestedData['quantity'] = $term->quantity;
+               $nestedData['cost'] = $term->cost;
+                $nestedData['est_loss'] = $cost;
+     $to = \Carbon\Carbon::createFromFormat('Y-m-d', $term->expiry_date);
+      $from = \Carbon\Carbon::createFromFormat('Y-m-d', date('Y-m-d'));
+                 $diff_in_days = $from->diffInDays($to);
+                 
+                    $nestedData['status']="<span class='text-danger'>  Expired (".$diff_in_days. " day(s)) ago</span>";  
+                 
+                  
+ 
+    
+            
+                   $x++;
+                $data[] = $nestedData;
+                  $t= $cost;
+   $total=$total+$t;
+           }
+      }
+
+      $json_data = array(
+        "draw" => intval($request->input('draw')),
+        "recordsTotal" => intval($totalData),
+        "recordsFiltered" => intval($totalFiltered),
+        "data" => $data,
+        "total"=>$total,
+        "quantity"=>$totalData,
+    );
+
+      echo json_encode($json_data);
+
+  }
+
+  public function loadExpiredItemByRange(Request $request){
+     parse_str($request->expiry_form,$out);
+ $expired= $out;
+ $lab=$expired['lab'];
+$range=$expired['period'];
+    switch ($range) {
+        case -1:
+        
+$this->getDefaultData($request);
+        break;
+        case 0:
+             $date=date('Y-m-d');
+              $this->getRangePrevious($request,$date);
+        break;
+        //yesterday
+        case 1:
+             $date=date('Y-m-d', strtotime("-1 days"));
+           $this->getRangePrevious($request,$date);
+            break;
+            //this week
+        case 2:
+           $start = Carbon::now()->subWeek()->endOfWeek();
+            $end = Carbon::now();
+            $this->getRangeData($request,$start, $end);
+            break;
+            //this month
+        case 3:
+        $myDate = date('Y-m-d');
+        $start = Carbon::createFromFormat('Y-m-d', $myDate)
+                        ->firstOfMonth()
+                        ->format('Y-m-d');
+
+        $end = Carbon::now();
+            $this->getRangeData($request,$start, $end);
+            break;
+            //this quarter
+        case 4:
+            $start = Carbon::now()->firstOfQuarter()->format('Y-m-d');
+$end = Carbon::now();
+$this->getRangeData($request,$start, $end);
+            break;
+            //this year
+    case 5:
+ $start = Carbon::now()->startOfYear()->format('Y-m-d');
+   $end = Carbon::now();
+   $this->getRangeData($request,$start, $end);
+    break;
+    //previous week
+ case 6:
+ $start = Carbon::now()->subWeek()->startOfWeek();
+$end = Carbon::now()->subWeek()->endOfWeek();
+$this->getRangeData($request,$start, $end);
+        break;
+   //previous month     
+case 7:
+ $start = Carbon::now()->startOfMonth()->subMonthsNoOverflow()->toDateString();
+$end = Carbon::now()->subMonthsNoOverflow()->endOfMonth()->toDateString();
+$this->getRangeData($request,$start, $end);
+break;
+
+//previous quarter
+case 8:
+$start = Carbon::now()->subMonths(3)->firstOfQuarter()->format('Y-m-d');
+$end = Carbon::now()->subMonths(3)->endOfQuarter()->format('Y-m-d');
+$this->getRangeData($request,$start, $end);
+break;
+
+//previous year
+case 9:
+ $start = Carbon::now()->subYear()->startOfYear()->format('Y-m-d');
+ $end = Carbon::now()->subYear()->endOfYear()->format('Y-m-d');
+ $this->getRangeData($request,$start, $end);
+break;
+//custom select
+case 10:
+
+$start = $expired['start'];
+ $end =$expired['end'];
+$this->getRangeData($request,$start, $end);
+break;
+    }
+
+}
+protected function getRangePrevious($request,$date){
+    $date=$date;
+ 
+    $date=Carbon::now();
+         $columns = array(
+            0 =>'id',
+            1=>'item',
+            2=> 'brand',
+            3=>'batch_number',
+            4=>'Name',
+            5=>'location',
+            6=>'expire_date',
+            7=>'quantity',
+            8=>'cost',
+            9=>'est_loss',
+            10=>'status',
+        ); 
+    
+   $totalData = DB::table('inventories as t') 
+              ->join('items AS s', 's.id', '=', 't.item_id')
+              ->join('laboratories as l','l.id','=','t.lab_id')
+              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.quantity','t.cost','s.item_name','t.expiry_date')
+           ->where('t.quantity','>',0)
+             ->where('t.expiry_date', '=', $date)
+             ->where('t.lab_id',auth()->user()->laboratory_id)
+          ->count();
+
+
+
+            $totalRec = $totalData;
+          // $totalData = DB::table('appointments')->count();
+
+          $limit = $request->input('length');
+          $start = $request->input('start');
+          $order = $columns[$request->input('order.0.column')];
+          $dir = $request->input('order.0.dir');
+
+           $search = $request->input('search.value');
+            $terms = DB::table('inventories as t') 
+              ->join('items AS s', 's.id', '=', 't.item_id')
+               ->join('laboratories as l','l.id','=','t.lab_id')
+              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+        ->where('t.lab_id',auth()->user()->laboratory_id)
+     ->where('t.expiry_date', '=', $date)
+            ->where('t.quantity','>',0)
+                ->where(function ($query) use ($search){
+                  return  $query->where('s.code', 'LIKE', "%{$search}%")
+                  ->orWhere('s.item_name','LIKE',"%{$search}%");
+                      
+                     
+            })
+            ->offset($start)
+            ->limit($limit)
+            ->orderBy('t.expiry_date','asc')
+            ->get();
+
+          $totalFiltered =  $totalRec ;
+//  0 => 'id',
+    
+          $data = array();
+          if (!empty($terms)) {
+$x=1;
+ 
+ $t=0;
+$total=0;
+            foreach ($terms as $term) {
+
+
+$cost=$term->quantity* $term->cost;
+                $nestedData['id']=$x;
+                $nestedData['item']=$term->code;
+                $nestedData['brand']= $term->brand;
+                    $nestedData['batch_number']= $term->batch_number;
+                 $nestedData['name']= $term->item_name;
+                    $nestedData['location']= $term->lab_name;
+                 $nestedData['expire_date'] = $term->expiry_date;
+              $nestedData['quantity'] = $term->quantity;
+               $nestedData['cost'] = $term->cost;
+                $nestedData['est_loss'] = $cost;
+     $to = \Carbon\Carbon::createFromFormat('Y-m-d', $term->expiry_date);
+      $from = \Carbon\Carbon::createFromFormat('Y-m-d', date('Y-m-d'));
+                 $diff_in_days = $from->diffInDays($to);
+                 
+                    $nestedData['status']="<span class='text-danger'>  Expired (".$diff_in_days. " day(s)) ago</span>";  
+                 
+                  
+ 
+    
+            
+                   $x++;
+                $data[] = $nestedData;
+                  $t= $cost;
+   $total=$total+$t;
+           }
+      }
+
+      $json_data = array(
+        "draw" => intval($request->input('draw')),
+        "recordsTotal" => intval($totalData),
+        "recordsFiltered" => intval($totalFiltered),
+        "data" => $data,
+        "total"=>$total,
+        "quantity"=>$totalData,
+    );
+
+      echo json_encode($json_data);
+
+
+}
+protected function getRangeData($request,$start_date, $end){
+   
+
+
+     $columns = array(
+            0 =>'id',
+            1=>'item',
+            2=> 'brand',
+            3=>'batch_number',
+            4=>'Name',
+            5=>'location',
+            6=>'expire_date',
+            7=>'quantity',
+            8=>'cost',
+            9=>'est_loss',
+            10=>'status',
+        ); 
+ $totalData = DB::table('inventories as t') 
+              ->join('items AS s', 's.id', '=', 't.item_id')
+              ->join('laboratories as l','l.id','=','t.lab_id')
+              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.quantity','t.cost','s.item_name','t.expiry_date')
+                ->where('t.quantity','>',0)
+        ->where('t.lab_id',auth()->user()->laboratory_id)
+             ->whereBetween('t.expiry_date', [$start_date, $end])
+           
+          ->count();
+
+
+
+            $totalRec = $totalData;
+$limit = $request->input('length');
+          $start = $request->input('start');
+          $order = $columns[$request->input('order.0.column')];
+          $dir = $request->input('order.0.dir');
+
+           $search = $request->input('search.value');
+            $terms = DB::table('inventories as t') 
+              ->join('items AS s', 's.id', '=', 't.item_id')
+               ->join('laboratories as l','l.id','=','t.lab_id')
+              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+                ->where('t.quantity','>',0)
+       ->where('t.lab_id',auth()->user()->laboratory_id)
+     ->whereBetween('t.expiry_date', [$start_date, $end])
+ 
+         
+                ->where(function ($query) use ($search){
+                  return  $query->where('s.code', 'LIKE', "%{$search}%")
+                  ->orWhere('s.item_name','LIKE',"%{$search}%");
+                      
+                     
+            })
+            ->offset($start)
+            ->limit($limit)
+            ->orderBy('t.expiry_date','asc')
+            ->get();
+
+          $totalFiltered =  $totalRec ;
+
+          $data = array();
+          if (!empty($terms)) {
+$x=1;
+ 
+ $t=0;
+$total=0;
+            foreach ($terms as $term) {
+
+
+$cost=$term->quantity* $term->cost;
+                $nestedData['id']=$x;
+                $nestedData['item']=$term->code;
+                $nestedData['brand']= $term->brand;
+                    $nestedData['batch_number']= $term->batch_number;
+                 $nestedData['name']= $term->item_name;
+                    $nestedData['location']= $term->lab_name;
+                 $nestedData['expire_date'] = $term->expiry_date;
+              $nestedData['quantity'] = $term->quantity;
+               $nestedData['cost'] = $term->cost;
+                $nestedData['est_loss'] = $cost;
+     $to = \Carbon\Carbon::createFromFormat('Y-m-d', $term->expiry_date);
+      $from = \Carbon\Carbon::createFromFormat('Y-m-d', date('Y-m-d'));
+                 $diff_in_days = $from->diffInDays($to);
+                 
+                    $nestedData['status']="<span class='text-danger'>  Expired (".$diff_in_days. " day(s)) ago</span>";  
+                 
+                  
+ 
+    
+            
+                   $x++;
+                $data[] = $nestedData;
+                  $t= $cost;
+   $total=$total+$t;
+           }
+      }
+
+      $json_data = array(
+        "draw" => intval($request->input('draw')),
+        "recordsTotal" => intval($totalData),
+        "recordsFiltered" => intval($totalFiltered),
+        "data" => $data,
+        "total"=>$total,
+        "quantity"=>$totalData,
+    );
+
+      echo json_encode($json_data);
+
+
+}
+// download files
+
+
+public function downloadExpired(Request $request){
+   
+  parse_str($request->expiry_form,$out);
+ $expired= $out;
+ $lab=auth()->user()->laboratory_id;
+
+ $period=$expired['period'];
+  $date=date('Y-m-d');
+if( $period==-1){
+    
+   $data['info'] = DB::table('inventories as t') 
+              ->join('items AS s', 's.id', '=', 't.item_id')
+               ->join('laboratories as l','l.id','=','t.lab_id')
+              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+          ->where('t.quantity','>',0)
+     ->where('t.expiry_date', '<', $date)
+     ->get();
+}
+if($lab!=-1 && $period==-1){
+ $data['info'] = DB::table('inventories as t') 
+              ->join('items AS s', 's.id', '=', 't.item_id')
+               ->join('laboratories as l','l.id','=','t.lab_id')
+              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+    ->where('t.lab_id',$lab)
+      ->where('t.quantity','>',0)
+     ->where('t.expiry_date', '<', $date)
+     ->get();
 }
 
+if($lab==-1 && $period!=-1){
+    switch ($period) {
+        case 0:
+         $date=date('Y-m-d');
+         $data['info'] = DB::table('inventories as t') 
+              ->join('items AS s', 's.id', '=', 't.item_id')
+               ->join('laboratories as l','l.id','=','t.lab_id')
+              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+                ->where('t.quantity','>',0)
+    ->where('t.lab_id',$lab)
+     ->where('t.expiry_date', '=', $date)
+     ->get();
+        break;
+        case 1:
+     $date=date('Y-m-d', strtotime("-1 days"));
 
+     $data['info'] = DB::table('inventories as t') 
+              ->join('items AS s', 's.id', '=', 't.item_id')
+               ->join('laboratories as l','l.id','=','t.lab_id')
+              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+      ->where('t.quantity','>',0)
+     ->where('t.expiry_date', '=', $date)
+     ->get();
+            break;
+        
+        case 2:
+$start = Carbon::now()->subWeek()->endOfWeek();
+$end = Carbon::now()->addWeek()->startOfWeek();
+
+
+$data['info'] = DB::table('inventories as t') 
+              ->join('items AS s', 's.id', '=', 't.item_id')
+               ->join('laboratories as l','l.id','=','t.lab_id')
+              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+                ->where('t.quantity','>',0)
+    ->where('t.lab_id',$lab)
+     ->whereBetween('t.expiry_date', [$start,$end])
+     ->get();
+            break;
+
+        case 3:
+ $myDate = date('Y-m-d');
+$start = Carbon::createFromFormat('Y-m-d', $myDate)
+                        ->firstOfMonth()
+                        ->format('Y-m-d');
+
+$end = Carbon::createFromFormat('Y-m-d', $myDate)
+                        ->lastOfMonth()
+                        ->format('Y-m-d');
+$data['info'] = DB::table('inventories as t') 
+              ->join('items AS s', 's.id', '=', 't.item_id')
+               ->join('laboratories as l','l.id','=','t.lab_id')
+              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+                ->where('t.quantity','>',0)
+    ->where('t.lab_id',$lab)
+     ->whereBetween('t.expiry_date', [$start, $end])
+     ->get();
+            break;
+        
+        case 4:
+$start = Carbon::now()->firstOfQuarter()->format('Y-m-d');
+$end = Carbon::now()->endOfQuarter()->format('Y-m-d');
+
+$data['info'] = DB::table('inventories as t') 
+              ->join('items AS s', 's.id', '=', 't.item_id')
+               ->join('laboratories as l','l.id','=','t.lab_id')
+              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+                ->where('t.quantity','>',0)
+    ->where('t.lab_id',$lab)
+     ->whereBetween('t.expiry_date', [$start, $end])
+     ->get();
+            break;
+
+        case 5:
+$start = Carbon::now()->startOfYear()->format('Y-m-d');
+$end = Carbon::now()->endOfYear()->format('Y-m-d');
+$data['info'] = DB::table('inventories as t') 
+              ->join('items AS s', 's.id', '=', 't.item_id')
+               ->join('laboratories as l','l.id','=','t.lab_id')
+              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+                ->where('t.quantity','>',0)
+    ->where('t.lab_id',$lab)
+     ->whereBetween('t.expiry_date', [$start, $end])
+     ->get();
+            break;
+        
+        case 6:
+$start = Carbon::now()->subWeek()->startOfWeek();
+$end = Carbon::now()->subWeek()->endOfWeek();
+$data['info'] = DB::table('inventories as t') 
+              ->join('items AS s', 's.id', '=', 't.item_id')
+               ->join('laboratories as l','l.id','=','t.lab_id')
+              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+                ->where('t.quantity','>',0)
+    ->where('t.lab_id',$lab)
+     ->whereBetween('t.expiry_date', [$start, $end])
+     ->get();
+        break;
+
+
+        case 7:
+ $start = Carbon::now()->startOfMonth()->subMonthsNoOverflow()->toDateString();
+$end = Carbon::now()->subMonthsNoOverflow()->endOfMonth()->toDateString();
+$data['info'] = DB::table('inventories as t') 
+              ->join('items AS s', 's.id', '=', 't.item_id')
+               ->join('laboratories as l','l.id','=','t.lab_id')
+              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+                ->where('t.quantity','>',0)
+    ->where('t.lab_id',$lab)
+     ->whereBetween('t.expiry_date', [$start, $end])
+     ->get();
+            break;
+        
+        case 8:
+$start = Carbon::now()->subMonths(3)->firstOfQuarter()->format('Y-m-d');
+$end = Carbon::now()->subMonths(3)->endOfQuarter()->format('Y-m-d');
+
+$data['info'] = DB::table('inventories as t') 
+              ->join('items AS s', 's.id', '=', 't.item_id')
+               ->join('laboratories as l','l.id','=','t.lab_id')
+              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+    ->where('t.lab_id',$lab)
+     ->whereBetween('t.expiry_date', [$start, $end])
+     ->get();
+            break;
+
+        case 9:
+$start = Carbon::now()->subYear()->startOfYear()->format('Y-m-d');
+ $end = Carbon::now()->subYear()->endOfYear()->format('Y-m-d');
+
+ $data['info'] = DB::table('inventories as t') 
+              ->join('items AS s', 's.id', '=', 't.item_id')
+               ->join('laboratories as l','l.id','=','t.lab_id')
+              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+                ->where('t.quantity','>',0)
+    ->where('t.lab_id',$lab)
+     ->whereBetween('t.expiry_date', [$start, $end])
+     ->get();
+            break;
+        
+        case 10:
+$start= $expired['start'];
+$end=   $expired['end'];
+$data['info'] = DB::table('inventories as t') 
+              ->join('items AS s', 's.id', '=', 't.item_id')
+               ->join('laboratories as l','l.id','=','t.lab_id')
+              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+                ->where('t.quantity','>',0)
+    ->where('t.lab_id',$lab)
+     ->whereBetween('t.expiry_date', [$start, $end])
+     ->get();
+            break;
+    }
+}
+
+if($period!=-1){
+    $lab=auth()->user()->laboratory_id;
+ switch ($period) {
+        case 0:
+         $date=date('Y-m-d');
+         $data['info'] = DB::table('inventories as t') 
+              ->join('items AS s', 's.id', '=', 't.item_id')
+               ->join('laboratories as l','l.id','=','t.lab_id')
+              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+                ->where('t.quantity','>',0)
+    ->where('t.lab_id',$lab)
+     ->where('t.expiry_date', '=', $date)
+     ->get();
+        break;
+        case 1:
+     $date=date('Y-m-d', strtotime("-1 days"));
+
+     $data['info'] = DB::table('inventories as t') 
+              ->join('items AS s', 's.id', '=', 't.item_id')
+               ->join('laboratories as l','l.id','=','t.lab_id')
+              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+                ->where('t.quantity','>',0)
+      ->where('t.lab_id',$lab)
+     ->where('t.expiry_date', '=', $date)
+     ->get();
+            break;
+        
+        case 2:
+$start = Carbon::now()->subWeek()->endOfWeek();
+$end = Carbon::now()->addWeek()->startOfWeek();
+
+
+$data['info'] = DB::table('inventories as t') 
+              ->join('items AS s', 's.id', '=', 't.item_id')
+               ->join('laboratories as l','l.id','=','t.lab_id')
+              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+                ->where('t.quantity','>',0)
+    ->where('t.lab_id',$lab)
+     ->whereBetween('t.expiry_date', [$start, $end])
+     ->get();
+
+    break;
+
+        case 3:
+ $myDate = date('Y-m-d');
+$start = Carbon::createFromFormat('Y-m-d', $myDate)
+                        ->firstOfMonth()
+                        ->format('Y-m-d');
+
+$end = Carbon::createFromFormat('Y-m-d', $myDate)
+                        ->lastOfMonth()
+                        ->format('Y-m-d');
+$data['info'] = DB::table('inventories as t') 
+              ->join('items AS s', 's.id', '=', 't.item_id')
+               ->join('laboratories as l','l.id','=','t.lab_id')
+              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+                ->where('t.quantity','>',0)
+    ->where('t.lab_id',$lab)
+     ->whereBetween('t.expiry_date', [$start, $end])
+     ->get();
+            break;
+        
+        case 4:
+$start = Carbon::now()->firstOfQuarter()->format('Y-m-d');
+$end = Carbon::now()->endOfQuarter()->format('Y-m-d');
+
+$data['info'] = DB::table('inventories as t') 
+              ->join('items AS s', 's.id', '=', 't.item_id')
+               ->join('laboratories as l','l.id','=','t.lab_id')
+              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+                ->where('t.quantity','>',0)
+    ->where('t.lab_id',$lab)
+     ->whereBetween('t.expiry_date', [$start, $end])
+     ->get();
+            break;
+
+        case 5:
+$start = Carbon::now()->startOfYear()->format('Y-m-d');
+$end = Carbon::now()->endOfYear()->format('Y-m-d');
+$data['info'] = DB::table('inventories as t') 
+              ->join('items AS s', 's.id', '=', 't.item_id')
+               ->join('laboratories as l','l.id','=','t.lab_id')
+              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+                ->where('t.quantity','>',0)
+    ->where('t.lab_id',$lab)
+     ->whereBetween('t.expiry_date', [$start, $end])
+     ->get();
+            break;
+        
+        case 6:
+$start = Carbon::now()->subWeek()->startOfWeek();
+$end = Carbon::now()->subWeek()->endOfWeek();
+$data['info'] = DB::table('inventories as t') 
+              ->join('items AS s', 's.id', '=', 't.item_id')
+               ->join('laboratories as l','l.id','=','t.lab_id')
+              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+                ->where('t.quantity','>',0)
+    ->where('t.lab_id',$lab)
+     ->whereBetween('t.expiry_date', [$start, $end])
+     ->get();
+        break;
+
+
+        case 7:
+ $start = Carbon::now()->startOfMonth()->subMonthsNoOverflow()->toDateString();
+$end = Carbon::now()->subMonthsNoOverflow()->endOfMonth()->toDateString();
+$data['info'] = DB::table('inventories as t') 
+              ->join('items AS s', 's.id', '=', 't.item_id')
+               ->join('laboratories as l','l.id','=','t.lab_id')
+              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+                ->where('t.quantity','>',0)
+    ->where('t.lab_id',$lab)
+     ->whereBetween('t.expiry_date', [$start, $end])
+     ->get();
+            break;
+        
+        case 8:
+$start = Carbon::now()->subMonths(3)->firstOfQuarter()->format('Y-m-d');
+$end = Carbon::now()->subMonths(3)->endOfQuarter()->format('Y-m-d');
+
+$data['info'] = DB::table('inventories as t') 
+              ->join('items AS s', 's.id', '=', 't.item_id')
+               ->join('laboratories as l','l.id','=','t.lab_id')
+              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+                ->where('t.quantity','>',0)
+    ->where('t.lab_id',$lab)
+     ->whereBetween('t.expiry_date', [$start, $end])
+     ->get();
+            break;
+
+        case 9:
+$start = Carbon::now()->subYear()->startOfYear()->format('Y-m-d');
+ $end = Carbon::now()->subYear()->endOfYear()->format('Y-m-d');
+
+ $data['info'] = DB::table('inventories as t') 
+              ->join('items AS s', 's.id', '=', 't.item_id')
+               ->join('laboratories as l','l.id','=','t.lab_id')
+              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+                ->where('t.quantity','>',0)
+    ->where('t.lab_id',$lab)
+     ->whereBetween('t.expiry_date', [$start, $end])
+     ->get();
+            break;
+        
+        case 10:
+$start= $expired['start'];
+$end=   $expired['end'];
+$data['info'] = DB::table('inventories as t') 
+              ->join('items AS s', 's.id', '=', 't.item_id')
+               ->join('laboratories as l','l.id','=','t.lab_id')
+              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+                ->where('t.quantity','>',0)
+    ->where('t.lab_id',$lab)
+     ->whereBetween('t.expiry_date', [$start, $end])
+     ->get();
+            break;
+    }
+   
+}
+if($request->type=="download"){
+ 
+    $name="expired.pdf";
+    $path=public_path('reports').'/expired.pdf';
+        
+    $pdf=PDF::loadView('pdf.reports.expired_report',$data);
+        $pdf->save($path); 
+$url=route('report.get_expired_download',['name'=>$name]);
+
+return response()->json([
+    'path'=>$name,
+    'url'=>$url,
+
+]);
+
+}
+if($request->type=="excel"){
+$spreadsheet = new Spreadsheet();
+
+     $spreadsheet->getActiveSheet()->getDefaultColumnDimension()->setWidth(100, 'pt');
+    $spreadsheet->getActiveSheet()->getColumnDimension('A')->setAutoSize(true);
+      $drawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
+ $image = file_get_contents(url('/').'/assets/icon/logo_black.png');
+$imageName = 'logo.png';
+$temp_image=tempnam(sys_get_temp_dir(), $imageName);
+file_put_contents($temp_image, $image);
+$drawing->setName('Logo');
+$drawing->setDescription('Logo');
+$drawing->setPath($temp_image); 
+$drawing->setHeight(70);
+$drawing->setCoordinates('C2');
+$drawing->setOffsetX(110);
+
+
+$drawing->getShadow()->setDirection(45);
+$drawing->setWorksheet($spreadsheet->getActiveSheet());
+
+$spreadsheet->setActiveSheetIndex(0);
+$spreadsheet->getActiveSheet()->setCellValue('D7', ' EXPIRED ITEM LIST ');
+$spreadsheet->getActiveSheet()->getStyle('D7')->getFont()->setBold(true);
+     
+$spreadsheet->getProperties()->setCreator('cathebert muyila')
+    ->setLastModifiedBy('Cathebert muyila')
+    ->setTitle('PhpSpreadsheet Table Test Document')
+    ->setSubject('PhpSpreadsheet Table Test Document')
+    ->setDescription('Test document for PhpSpreadsheet, generated using PHP classes.')
+    ->setKeywords('office PhpSpreadsheet php')
+    ->setCategory('Table');
+
+// Create the worksheet
+
+    
+
+$spreadsheet->setActiveSheetIndex(0);
+$spreadsheet->getActiveSheet()
+    ->setCellValue('A8', 'Name')
+    ->setCellValue('B8', 'Code')
+    ->setCellValue('C8', 'Batch Number')
+    ->setCellValue('D8', 'Location')
+    ->setCellValue('E8', 'Expiration')
+    ->setCellValue('F8', 'Quantity')
+    ->setCellValue('G8', 'Cost')
+    ->setCellValue('H8', 'Loss');
+
+$num=9;
+$total=0;
+$overall_total=0;
+
+  for ($x=0; $x<count($data['info']); $x++){
+$total=$data['info'][$x]->cost*$data['info'][$x]->quantity;
+$overall_total=$overall_total+$total;
+  $dat=[
+
+    [
+    $data['info'][$x]->item_name,
+    $data['info'][$x]->code, 
+    $data['info'][$x]->batch_number,
+    $data['info'][$x]->lab_name,
+    $data['info'][$x]->expiry_date,
+    $data['info'][$x]->quantity,
+    $data['info'][$x]->cost,
+    $total
+]
+  
+
+  ];
+ $spreadsheet->getActiveSheet()->fromArray($dat, null, 'A'.$num);
+$num++;
+}
+
+$step=$num+1;
+//$spreadsheet->getActiveSheet()->fromArray($data, null, 'A2');
+$spreadsheet->getActiveSheet()
+    ->setCellValue('A'.$step, 'Total');
+  $spreadsheet->getActiveSheet()->getStyle('A'.$step)->getFont()->setBold(true);
+    $spreadsheet->getActiveSheet()
+    ->setCellValue('H'.$step, $overall_total);
+    $spreadsheet->getActiveSheet()->getStyle('H'.$step)->getNumberFormat()
+    ->setFormatCode('#,##0.00');
+    $spreadsheet->getActiveSheet()->getStyle('H'.$step)->getFont()->setBold(true);
+
+// Create Table
+
+$table = new Table('A8:H'.$num, 'Expired_Data');
+
+// Create Columns
+
+// Create Table Style
+
+$tableStyle = new TableStyle();
+$tableStyle->setTheme(TableStyle::TABLE_STYLE_MEDIUM2);
+$tableStyle->setShowRowStripes(true);
+$tableStyle->setShowColumnStripes(true);
+$tableStyle->setShowFirstColumn(true);
+$tableStyle->setShowLastColumn(true);
+$table->setStyle($tableStyle);
+
+// Add Table to Worksheet
+
+$spreadsheet->getActiveSheet()->addTable($table);
+
+
+
+// Save
+
+$writer = new Xlsx($spreadsheet);
+$writer->save(public_path('reports').'/expired_report.xlsx');
+$path=public_path('reports').'/expiry_report.xlsx';
+$name='expired_report.xlsx';
+$headers = [
+  'Content-type' => 'application/vnd.ms-excel', 
+  'Content-Disposition' => sprintf('attachment; filename="%s"', $name),
+  'Content-Length' => strlen($path)
+
+];
+$url=route('report.expired_download-excel',['name'=>$name]); 
+return response()->json([
+    'path'=>$name,
+    'url'=>$url,
+]);
+
+}
+}
+public function downloadAboutToExpire(Request $request){
+    parse_str($request->expiry_form,$out);
+ $expired= $out;
+ $lab=auth()->user()->laboratory_id;
+
+ $period=$expired['period'];
+if($period==-1){
+            $date= \Carbon\Carbon::createFromFormat('Y-m-d', date('Y-m-d'))->addDays(90);
+    $from_date=date('Y-m-d');
+      
+        //  dd("done");
+
+            $report = DB::table('inventories as t') 
+              ->join('items AS s', 's.id', '=', 't.item_id')
+               ->join('laboratories as l','l.id','=','t.lab_id')
+              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+                ->where('t.quantity','>',0)
+        ->where('t.lab_id','=',$lab)
+        ->whereBetween(DB::raw('DATE(t.expiry_date)'), array($from_date, $date))->get();
+    }
+
+
+if($period!=-1){
+switch ($period) {
+
+        case 1:
+           
+              $from_date=  date('Y-m-d', strtotime("-30 days"));
+               $to_date=Carbon::now();
+            break;
+        case 2:
+            $days=30;
+               $to_date= Carbon::now()->addDays($days);
+               $from_date=Carbon::now();
+            break;
+        case 3:
+            $days=60;
+                $to_date= Carbon::now()->addDays($days);
+                $from_date=Carbon::now()->addDays(31);
+            break;
+        case 4:
+            $days=90;
+          $to_date=Carbon::now()->addDays($days);
+          $from_date=Carbon::now()->addDays(60);
+            break;
+        default:
+        $days=90;
+            $to_date=Carbon::now()->addDays($days);
+             $from_date=Carbon::now();
+    }
+    $report = DB::table('inventories as t') 
+              ->join('items AS s', 's.id', '=', 't.item_id')
+               ->join('laboratories as l','l.id','=','t.lab_id')
+              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+                ->where('t.quantity','>',0)
+         ->where('t.lab_id','=',$lab)
+        ->whereBetween('t.expiry_date', [$from_date,  $to_date])->get(); 
+
+}
+
+          //->where('t.expiry_date', '<', $date )
+
+          //$path=public_path('reports').'/Inventory Expiry.pdf';
+        
+   // $pdf=PDF::loadView('pdf.reports.expiry_report',['info'=>$report]);
+     // dd("done");
+  
+
+   if($request->type=="download"){
+   
+    $name="Inventory Expiry.pdf";
+       $path=public_path('reports').'/Inventory Expiry.pdf';
+        
+$pdf=PDF::loadView('pdf.reports.expiry_report',['info'=>$report]);
+        $pdf->save($path); 
+$url=route('report.expiry_download',['name'=>$name]);
+
+return response()->json([
+    'path'=>$name,
+    'url'=>$url,
+
+]);
+
+}
+if($request->type=="print"){
+ $pdf=PDF::loadView('pdf.reports.expiry_report',['info'=>$report]);
+ return $pdf->stream();
+}
+if($request->type=="excel"){
+$spreadsheet = new Spreadsheet();
+
+     $spreadsheet->getActiveSheet()->getDefaultColumnDimension()->setWidth(100, 'pt');
+    $spreadsheet->getActiveSheet()->getColumnDimension('A')->setAutoSize(true);
+      $drawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
+ $image = file_get_contents(url('/').'/assets/icon/logo_black.png');
+$imageName = 'logo.png';
+$temp_image=tempnam(sys_get_temp_dir(), $imageName);
+file_put_contents($temp_image, $image);
+$drawing->setName('Logo');
+$drawing->setDescription('Logo');
+$drawing->setPath($temp_image); 
+$drawing->setHeight(70);
+$drawing->setCoordinates('C2');
+$drawing->setOffsetX(110);
+
+
+$drawing->getShadow()->setDirection(45);
+$drawing->setWorksheet($spreadsheet->getActiveSheet());
+
+$spreadsheet->setActiveSheetIndex(0);
+$spreadsheet->getActiveSheet()->setCellValue('D7', 'ABOUT TO EXPIRE LIST ');
+$spreadsheet->getActiveSheet()->getStyle('D7')->getFont()->setBold(true);
+     
+$spreadsheet->getProperties()->setCreator('cathebert muyila')
+    ->setLastModifiedBy('Cathebert muyila')
+    ->setTitle('PhpSpreadsheet Table Test Document')
+    ->setSubject('PhpSpreadsheet Table Test Document')
+    ->setDescription('Test document for PhpSpreadsheet, generated using PHP classes.')
+    ->setKeywords('office PhpSpreadsheet php')
+    ->setCategory('Table');
+
+// Create the worksheet
+
+    
+
+$spreadsheet->setActiveSheetIndex(0);
+$spreadsheet->getActiveSheet()
+    ->setCellValue('A8', 'Name')
+    ->setCellValue('B8', 'Code')
+    ->setCellValue('C8', 'Batch Number')
+    ->setCellValue('D8', 'Location')
+    ->setCellValue('E8', 'Expiration')
+    ->setCellValue('F8', 'Quantity')
+    ->setCellValue('G8', 'Cost')
+    ->setCellValue('H8', 'Estimated Loss');
+
+$num=9;
+$total=0;
+$overall_total=0;
+
+  for ($x=0; $x<count($report); $x++){
+$total=$report[$x]->cost*$report[$x]->quantity;
+$overall_total=$overall_total+$total;
+  $data=[
+
+    [$report[$x]->item_name,$report[$x]->code, $report[$x]->batch_number,$report[$x]->lab_name,$report[$x]->expiry_date,$report[$x]->quantity,$report[$x]->cost,$total]
+  
+
+  ];
+ $spreadsheet->getActiveSheet()->fromArray($data, null, 'A'.$num);
+$num++;
+}
+
+$step=$num+1;
+//$spreadsheet->getActiveSheet()->fromArray($data, null, 'A2');
+$spreadsheet->getActiveSheet()
+    ->setCellValue('A'.$step, 'Total');
+  $spreadsheet->getActiveSheet()->getStyle('A'.$step)->getFont()->setBold(true);
+    $spreadsheet->getActiveSheet()
+    ->setCellValue('H'.$step, $overall_total);
+    $spreadsheet->getActiveSheet()->getStyle('H'.$step)->getNumberFormat()
+    ->setFormatCode('#,##0.00');
+    $spreadsheet->getActiveSheet()->getStyle('H'.$step)->getFont()->setBold(true);
+
+// Create Table
+
+$table = new Table('A8:H'.$num, 'About_To_Expire_Data');
+
+// Create Columns
+
+// Create Table Style
+
+$tableStyle = new TableStyle();
+$tableStyle->setTheme(TableStyle::TABLE_STYLE_MEDIUM2);
+$tableStyle->setShowRowStripes(true);
+$tableStyle->setShowColumnStripes(true);
+$tableStyle->setShowFirstColumn(true);
+$tableStyle->setShowLastColumn(true);
+$table->setStyle($tableStyle);
+
+// Add Table to Worksheet
+
+$spreadsheet->getActiveSheet()->addTable($table);
+
+
+
+// Save
+
+$writer = new Xlsx($spreadsheet);
+$writer->save(public_path('reports').'/expiry_report.xlsx');
+$path=public_path('reports').'/expiry_report.xlsx';
+$name='expiry_report.xlsx';
+$headers = [
+  'Content-type' => 'application/vnd.ms-excel', 
+  'Content-Disposition' => sprintf('attachment; filename="%s"', $name),
+  'Content-Length' => strlen($path)
+
+];
+$url=route('report.expiry_download-excel',['name'=>$name]); 
+return response()->json([
+    'path'=>$name,
+    'url'=>$url,
+]); 
+}
+}
+public function stockLevelDownload(Request $request, $name){
+
+$lab=auth()->user()->laboratory_id;
+               $terms = DB::table('items as t')
+                  ->join('inventories as i','i.item_id','=','t.id')
+                  ->where('i.lab_id',$lab)
+                  ->select(
+                    't.id as id',
+                    't.uln',
+                    't.code',
+                    't.item_name',
+                    'i.batch_number',
+                    't.catalog_number',
+                    't.place_of_purchase',
+                    't.unit_issue',
+                    't.minimum_level',
+                    't.maximum_level',
+                    'i.quantity',
+                    'i.cost',
+                     DB::raw('SUM(i.quantity) as stock_on_hand'))
+            ->groupBy('t.id','t.item_name')
+            ->get();
+
+
+
+       if($name=='pdf'){
+  $name="out_of_stock.pdf";
+    $path=public_path('reports').'/'.$name;
+        
+    $pdf=PDF::loadView('pdf.reports.stock_level',['info'=>$terms]);
+      return  $pdf->download(now().'_Stock_level.pdf'); 
+    }       
+if($name=='excel'){
+     $spreadsheet = new Spreadsheet();
+
+     $spreadsheet->getActiveSheet()->getDefaultColumnDimension()->setWidth(100, 'pt');
+    $spreadsheet->getActiveSheet()->getColumnDimension('A')->setAutoSize(true);
+      $drawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
+ $image = file_get_contents(url('/').'/assets/icon/logo_black.png');
+$imageName = 'logo.png';
+$temp_image=tempnam(sys_get_temp_dir(), $imageName);
+file_put_contents($temp_image, $image);
+$drawing->setName('Logo');
+$drawing->setDescription('Logo');
+$drawing->setPath($temp_image); 
+$drawing->setHeight(70);
+$drawing->setCoordinates('C2');
+$drawing->setOffsetX(110);
+
+
+$drawing->getShadow()->setDirection(45);
+$drawing->setWorksheet($spreadsheet->getActiveSheet());
+
+$spreadsheet->setActiveSheetIndex(0);
+$spreadsheet->getActiveSheet()->setCellValue('D7', ' STOCK LEVEL');
+$spreadsheet->getActiveSheet()->getStyle('D7')->getFont()->setBold(true);
+     
+$spreadsheet->getProperties()->setCreator('cathebert muyila')
+    ->setLastModifiedBy('Cathebert muyila')
+    ->setTitle('PhpSpreadsheet Table Test Document')
+    ->setSubject('PhpSpreadsheet Table Test Document')
+    ->setDescription('Test document for PhpSpreadsheet, generated using PHP classes.')
+    ->setKeywords('office PhpSpreadsheet php')
+    ->setCategory('Table');
+
+// Create the worksheet
+
+    
+
+$spreadsheet->setActiveSheetIndex(0);
+$spreadsheet->getActiveSheet()
+    ->setCellValue('A8', 'Name')
+    ->setCellValue('B8', 'Code')
+    ->setCellValue('C8', 'Batch Number')
+    ->setCellValue('D8', 'Place of Purchase')
+    ->setCellValue('E8', 'Unit')
+    ->setCellValue('F8', 'Minimum')
+    ->setCellValue('G8', 'Maximum')
+    ->setCellValue('H8', 'Quantity');
+
+
+      
+
+$num=9;
+$total=0;
+$overall_total=0;
+
+  foreach ($terms as $term){
+
+  $dat=[
+
+    [
+   $term->item_name,
+    $term->code, 
+    $term->batch_number,
+    $term->unit_issue,
+    $term->place_of_purchase,
+    $term->minimum_level,
+     $term->maximum_level,
+     $term->stock_on_hand
+   
+]
+  
+
+  ];
+ $spreadsheet->getActiveSheet()->fromArray($dat, null, 'A'.$num);
+$num++;
+}
+
+$step=$num+1;
+//$spreadsheet->getActiveSheet()->fromArray($data, null, 'A2');
+
+// Create Table
+
+$table = new Table('A8:H'.$num, 'Expired_Data');
+
+// Create Columns
+
+// Create Table Style
+
+$tableStyle = new TableStyle();
+$tableStyle->setTheme(TableStyle::TABLE_STYLE_MEDIUM2);
+$tableStyle->setShowRowStripes(true);
+$tableStyle->setShowColumnStripes(true);
+$tableStyle->setShowFirstColumn(true);
+$tableStyle->setShowLastColumn(true);
+$table->setStyle($tableStyle);
+
+// Add Table to Worksheet
+
+$spreadsheet->getActiveSheet()->addTable($table);
+
+
+
+// Save
+
+$writer = new Xlsx($spreadsheet);
+$writer->save(public_path('reports').'/stock_level_report.xlsx');
+$path=public_path('reports').'/stock_level_report.xlsx';
+$name='stock_level_report.xlsx';
+$headers = [
+  'Content-type' => 'application/vnd.ms-excel', 
+  'Content-Disposition' => sprintf('attachment; filename="%s"', $name),
+  'Content-Length' => strlen($path)
+
+];
+   return response()->download($path,$name, $headers);
+    }
+   
+  }
+  public function downloadOutOfStock(Request $request ,$name){
+    $terms = DB::table('items as t')
+                  ->join('inventories as i','i.item_id','=','t.id')
+                  ->select(
+                    't.id as id',
+                    't.item_name',
+                    'i.batch_number',
+                    't.catalog_number',
+                    't.place_of_purchase',
+                    't.minimum_level',
+                    't.maximum_level',
+
+                    't.unit_issue',
+                    DB::raw('GROUP_CONCAT(i.id) as item_ids')
+                   )
+                  ->where('i.lab_id',auth()->user()->laboratory_id) 
+                  ->where([['i.quantity','<=',0]])
+                  ->groupBy('t.id','t.item_name')
+            ->get();
+       if($name=='pdf'){
+  $name="out_of_stock.pdf";
+    $path=public_path('reports').'/out_of_stock.pdf';
+        
+    $pdf=PDF::loadView('pdf.reports.out_of_stock',['info'=>$terms]);
+      return  $pdf->download(now().'_out_of_stock.pdf'); 
+    }       
+if($name=='excel'){
+     $spreadsheet = new Spreadsheet();
+
+     $spreadsheet->getActiveSheet()->getDefaultColumnDimension()->setWidth(100, 'pt');
+    $spreadsheet->getActiveSheet()->getColumnDimension('A')->setAutoSize(true);
+      $drawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
+ $image = file_get_contents(url('/').'/assets/icon/logo_black.png');
+$imageName = 'logo.png';
+$temp_image=tempnam(sys_get_temp_dir(), $imageName);
+file_put_contents($temp_image, $image);
+$drawing->setName('Logo');
+$drawing->setDescription('Logo');
+$drawing->setPath($temp_image); 
+$drawing->setHeight(70);
+$drawing->setCoordinates('C2');
+$drawing->setOffsetX(110);
+
+
+$drawing->getShadow()->setDirection(45);
+$drawing->setWorksheet($spreadsheet->getActiveSheet());
+
+$spreadsheet->setActiveSheetIndex(0);
+$spreadsheet->getActiveSheet()->setCellValue('D7', ' STOCK LEVEL');
+$spreadsheet->getActiveSheet()->getStyle('D7')->getFont()->setBold(true);
+     
+$spreadsheet->getProperties()->setCreator('cathebert muyila')
+    ->setLastModifiedBy('Cathebert muyila')
+    ->setTitle('PhpSpreadsheet Table Test Document')
+    ->setSubject('PhpSpreadsheet Table Test Document')
+    ->setDescription('Test document for PhpSpreadsheet, generated using PHP classes.')
+    ->setKeywords('office PhpSpreadsheet php')
+    ->setCategory('Table');
+
+// Create the worksheet
+
+    
+
+$spreadsheet->setActiveSheetIndex(0);
+$spreadsheet->getActiveSheet()
+    ->setCellValue('A8', 'Name')
+    ->setCellValue('B8', 'Code')
+    ->setCellValue('C8', 'Batch Number')
+    ->setCellValue('D8', 'Place of Purchase')
+    ->setCellValue('E8', 'Unit')
+    ->setCellValue('F8', 'Minimum')
+    ->setCellValue('G8', 'Maximum')
+    ->setCellValue('H8', 'Quantity');
+
+
+      
+
+$num=9;
+$total=0;
+$overall_total=0;
+
+  foreach ($terms as $term){
+
+  $dat=[
+
+    [
+   $term->item_name,
+    $term->code, 
+    $term->batch_number,
+    $term->unit_issue,
+    $term->place_of_purchase,
+    $term->minimum_level,
+     $term->maximum_level,
+     $term->stock_on_hand
+   
+]
+  
+
+  ];
+ $spreadsheet->getActiveSheet()->fromArray($dat, null, 'A'.$num);
+$num++;
+}
+
+$step=$num+1;
+//$spreadsheet->getActiveSheet()->fromArray($data, null, 'A2');
+
+// Create Table
+
+$table = new Table('A8:H'.$num, 'Expired_Data');
+
+// Create Columns
+
+// Create Table Style
+
+$tableStyle = new TableStyle();
+$tableStyle->setTheme(TableStyle::TABLE_STYLE_MEDIUM2);
+$tableStyle->setShowRowStripes(true);
+$tableStyle->setShowColumnStripes(true);
+$tableStyle->setShowFirstColumn(true);
+$tableStyle->setShowLastColumn(true);
+$table->setStyle($tableStyle);
+
+// Add Table to Worksheet
+
+$spreadsheet->getActiveSheet()->addTable($table);
+
+
+
+// Save
+
+$writer = new Xlsx($spreadsheet);
+$writer->save(public_path('reports').'/out_of_stock.xlsx');
+$path=public_path('reports').'/out_of_stock.xlsx';
+$name='out_of_stock.xlsx';
+$headers = [
+  'Content-type' => 'application/vnd.ms-excel', 
+  'Content-Disposition' => sprintf('attachment; filename="%s"', $name),
+  'Content-Length' => strlen($path)
+
+];
+   return response()->download($path,$name, $headers);
+    }
+   
+  }
+
+   public function showDisposal(){
+              $data['users']=User::where([['laboratory_id','=',auth()->user()->laboratory_id],['authority','=',1]])
+             ->select('id','email')->get();
+              $lab=Laboratory::where('id',auth()->user()->laboratory_id)->select('lab_name')->first();
+                    $section=LaboratorySection::where('id',auth()->user()->section_id)->select('section_name')->first();
+  
+   
+$data['lab_name']='Logged Into: '.$lab->lab_name;
+
+$data['laboratories']=Laboratory::get();
+           
+return view('provider.reports.list.disposal',$data);
+        
+    }
+public function  loadDisposal(Request $request){
+   $lab=auth()->user()->laboratory_id;  
+    $columns = array(
+            0 =>'id',
+            1=>'item',
+            2=>'brand',
+            3=>'batch_number',
+            4=>'name',
+            5=>'quantity',
+            6=>'remark',
+            7=>'lab',
+            8=>'date'
+           
+        ); 
+    
+   $totalData = DB::table('inventories as t')
+                ->join('item_disposal_details as d','d.item_id','=','t.id') 
+              ->join('items AS s', 's.id', '=', 't.item_id')
+              ->join('laboratories as l','l.id','=','t.lab_id')
+              ->where('d.lab_id',$lab)
+          ->count();
+
+
+
+            $totalRec = $totalData;
+          // $totalData = DB::table('appointments')->count();
+
+          $limit = $request->input('length');
+          $start = $request->input('start');
+          $order = $columns[$request->input('order.0.column')];
+          $dir = $request->input('order.0.dir');
+
+           $search = $request->input('search.value');
+            $terms = DB::table('inventories as t') 
+              ->join('item_disposal_details as d','d.item_id','=','t.id') 
+              ->join('items AS s', 's.id', '=', 't.item_id')
+               ->join('laboratories as l','l.id','=','d.lab_id')
+              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','d.dispose_quantity','t.quantity','d.remarks','d.created_at','t.cost','s.item_name','t.expiry_date')
+      
+           ->where('d.lab_id',$lab)
+         
+                ->where(function ($query) use ($search){
+                  return  $query->where('s.code', 'LIKE', "%{$search}%")
+                  ->orWhere('s.item_name','LIKE',"%{$search}%");
+                      
+                     
+            })
+            ->offset($start)
+            ->limit($limit)
+            ->orderBy('s.item_name','asc')
+            ->get();
+
+          $totalFiltered =  $totalRec ;
+//  0 => 'id',
+    
+          $data = array();
+          if (!empty($terms)) {
+$x=1;
+ 
+ $t=0;
+$total=0;
+            foreach ($terms as $term) {
+
+
+$cost=$term->quantity* $term->cost;
+                $nestedData['id']=$x;
+                $nestedData['item']=$term->code;
+                $nestedData['brand']= $term->brand;
+                    $nestedData['batch_number']= $term->batch_number;
+                 $nestedData['name']= $term->item_name;
+                    $nestedData['lab']= $term->lab_name;
+                 $nestedData['expire_date'] = $term->expiry_date;
+              $nestedData['quantity'] = $term->dispose_quantity;
+               $nestedData['cost'] = $term->cost;
+                $nestedData['est_loss'] = $cost;
+   $nestedData['date']= $term->created_at;
+                    $nestedData['remark']=$term->remarks;  
+                 
+                  
+ 
+    
+            
+                   $x++;
+                $data[] = $nestedData;
+                  $t= $cost;
+   $total=$total+$t;
+           }
+      }
+
+      $json_data = array(
+        "draw" => intval($request->input('draw')),
+        "recordsTotal" => intval($totalData),
+        "recordsFiltered" => intval($totalFiltered),
+        "data" => $data,
+        "total"=>$total,
+        "quantity"=>$totalData,
+    );
+
+      echo json_encode($json_data);
+   
+}
+public function labDownloadDisposed(Request $request){
+   parse_str($request->expiry_form,$out);
+ $expired= $out;
+$lab=auth()->user()->laboratory_id;
+ $period=$expired['period'];
+  switch ($period) { 
+  case -1:
+
+ $terms = DB::table('inventories as t') 
+              ->join('item_disposal_details as d','d.item_id','=','t.id') 
+              ->join('items AS s', 's.id', '=', 't.item_id')
+               ->join('laboratories as l','l.id','=','d.lab_id')
+              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','d.dispose_quantity','t.quantity','d.remarks','d.created_at','t.cost','s.item_name','t.expiry_date')
+                    
+                 ->where('d.lab_id',$lab) 
+                  ->orderBy('s.item_name','asc')
+                 ->get();
+  break;
+ case 0:
+  $date=date('Y-m-d');
+
+ $terms = DB::table('inventories as t') 
+              ->join('item_disposal_details as d','d.item_id','=','t.id') 
+              ->join('items AS s', 's.id', '=', 't.item_id')
+               ->join('laboratories as l','l.id','=','d.lab_id')
+              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','d.dispose_quantity','t.quantity','d.remarks','d.created_at','t.cost','s.item_name','t.expiry_date')
+                    
+                 ->where('d.lab_id',$lab) 
+                 ->where('d.created_at',$date)
+                  ->orderBy('s.item_name','asc')
+                 ->get();
+ break;
+
+case 1:
+ $date=date('Y-m-d', strtotime("-1 days"));
+
+ $terms = DB::table('inventories as t') 
+              ->join('item_disposal_details as d','d.item_id','=','t.id') 
+              ->join('items AS s', 's.id', '=', 't.item_id')
+               ->join('laboratories as l','l.id','=','d.lab_id')
+              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','d.dispose_quantity','t.quantity','d.remarks','d.created_at','t.cost','s.item_name','t.expiry_date')
+                  ->where('d.created_at','=',$date)  
+                 ->where('d.lab_id',$lab) 
+                  ->orderBy('s.item_name','asc')
+                 ->get();
+
+ break;
+
+case 2:
+$start = Carbon::now()->subWeek()->endOfWeek();
+$end = Carbon::now()->addWeek()->startOfWeek();
+
+
+ $terms = DB::table('inventories as t') 
+              ->join('item_disposal_details as d','d.item_id','=','t.id') 
+              ->join('items AS s', 's.id', '=', 't.item_id')
+               ->join('laboratories as l','l.id','=','d.lab_id')
+              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','d.dispose_quantity','t.quantity','d.remarks','d.created_at','t.cost','s.item_name','t.expiry_date')
+                    
+                 ->where('d.lab_id',$lab) 
+                 ->whereBetween('d.created_at',[$start,$end])
+                  ->orderBy('s.item_name','asc')
+                 ->get();
+ break;
+case 3:
+ $myDate = date('Y-m-d');
+        $start = Carbon::createFromFormat('Y-m-d', $myDate)
+                        ->firstOfMonth()
+                        ->format('Y-m-d');
+
+$end = Carbon::createFromFormat('Y-m-d', $myDate)
+                        ->lastOfMonth()
+                        ->format('Y-m-d');
+ $terms = DB::table('inventories as t') 
+              ->join('item_disposal_details as d','d.item_id','=','t.id') 
+              ->join('items AS s', 's.id', '=', 't.item_id')
+               ->join('laboratories as l','l.id','=','d.lab_id')
+              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','d.dispose_quantity','t.quantity','d.remarks','d.created_at','t.cost','s.item_name','t.expiry_date')
+                    
+                 ->where('d.lab_id',$lab) 
+                 ->whereBetween('d.created_at',[$start,$end])
+                  ->orderBy('s.item_name','asc')
+                 ->get();
+ break;
+
+case 4:
+$start = Carbon::now()->firstOfQuarter()->format('Y-m-d');
+$end = Carbon::now()->endOfQuarter()->format('Y-m-d');
+ $terms = DB::table('inventories as t') 
+              ->join('item_disposal_details as d','d.item_id','=','t.id') 
+              ->join('items AS s', 's.id', '=', 't.item_id')
+               ->join('laboratories as l','l.id','=','d.lab_id')
+              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','d.dispose_quantity','t.quantity','d.remarks','d.created_at','t.cost','s.item_name','t.expiry_date')
+                    
+                 ->where('d.lab_id',$lab) 
+                 ->whereBetween('d.created_at',[$start,$end])
+                  ->orderBy('s.item_name','asc')
+                 ->get();
+break;
+ case 5:
+$start = Carbon::now()->startOfYear()->format('Y-m-d');
+$end = Carbon::now()->endOfYear()->format('Y-m-d');
+ $terms = DB::table('inventories as t') 
+              ->join('item_disposal_details as d','d.item_id','=','t.id') 
+              ->join('items AS s', 's.id', '=', 't.item_id')
+               ->join('laboratories as l','l.id','=','d.lab_id')
+              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','d.dispose_quantity','t.quantity','d.remarks','d.created_at','t.cost','s.item_name','t.expiry_date')
+                    
+                 ->where('d.lab_id',$lab) 
+                 ->whereBetween('d.created_at',[$start,$end])
+                  ->orderBy('s.item_name','asc')
+                 ->get();
+ break;  
+
+ case 6:
+ $start = Carbon::now()->subWeek()->startOfWeek();
+$end = Carbon::now()->subWeek()->endOfWeek();
+ $terms = DB::table('inventories as t') 
+              ->join('item_disposal_details as d','d.item_id','=','t.id') 
+              ->join('items AS s', 's.id', '=', 't.item_id')
+               ->join('laboratories as l','l.id','=','d.lab_id')
+              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','d.dispose_quantity','t.quantity','d.remarks','d.created_at','t.cost','s.item_name','t.expiry_date')
+                    
+                 ->where('d.lab_id',$lab) 
+                 ->whereBetween('d.created_at',[$start,$end])
+                  ->orderBy('s.item_name','asc')
+                 ->get();
+ break;
+ case 7:
+ $start = Carbon::now()->startOfMonth()->subMonthsNoOverflow()->toDateString();
+$end = Carbon::now()->subMonthsNoOverflow()->endOfMonth()->toDateString();
+ $terms = DB::table('inventories as t') 
+              ->join('item_disposal_details as d','d.item_id','=','t.id') 
+              ->join('items AS s', 's.id', '=', 't.item_id')
+               ->join('laboratories as l','l.id','=','d.lab_id')
+              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','d.dispose_quantity','t.quantity','d.remarks','d.created_at','t.cost','s.item_name','t.expiry_date')
+                    
+                 ->where('d.lab_id',$lab) 
+                 ->whereBetween('d.created_at',[$start,$end])
+                  ->orderBy('s.item_name','asc')
+                 ->get();
+ break;
+
+ case 8:
+$start = Carbon::now()->subMonths(3)->firstOfQuarter()->format('Y-m-d');
+$end = Carbon::now()->subMonths(3)->endOfQuarter()->format('Y-m-d');
+
+ $terms = DB::table('inventories as t') 
+              ->join('item_disposal_details as d','d.item_id','=','t.id') 
+              ->join('items AS s', 's.id', '=', 't.item_id')
+               ->join('laboratories as l','l.id','=','d.lab_id')
+              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','d.dispose_quantity','t.quantity','d.remarks','d.created_at','t.cost','s.item_name','t.expiry_date')
+                    
+                 ->where('d.lab_id',$lab) 
+                 ->whereBetween('d.created_at',[$start,$end])
+                  ->orderBy('s.item_name','asc')
+                 ->get();
+ break;
+ case 9:
+  $start = Carbon::now()->subYear()->startOfYear()->format('Y-m-d');
+ $end = Carbon::now()->subYear()->endOfYear()->format('Y-m-d');
+  $terms = DB::table('inventories as t') 
+              ->join('item_disposal_details as d','d.item_id','=','t.id') 
+              ->join('items AS s', 's.id', '=', 't.item_id')
+               ->join('laboratories as l','l.id','=','d.lab_id')
+              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','d.dispose_quantity','t.quantity','d.remarks','d.created_at','t.cost','s.item_name','t.expiry_date')
+                    
+                 ->where('d.lab_id',$lab) 
+                 ->whereBetween('d.created_at',[$start,$end])
+                  ->orderBy('s.item_name','asc')
+                 ->get();
+ break;
+
+ case 10:
+$start=Carbon::createFromFormat('Y-m-d', $request->start_date);
+$end=Carbon::createFromFormat('Y-m-d',$request->end_date);
+ $terms = DB::table('inventories as t') 
+              ->join('item_disposal_details as d','d.item_id','=','t.id') 
+              ->join('items AS s', 's.id', '=', 't.item_id')
+               ->join('laboratories as l','l.id','=','d.lab_id')
+              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','d.dispose_quantity','t.quantity','d.remarks','d.created_at','t.cost','s.item_name','t.expiry_date')
+                    
+                 ->where('d.lab_id',$lab) 
+                 ->whereBetween('d.created_at',[$start,$end])
+                  ->orderBy('s.item_name','asc')
+                 ->get();
+ break; 
+}
+if(count($terms)>0){
+    switch($request->type){
+        case 'download':
+
+            $name="disposed_items.pdf";
+    $path=public_path('reports').'/'.$name;
+        
+    $pdf=PDF::loadView('pdf.reports.disposal',['info'=>$terms]);
+        $pdf->save($path); 
+$url=route('report.get_expired_download',['name'=>$name]);
+
+return response()->json([
+    'path'=>$name,
+    'url'=>$url,
+
+]);
+        break;
+
+
+        case 'excel':
+$spreadsheet = new Spreadsheet();
+
+     $spreadsheet->getActiveSheet()->getDefaultColumnDimension()->setWidth(100, 'pt');
+    $spreadsheet->getActiveSheet()->getColumnDimension('A')->setAutoSize(true);
+      $drawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
+ $image = file_get_contents(url('/').'/assets/icon/logo_black.png');
+$imageName = 'logo.png';
+$temp_image=tempnam(sys_get_temp_dir(), $imageName);
+file_put_contents($temp_image, $image);
+$drawing->setName('Logo');
+$drawing->setDescription('Logo');
+$drawing->setPath($temp_image); 
+$drawing->setHeight(70);
+$drawing->setCoordinates('C2');
+$drawing->setOffsetX(110);
+
+
+$drawing->getShadow()->setDirection(45);
+$drawing->setWorksheet($spreadsheet->getActiveSheet());
+
+$spreadsheet->setActiveSheetIndex(0);
+$spreadsheet->getActiveSheet()->setCellValue('D7', ' EXPIRED ITEM LIST ');
+$spreadsheet->getActiveSheet()->getStyle('D7')->getFont()->setBold(true);
+     
+$spreadsheet->getProperties()->setCreator('cathebert muyila')
+    ->setLastModifiedBy('Cathebert muyila')
+    ->setTitle('PhpSpreadsheet Table Test Document')
+    ->setSubject('PhpSpreadsheet Table Test Document')
+    ->setDescription('Test document for PhpSpreadsheet, generated using PHP classes.')
+    ->setKeywords('office PhpSpreadsheet php')
+    ->setCategory('Table');
+
+// Create the worksheet
+
+    
+
+$spreadsheet->setActiveSheetIndex(0);
+$spreadsheet->getActiveSheet()
+    ->setCellValue('A8', '#')
+    ->setCellValue('B8', 'Name')
+    ->setCellValue('C8', 'Code')
+    ->setCellValue('D8', 'Batch #')
+    ->setCellValue('E8', 'Disposed Date')
+    ->setCellValue('F8', 'Disposed Quantity')
+    ->setCellValue('G8', 'Cost')
+    ->setCellValue('H8', 'Remark')
+    ->setCellValue('I8', 'Total');
+    -
+
+$num=9;
+$total=0;
+$overall_total=0;
+$x=1;
+  foreach ($terms as $term){
+$total=$term->cost*$term->dispose_quantity;
+$overall_total=$overall_total+$total;
+  $dat=[
+
+    [
+   $x,
+   $term->item_name,
+   $term->code, 
+   $term->batch_number,
+   $term->created_at,
+   $term->dispose_quantity,
+   $term->cost,
+   $term->remarks,
+    $total,
+   
+]
+  
+
+  ];
+ $spreadsheet->getActiveSheet()->fromArray($dat, null, 'A'.$num);
+$num++;
+}
+
+$step=$num+1;
+//$spreadsheet->getActiveSheet()->fromArray($data, null, 'A2');
+$spreadsheet->getActiveSheet()
+    ->setCellValue('A'.$step, 'Total');
+  $spreadsheet->getActiveSheet()->getStyle('A'.$step)->getFont()->setBold(true);
+    $spreadsheet->getActiveSheet()
+    ->setCellValue('I'.$step, $overall_total);
+    $spreadsheet->getActiveSheet()->getStyle('I'.$step)->getNumberFormat()
+    ->setFormatCode('#,##0.00');
+    $spreadsheet->getActiveSheet()->getStyle('I'.$step)->getFont()->setBold(true);
+
+// Create Table
+
+$table = new Table('A8:I'.$num, 'Expired_Data');
+
+// Create Columns
+
+// Create Table Style
+
+$tableStyle = new TableStyle();
+$tableStyle->setTheme(TableStyle::TABLE_STYLE_MEDIUM2);
+$tableStyle->setShowRowStripes(true);
+$tableStyle->setShowColumnStripes(true);
+$tableStyle->setShowFirstColumn(true);
+$tableStyle->setShowLastColumn(true);
+$table->setStyle($tableStyle);
+
+// Add Table to Worksheet
+
+$spreadsheet->getActiveSheet()->addTable($table);
+
+
+
+// Save
+
+$writer = new Xlsx($spreadsheet);
+$name='disposed_items.xlsx';
+$writer->save(public_path('reports').'/'.$name);
+$path=public_path('reports').'/'.$name;
+
+$headers = [
+  'Content-type' => 'application/vnd.ms-excel', 
+  'Content-Disposition' => sprintf('attachment; filename="%s"', $name),
+  'Content-Length' => strlen($path)
+
+];
+$url=route('report.expired_download-excel',['name'=>$name]); 
+return response()->json([
+    'path'=>$name,
+    'url'=>$url,
+]);
+        break;
+    }
+}
+else{
+    return response()->json([
+        'message'=>"data not available",
+        'error'=>true,
+    ]);
+}
+}
+public function filterByPeriod(Request $request){
+parse_str($request->expiry_form,$out);
+ $expired= $out;
+
+ $period=$expired['period'];
+  switch ($period) {
+    case -1:
+$this->loadDefault($request);
+    break;
+        case 0:
+         $date=date('Y-m-d');
+            $this->getDisposedRangePrevious($request,$date);
+        break;
+        //yesterday
+        case 1:
+             $date=date('Y-m-d', strtotime("-1 days"));
+           $this->getDisposedRangePrevious($request,$date);
+            break;
+            //this week
+        case 2:
+           $start = Carbon::now()->subWeek()->endOfWeek()->format('Y-m-d');
+            $end = Carbon::now()->addWeek()->startOfWeek()->format('Y-m-d');
+            //dd($start->format('Y-m-d'));
+            $this->getDisposedRangeData($request,$start, $end);
+            break;
+            //this month
+        case 3:
+        $myDate = date('Y-m-d');
+        $start = Carbon::createFromFormat('Y-m-d', $myDate)
+                        ->firstOfMonth()
+                        ->format('Y-m-d');
+
+        $end = Carbon::createFromFormat('Y-m-d', $myDate)
+                        ->lastOfMonth()
+                        ->format('Y-m-d');
+    $this->getDisposedRangeData($request,$start, $end);
+            break;
+            //this quarter
+        case 4:
+            $start = Carbon::now()->firstOfQuarter()->format('Y-m-d');
+$end = Carbon::now()->endOfQuarter()->format('Y-m-d');
+$this->getDisposedRangeData($request,$start, $end);
+            break;
+            //this year
+    case 5:
+ $start = Carbon::now()->startOfYear()->format('Y-m-d');
+   $end = Carbon::now()->endOfYear()->format('Y-m-d');
+   $this->getDisposedRangeData($request,$start, $end);
+    break;
+    //previous week
+ case 6:
+ $start = Carbon::now()->subWeek()->startOfWeek();
+$end = Carbon::now()->subWeek()->endOfWeek();
+$this->getDisposedRangeData($request,$start, $end);
+        break;
+   //previous month     
+case 7:
+ $start = Carbon::now()->startOfMonth()->subMonthsNoOverflow()->toDateString();
+$end = Carbon::now()->subMonthsNoOverflow()->endOfMonth()->toDateString();
+$this->getDisposedRangeData($request,$start, $end);
+break;
+
+//previous quarter
+case 8:
+$start = Carbon::now()->subMonths(3)->firstOfQuarter()->format('Y-m-d');
+$end = Carbon::now()->subMonths(3)->endOfQuarter()->format('Y-m-d');
+$this->getDisposedRangeData($request,$start, $end);
+break;
+
+//previous year
+case 9:
+ $start = Carbon::now()->subYear()->startOfYear()->format('Y-m-d');
+ $end = Carbon::now()->subYear()->endOfYear()->format('Y-m-d');
+ $this->getDisposedRangeData($request,$start, $end);
+break;
+case 10:
+$start=$expired['start'];
+$end=$expired['end'];
+$this->getDisposedRangeData($request,$start, $end);
+break;
+    }
+  
+      
+}
+protected function loadDefault($request){
+$lab=auth()->user()->laboratory_id;
+     $columns = array(
+            0 =>'id',
+            1=>'item',
+            2=>'brand',
+            3=>'batch_number',
+            4=>'name',
+            5=>'quantity',
+            6=>'remark',
+            7=>'lab',
+            8=>'date'
+           
+        ); 
+  
+   $totalData = DB::table('inventories as t')
+                ->join('item_disposal_details as d','d.item_id','=','t.id') 
+              ->join('items AS s', 's.id', '=', 't.item_id')
+              ->join('laboratories as l','l.id','=','t.lab_id')
+           ->where('d.lab_id',$lab)  
+          ->count();
+
+
+
+            $totalRec = $totalData;
+          // $totalData = DB::table('appointments')->count();
+
+          $limit = $request->input('length');
+          $start = $request->input('start');
+          $order = $columns[$request->input('order.0.column')];
+          $dir = $request->input('order.0.dir');
+
+           $search = $request->input('search.value');
+            $terms = DB::table('inventories as t') 
+              ->join('item_disposal_details as d','d.item_id','=','t.id') 
+              ->join('items AS s', 's.id', '=', 't.item_id')
+               ->join('laboratories as l','l.id','=','d.lab_id')
+              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','d.dispose_quantity','t.quantity','d.remarks','d.created_at','t.cost','s.item_name','t.expiry_date')
+  
+                 ->where('d.lab_id',$lab) 
+         
+                ->where(function ($query) use ($search){
+                  return  $query->where('s.code', 'LIKE', "%{$search}%")
+                  ->orWhere('s.item_name','LIKE',"%{$search}%");
+                      
+                     
+            })
+            ->offset($start)
+            ->limit($limit)
+            ->orderBy('s.item_name','asc')
+            ->get();
+
+          $totalFiltered =  $totalRec ;
+//  0 => 'id',
+    
+          $data = array();
+          if (!empty($terms)) {
+$x=1;
+ 
+ $t=0;
+$total=0;
+            foreach ($terms as $term) {
+
+
+$cost=$term->quantity* $term->cost;
+                $nestedData['id']=$x;
+                $nestedData['item']=$term->code;
+                $nestedData['brand']= $term->brand;
+                    $nestedData['batch_number']= $term->batch_number;
+                 $nestedData['name']= $term->item_name;
+                    $nestedData['lab']= $term->lab_name;
+                 $nestedData['expire_date'] = $term->expiry_date;
+              $nestedData['quantity'] = $term->dispose_quantity;
+               $nestedData['cost'] = $term->cost;
+                $nestedData['est_loss'] = $cost;
+                 $nestedData['date']= $term->created_at;
+                $nestedData['remark']=$term->remarks;  
+
+                   $x++;
+                $data[] = $nestedData;
+                  $t= $cost;
+   $total=$total+$t;
+           }
+      }
+
+      $json_data = array(
+        "draw" => intval($request->input('draw')),
+        "recordsTotal" => intval($totalData),
+        "recordsFiltered" => intval($totalFiltered),
+        "data" => $data,
+        "total"=>$total,
+        "quantity"=>$totalData,
+    );
+
+      echo json_encode($json_data);
+      
+
+
+}
+protected function getDisposedRangeData($request,$start_date, $end){
+
+$columns = array(
+            0 =>'id',
+            1=>'item',
+            2=>'brand',
+            3=>'batch_number',
+            4=>'name',
+            5=>'quantity',
+            6=>'remark',
+            7=>'lab',
+            8=>'date'
+           
+        ); 
+  $lab=auth()->user()->laboratory_id;
+   $totalData = DB::table('inventories as t')
+                ->join('item_disposal_details as d','d.item_id','=','t.id') 
+              ->join('items AS s', 's.id', '=', 't.item_id')
+              ->join('laboratories as l','l.id','=','t.lab_id')
+              ->where('d.lab_id',$lab)
+             ->whereBetween('d.created_at', [$start_date, $end])->count();
+
+
+
+            $totalRec = $totalData;
+          // $totalData = DB::table('appointments')->count();
+
+          $limit = $request->input('length');
+          $start = $request->input('start');
+          $order = $columns[$request->input('order.0.column')];
+          $dir = $request->input('order.0.dir');
+
+           $search = $request->input('search.value');
+            $terms = DB::table('inventories as t') 
+              ->join('item_disposal_details as d','d.item_id','=','t.id') 
+              ->join('items AS s', 's.id', '=', 't.item_id')
+               ->join('laboratories as l','l.id','=','d.lab_id')
+              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','d.dispose_quantity','t.quantity','d.remarks','d.created_at','t.cost','s.item_name','t.expiry_date')
+               ->where('d.lab_id',$lab)
+      ->whereBetween('d.created_at', [$start_date, $end])
+  
+       
+                ->where(function ($query) use ($search){
+                  return  $query->where('s.code', 'LIKE', "%{$search}%")
+                  ->orWhere('s.item_name','LIKE',"%{$search}%");
+                      
+                     
+            })
+            ->offset($start)
+            ->limit($limit)
+            ->orderBy('s.item_name','asc')
+            ->get();
+ 
+          $totalFiltered =  $totalRec ;
+//  0 => 'id',
+    
+          $data = array();
+          if (!empty($terms)) {
+$x=1;
+ 
+ $t=0;
+$total=0;
+            foreach ($terms as $term) {
+
+
+$cost=$term->quantity* $term->cost;
+                $nestedData['id']=$x;
+                $nestedData['item']=$term->code;
+                $nestedData['brand']= $term->brand;
+                    $nestedData['batch_number']= $term->batch_number;
+                 $nestedData['name']= $term->item_name;
+                    $nestedData['lab']= $term->lab_name;
+                 $nestedData['expire_date'] = $term->expiry_date;
+              $nestedData['quantity'] = $term->dispose_quantity;
+               $nestedData['cost'] = $term->cost;
+                $nestedData['est_loss'] = $cost;
+   $nestedData['date']= $term->created_at;
+                    $nestedData['remark']=$term->remarks;  
+
+                   $x++;
+                $data[] = $nestedData;
+                  $t= $cost;
+   $total=$total+$t;
+           }
+      }
+
+      $json_data = array(
+        "draw" => intval($request->input('draw')),
+        "recordsTotal" => intval($totalData),
+        "recordsFiltered" => intval($totalFiltered),
+        "data" => $data,
+        "total"=>$total,
+        "quantity"=>$totalData,
+    );
+
+      echo json_encode($json_data); 
+
+}
+
+public function getDisposedRangePrevious($request,$date){
+$lab=auth()->user()->laboratory_id;
+$columns = array(
+            0 =>'id',
+            1=>'item',
+            2=>'brand',
+            3=>'batch_number',
+            4=>'name',
+            5=>'quantity',
+            6=>'remark',
+            7=>'lab',
+            8=>'date'
+           
+        ); 
+  
+   $totalData = DB::table('inventories as t')
+                ->join('item_disposal_details as d','d.item_id','=','t.id') 
+              ->join('items AS s', 's.id', '=', 't.item_id')
+              ->join('laboratories as l','l.id','=','t.lab_id')
+              ->where('d.lab_id',$lab)
+              ->where('d.created_at',$date)
+          ->count();
+
+
+
+            $totalRec = $totalData;
+          // $totalData = DB::table('appointments')->count();
+
+          $limit = $request->input('length');
+          $start = $request->input('start');
+          $order = $columns[$request->input('order.0.column')];
+          $dir = $request->input('order.0.dir');
+
+           $search = $request->input('search.value');
+            $terms = DB::table('inventories as t') 
+              ->join('item_disposal_details as d','d.item_id','=','t.id') 
+              ->join('items AS s', 's.id', '=', 't.item_id')
+               ->join('laboratories as l','l.id','=','d.lab_id')
+              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','d.dispose_quantity','t.quantity','d.remarks','d.created_at','t.cost','s.item_name','t.expiry_date')
+               ->where('d.lab_id',$lab)
+      ->where('d.created_at',$date)
+  
+         
+                ->where(function ($query) use ($search){
+                  return  $query->where('s.code', 'LIKE', "%{$search}%")
+                  ->orWhere('s.item_name','LIKE',"%{$search}%");
+                      
+                     
+            })
+            ->offset($start)
+            ->limit($limit)
+            ->orderBy('s.item_name','asc')
+            ->get();
+
+          $totalFiltered =  $totalRec ;
+//  0 => 'id',
+    
+          $data = array();
+          if (!empty($terms)) {
+$x=1;
+ 
+ $t=0;
+$total=0;
+            foreach ($terms as $term) {
+
+
+$cost=$term->quantity* $term->cost;
+                $nestedData['id']=$x;
+                $nestedData['item']=$term->code;
+                $nestedData['brand']= $term->brand;
+                    $nestedData['batch_number']= $term->batch_number;
+                 $nestedData['name']= $term->item_name;
+                    $nestedData['lab']= $term->lab_name;
+                 $nestedData['expire_date'] = $term->expiry_date;
+              $nestedData['quantity'] = $term->dispose_quantity;
+               $nestedData['cost'] = $term->cost;
+                $nestedData['est_loss'] = $cost;
+   $nestedData['date']= $term->created_at;
+                    $nestedData['remark']=$term->remarks;  
+
+                   $x++;
+                $data[] = $nestedData;
+                  $t= $cost;
+   $total=$total+$t;
+           }
+      }
+
+      $json_data = array(
+        "draw" => intval($request->input('draw')),
+        "recordsTotal" => intval($totalData),
+        "recordsFiltered" => intval($totalFiltered),
+        "data" => $data,
+        "total"=>$total,
+        "quantity"=>$totalData,
+    );
+
+      echo json_encode($json_data);    
+}
+public function labIssueDownload(Request $request, $name){
+    $lab=auth()->user()->laboratory_id;
+   $terms = DB::table('issues as t') 
+              ->join('laboratories AS l', 'l.id', '=', 't.to_lab_id')
+              ->where('t.from_lab_id',$lab)
+              ->select(
+                 't.id as id',
+                 't.siv_number',
+                 't.issued_by' ,
+                 't.from_lab_id',
+                 't.from_section_id',
+                 'l.lab_name as lab_name',
+                 't.to_section_id',
+                 't.approved_by',
+                 't.received_by',
+                 't.issuing_date',
+                 't.approve_status')
+            ->orderBy('t.issuing_date','asc')
+            ->get();
+            switch ($name) {
+                case 'pdf':
+    $name="stock_transfer.pdf";
+    $path=public_path('reports').'/'.$name;
+        
+    $pdf=PDF::loadView('pdf.reports.stock_transfer',['info'=>$terms]);
+      return  $pdf->download(now().'stock_transfer.pdf'); 
+       
+                    break;
+                
+                case 'excel':
+                    // code...
+                    break;
+            }
+
+}
+protected function getDefaultData($request ){
+     $lab=auth()->user()->laboratory_id;
+
+
+     $date=Carbon::now();
+  $columns = array(
+            0 =>'id',
+            1=>'item',
+            2=> 'brand',
+            3=>'batch_number',
+            4=>'Name',
+            5=>'location',
+            6=>'expire_date',
+            7=>'quantity',
+            8=>'cost',
+            9=>'est_loss',
+            10=>'status',
+        ); 
+    
+   $totalData = DB::table('inventories as t') 
+              ->join('items AS s', 's.id', '=', 't.item_id')
+              ->join('laboratories as l','l.id','=','t.lab_id')
+              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.quantity','t.cost','s.item_name','t.expiry_date')
+           ->where('t.lab_id',$lab)
+             ->where('t.expiry_date', '<', $date)
+             
+          ->count();
+
+
+
+            $totalRec = $totalData;
+          // $totalData = DB::table('appointments')->count();
+
+          $limit = $request->input('length');
+          $start = $request->input('start');
+          $order = $columns[$request->input('order.0.column')];
+          $dir = $request->input('order.0.dir');
+
+           $search = $request->input('search.value');
+            $terms = DB::table('inventories as t') 
+              ->join('items AS s', 's.id', '=', 't.item_id')
+               ->join('laboratories as l','l.id','=','t.lab_id')
+              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+        ->where('t.lab_id',$lab)
+     ->where('t.expiry_date', '<', $date)
+          
+                ->where(function ($query) use ($search){
+                  return  $query->where('s.code', 'LIKE', "%{$search}%")
+                  ->orWhere('s.item_name','LIKE',"%{$search}%");
+                      
+                     
+            })
+            ->offset($start)
+            ->limit($limit)
+            ->orderBy('t.expiry_date','asc')
+            ->get();
+
+          $totalFiltered =  $totalRec ;
+//  0 => 'id',
+    
+          $data = array();
+          if (!empty($terms)) {
+$x=1;
+ 
+ $t=0;
+$total=0;
+            foreach ($terms as $term) {
+
+
+$cost=$term->quantity* $term->cost;
+                $nestedData['id']=$x;
+                $nestedData['item']=$term->code;
+                $nestedData['brand']= $term->brand;
+                    $nestedData['batch_number']= $term->batch_number;
+                 $nestedData['name']= $term->item_name;
+                    $nestedData['location']= $term->lab_name;
+                 $nestedData['expire_date'] = $term->expiry_date;
+              $nestedData['quantity'] = $term->quantity;
+               $nestedData['cost'] = $term->cost;
+                $nestedData['est_loss'] = $cost;
+     $to = \Carbon\Carbon::createFromFormat('Y-m-d', $term->expiry_date);
+      $from = \Carbon\Carbon::createFromFormat('Y-m-d', date('Y-m-d'));
+                 $diff_in_days = $from->diffInDays($to);
+                 
+                    $nestedData['status']="<span class='text-danger'>  Expired (".$diff_in_days. " day(s)) ago</span>";  
+                 
+                  
+ 
+    
+            
+                   $x++;
+                $data[] = $nestedData;
+                  $t= $cost;
+   $total=$total+$t;
+           }
+      }
+
+      $json_data = array(
+        "draw" => intval($request->input('draw')),
+        "recordsTotal" => intval($totalData),
+        "recordsFiltered" => intval($totalFiltered),
+        "data" => $data,
+        "total"=>$total,
+        "quantity"=>$totalData,
+    );
+
+      echo json_encode($json_data);
+
+
+}
+public function showStockVariance(Request $request){
+   $lab=Laboratory::where('id',auth()->user()->laboratory_id)->select('lab_name')->first();
+   
+   $section=LaboratorySection::where('id',auth()->user()->section_id)->select('section_name')->first();
+   if($section){
+     $data['lab_name']='Logged Into: '.$lab->lab_name.' / '.$section->section_name;  
+   }
+   else
+   {
+$data['lab_name']='Logged Into: '.$lab->lab_name;
+}
+    return view('provider.reports.list.variance',$data);    
+}
+}

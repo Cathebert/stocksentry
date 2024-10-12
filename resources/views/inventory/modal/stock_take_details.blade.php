@@ -1,4 +1,3 @@
-   
 <div class="modal-header">
         <h5 class="modal-title">Stock Taken Details</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="Close_Button"></button>
@@ -89,6 +88,22 @@
   <tbody>
 </table>
       </div>
+      
+           <div class="d-print-none mt-4">
+                            <div class="float-start">
+                               <span><strong>Captured By:</strong> {{$captured_by?? "N/A"}}</span><br>
+                                                          @if ($capturer_sig!='')
+                                                          <span><strong>Signature:</strong><img src="{{ url('/').'/public/upload/signatures/'.$capturer_sig}}" width="70px" height="50px"/></span> 
+                                
+                          
+                              
+                             @endif
+
+                              
+                            </div>
+                            <br>
+</div>
+</div>
       <div class="d-print-none mt-4">
                             <div class="float-start">
                                <span><strong>Employees Involved:</strong> {{$supervisor}}(Supervisor)</span><br>

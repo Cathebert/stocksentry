@@ -1,4 +1,4 @@
- @extends('provider.layout.main')
+@extends('provider.layout.main')
 @section('title','Add Supplier')
 @section('content')
 
@@ -6,7 +6,7 @@
  <div class="container-fluid">
 <nav aria-label="breadcrumb">
   <ol class="breadcrumb">
-    <li class="breadcrumb-item"><a href="{{route('admin.home')}}">Home</a></li>
+    <li class="breadcrumb-item"><a href="{{route('moderator.home')}}">Home</a></li>
     <li class="breadcrumb-item"><a href="#">Suppliers</a></li>
     <li class="breadcrumb-item active" aria-current="page">Add</li>
   </ol>

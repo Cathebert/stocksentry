@@ -1,4 +1,4 @@
- @extends('clerk.layout.main')
+@extends('clerk.layout.main')
 @section('title','Received Items Status')
 @push('style')
    

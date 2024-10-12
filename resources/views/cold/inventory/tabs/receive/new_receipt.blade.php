@@ -1,4 +1,4 @@
- @extends('cold.layout.main')
+@extends('cold.layout.main')
 @section('title','Inventory')
 @push('style')
    
@@ -54,9 +54,7 @@
    @endforeach
 </select>
 </div>
-   <div class="col-md-3 col-sm-12 col-xs-12 form-group" id="req"  hidden>
-    
-  </div>
+  
    <div class="col-md-3 col-sm-12 col-xs-12 form-group"  hidden  >
     <label for="siv_number">Source SIV</label>
     <input type="text" class="form-control" id="siv_number" name="siv_number">
@@ -104,7 +102,7 @@
   </div>
    <div class="col-md-3 col-sm-12 col-xs-12 form-group" >
     <label for="exampleInputPassword1">GRN Number</label>
-    <input type="text" class="form-control" id="grn_number"  name="grn_number" >
+    <input type="text" class="form-control" id="grn_number"  name="grn_number" maxlength="8">
   </div>
 </div>
 <hr>
@@ -112,6 +110,7 @@
    <div class="col-md-3 col-sm-12 col-xs-12 form-group"  >
     <label for="exampleInputPassword1">Checked Off By</label>
     <select class="form-control" id="checked_off_by" name="checked_off_by" style="width: 75%">
+     <option value=""></option>
   @foreach($users as $user)
     <option value="{{ $user->id }}">{{$user->name.' '.$user->last_name}}</option>
     @endforeach
@@ -133,6 +132,7 @@
      <div class="col-md-3 col-sm-12 col-xs-12 form-group"  >
     <label for="exampleInputPassword1">Reviewed By</label>
     <select class="form-control" id="reviewed_by" name="reviewed_by" style="width: 75%">
+     <option value=""></option>
   @foreach($users as $user)
     <option value="{{ $user->id }}">{{$user->name.' '.$user->last_name}}</option>
     @endforeach
@@ -251,5 +251,3 @@
      <script src="{{asset('assets/admin/js/inventory/receive_inventory.js') }}"></script>
      
    @endpush
-
-   

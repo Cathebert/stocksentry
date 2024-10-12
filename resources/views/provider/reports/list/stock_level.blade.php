@@ -15,9 +15,7 @@
 <div class="d-sm-flex align-items-center justify-content-between mb-4" hidden>
 <h1 class="h3 mb-0 text-gray-800">Stock Level Report</h1>
 <div class="dropdow" style="text-align:right" >
-  <button  role="button" data-toggle="modal" data-target="#exampleModal">
-  <i class="fa fa-clock"> Schedule</i>
-</button>
+
 </div>
 </div>
 
@@ -28,11 +26,11 @@
 
   <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
   
-    <a class="dropdown-item" href="" ><i class="fa fa-download"></i> PDF File</a>
-    <a class="dropdown-item" href=""><i class="fa fa-share"></i>  Excel file</a>
+    <a class="dropdown-item" href="{{route('lab_manager_report.stock_level_download',['name'=>'pdf'])}}" ><i class="fa fa-download"></i> PDF File</a>
+    <a class="dropdown-item" href="{{route('lab_manager_report.stock_level_download',['name'=>'excel'])}}" id="download_excel"><i class="fa fa-share"></i>  Excel file</a>
     <hr>
-    <a class="dropdown-item" href=""><i class="fa fa-print"></i> Print Report </a>
-     <a class="dropdown-item" href="#"><i class="fa fa-envelope"></i> Mail To</a>
+   
+   
   </div>
 </div>
 <div class="row" >

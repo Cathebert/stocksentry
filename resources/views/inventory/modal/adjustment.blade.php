@@ -6,7 +6,7 @@
 <div class="input-group mb-3" hidden>
  <div class="form-check form-check-inline">
       <input type="checkbox" class="form-check-input" id="select_all"  onclick="SelectAll()" />&nbsp;
-    
+
   <label class="form-check-label" for="select_all"> &nbsp; Select All </label>
 </div>
 </div>
@@ -14,7 +14,7 @@
         <table class="table table-bordered table-striped table-sm table-hover" id="item_adjust" width="100%">
     <thead class="thead-light">
     <tr>
-      
+
       <th scope="col"> #</th>
       <th scope="col">Item Name</th>
       <th scope="col">Code #</th>
@@ -22,14 +22,14 @@
       <th scope="col">Adjusted Date</th>
       <th scope="col">Available</th>
       <th scope="col">Adjusted</th>
-        <th scope="col">Adjusted By</th>
-       <th scope="col">Type</th>
+    <th scope="col">Adjusted By</th>
+    <th scope="col">Type</th>
     <th scope="col">Remarks</th>
       <th scope="col">Status</th>
     <th scope="col">Action</th>
-     
-      
-      
+
+
+
     </tr>
   </thead>
   <tbody>
@@ -46,6 +46,7 @@
 <script type="text/javascript">
   var p;
   var load_forecast = "{{route('inventory.load_adjusted')}}"
+
   p = $("#item_adjust").DataTable({
     processing: true,
     serverSide: true,
@@ -65,12 +66,15 @@
         url: load_forecast,
         dataType: "json",
         type: "GET",
+        data:{
+id:{{ $id }}
+        },
     },
 
     AutoWidth: false,
-  
+
     columns: [
-    
+
         { data: "id" },
         { data: "item",width:"30%" },
         { data: "code" },
@@ -100,8 +104,7 @@
         },
     ],
 });
-  
+
   </script>
 
-  
-   
+

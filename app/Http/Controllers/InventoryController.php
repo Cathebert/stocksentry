@@ -12,6 +12,7 @@ use App\Models\Inventory;
 use App\Models\Issue;
 use App\Models\IssueDetails;
 use App\Models\User;
+
 use App\Models\ItemOrder;
 use App\Models\Setting;
 use App\Models\ConsumptionDetail;
@@ -22,6 +23,7 @@ use App\Services\LogActivityService;
 use App\Models\BinCard;
 use App\Models\ReceivedItem;
 use Carbon\Carbon;
+use App\Models\UserSetting;
 use App\Notifications\PendingIssueNotification;
 use App\Notifications\ApprovedIssueNotification;
 use Validator;
@@ -83,10 +85,10 @@ $data['lab_name']='Logged Into: '.$lab->lab_name;
 
   $settings=Setting::find(1);
   if( $issue==NULL){
-          $data['issue']=$settings->issue_prefix.'0001';
+          $data['issue']=$settings->issue_prefix.''.str_pad(mt_rand(0, 999999), 6, '0', STR_PAD_LEFT);
          }
          else{
-          $number=str_pad($issue->id+1, 4, '0', STR_PAD_LEFT);
+          $number=str_pad(mt_rand(0, 999999), 6, '0', STR_PAD_LEFT);
         
           $data['issue']=$settings->issue_prefix.''.$number;
          }
@@ -435,10 +437,10 @@ public function showForecasting(Request $request){
 
   $settings=Setting::find(1);
   if($order==NULL){
-          $data['order']=$settings->order_prefix.'0001';
+          $data['order']=$settings->order_prefix.''.str_pad(mt_rand(0, 999999), 6, '0', STR_PAD_LEFT);
          }
          else{
-          $number=str_pad($order->id+1, 4, '0', STR_PAD_LEFT);
+          $number=str_pad(mt_rand(0, 999999), 6, '0', STR_PAD_LEFT);
         
           $data['order']=$settings->order_prefix.''.$number;
          }
@@ -567,7 +569,7 @@ $x=1;
               ->join('items AS s', 's.id', '=', 't.item_id')
           ->select('t.id as id','s.item_name')
           ->groupBy('s.id')
-             ->where([['t.lab_id','=',auth()->user()->laboratory_id],['t.expiry_date','>',$date]])
+             ->where('t.lab_id',auth()->user()->laboratory_id)
           ->paginate(15);
       $lab=Laboratory::where('id',auth()->user()->laboratory_id)->select('lab_name')->first();
    
@@ -611,7 +613,7 @@ public function showStockAdjustment(Request $request){
 $data['lab_name']='Logged Into: '.$lab->lab_name;
 }
   
-        return view('inventory.inventory_tab.stock_adjustment',$data);
+        return view('inventory.inventory_tab.stock_adjustment_2',$data);
 }
 public function showStockDisposal(Request $request){
     $data['laboratories']=Laboratory::select('id','lab_name')->get();
@@ -675,6 +677,7 @@ $data['lab_name']='Logged Into: '.$lab->lab_name;
               ->join('items AS s', 's.id', '=', 't.item_id')
               ->select('t.id as id','s.code','s.brand','s.item_description','t.quantity','t.cost','s.item_name','t.expiry_date')
           ->where('t.lab_id','=',auth()->user()->laboratory_id)
+           ->where('t.quantity','>',0)
             ->where('t.expiry_date', '>', date('Y-m-d') )
           ->count();
 
@@ -693,6 +696,7 @@ $data['lab_name']='Logged Into: '.$lab->lab_name;
               ->join('items AS s', 's.id', '=', 't.item_id')
               ->select('t.id as id','s.code','s.brand','s.item_description','t.item_id','t.quantity','t.cost','t.batch_number','s.item_name','t.expiry_date')
          ->where('t.lab_id','=',auth()->user()->laboratory_id)
+         ->where('t.quantity','>',0)
           ->where('t.expiry_date', '>', date('Y-m-d') )
                 ->where(function ($query) use ($search){
                   return  $query->where('s.code', 'LIKE', "%{$search}%")
@@ -860,15 +864,25 @@ $issueDetails->quantity=$quantities[$i];
 $issueDetails->created_at=now();
 $issueDetails->updated_at=NULL;
 $issueDetails->save();
- $number=str_pad($issue_id, 4, '0', STR_PAD_LEFT);
+ $number=str_pad(mt_rand(0, 999999), 6, '0', STR_PAD_LEFT);
 }
 
 $approvers=User::where([['authority','=',2],['laboratory_id','=',auth()->user()->laboratory_id]])->get();
+$approver_list=UserSetting::where('lab_id',auth()->user()->laboratory_id)->select('user_id')->get();
 $issuer=auth()->user()->name.' '.auth()->user()->last_name;
 $stock_tranfer_no=$request->form_data['siv'];
 $issued_to=Laboratory::where('id',$request->form_data['to_lab_id'])->select('lab_name')->first();
+$from_lab=Laboratory::where('id',auth()->user()->laboratory_id)->select('lab_name')->first();
+if(!empty($approver_list) && count($approver_list)>0){
+foreach ($approver_list as $list) {
+$user=User::find($list->user_id);
+   $user->notify(new PendingIssueNotification($issuer,$issued_to->lab_name,$stock_tranfer_no,$from_lab->lab_name));
+}
+}
+else{
 foreach ($approvers as $user) {
-   $user->notify(new PendingIssueNotification($issuer,$issued_to->lab_name,$stock_tranfer_no));
+   $user->notify(new PendingIssueNotification($issuer,$issued_to->lab_name,$stock_tranfer_no,$from_lab->lab_name));
+}
 }
 DB::commit();
 
@@ -903,7 +917,7 @@ if($status==1){
     $issurer=Issue::where('id',$request->id)->select('siv_number','issued_by')->first();
     $user=User::where('id',$issurer->issued_by)->first();
     $user->notify(new ApprovedIssueNotification($issurer->siv_number));
- LogActivityService::saveToLog('Issue Approval',''.auth()->user()->name.' '.auth()->user()->last_name.' approved issue number'.$request->form_data['siv'],'low');
+ LogActivityService::saveToLog('Issue Approval',auth()->user()->name.' '.auth()->user()->last_name.' approved issue number'.$request->form_data['siv'],'low');
  return response()->json([
     'message'=>config('stocksentry.issue_approved'),
     'error'=>false
@@ -1063,7 +1077,7 @@ public function viewIssue(Request $request){
     
   $issues=Issue::select('siv_number','approve_status','issued_by','received_by','approved_by','from_lab_id','to_lab_id','issuing_date')->where('id',$request->id)->first();
   //dd($issues);
-
+$user=User::where('id',$issues->issued_by)->select('name','last_name','signature')->first();
 $from_lab=Laboratory::where('id',$issues->from_lab_id)->select('lab_name')->first();
 $to_lab= Laboratory::where('id',$issues->to_lab_id)->select('lab_name')->first();
 $data['from_lab']= $from_lab->lab_name;
@@ -1071,7 +1085,8 @@ $data['to_lab']= $to_lab->lab_name;
 $data['issuing_date']=date('d, M Y',strtotime($issues->issuing_date));
 $data['siv']=$issues->siv_number;
 $data['status']=$issues->approve_status;
-
+//$data['issued_by']=$user->name.' '.$user->last_name;
+$data['signature']=$user->signature??NULL;
 if($issues->issued_by!=NULL){
    $user=User::where('id',$issues->issued_by)->select('name','last_name','signature')->first();
    
@@ -1515,6 +1530,7 @@ public function disposalList(Request $request){
    $totalData = DB::table('inventories as inv')
    ->join('items as i','i.id','=','inv.item_id')
           ->where([['inv.lab_id','=',auth()->user()->laboratory_id]])
+          ->where('inv.quantity','>',0)
           ->count();
 
 
@@ -1532,7 +1548,7 @@ public function disposalList(Request $request){
    ->join('items as i','i.id','=','inv.item_id')
    ->select('inv.id as id','i.code','i.item_name','i.unit_issue','inv.batch_number','inv.quantity','inv.expiry_date')
           ->where([['inv.lab_id','=',auth()->user()->laboratory_id]])
-
+->where('inv.quantity','>',0)
                 ->where(function ($query) use ($search){
                   return  $query->where('inv.batch_number', 'LIKE', "%{$search}%")
                   ->orWhere('i.code','LIKE',"%{$search}%");
@@ -1571,7 +1587,11 @@ $x=1;
                      $nestedData['unit']= $term->unit_issue;
                
                  $nestedData['quantity']  =$term->quantity;
+                 if($term->expiry_date!='0000-00-00')
                  $nestedData['expiry']=$term->expiry_date;
+             else{
+                 $nestedData['expiry']='N/A';
+             }
                
               
                
@@ -2030,5 +2050,48 @@ $nestedData['action']= "<a type='button'><i class='fa fa-check'> Received</i></a
       echo json_encode($json_data);
 
     
+}
+
+public function editInventoryModal(Request $request){
+    $data['inventory']=DB::table('inventories as t')
+              ->join('items AS s', 's.id', '=', 't.item_id')
+              ->select('t.id as id','s.code','s.brand','s.item_description','t.item_id','t.quantity','t.batch_number','t.cost','s.unit_issue','s.location','s.item_name','t.expiry_date')
+         ->where('t.lab_id','=',auth()->user()->laboratory_id)
+         ->where('t.id',$request->id)->first();
+    //Inventory::where("id",$request->id)->first();
+    $data['id']=$request->id;
+   return view('inventory.modal.edit_inventory_modal',$data);
+}
+public function saveInventory(Request $request){
+   
+    $inventory_id=$request->id;
+    $batch_number=$request->batch_number;
+    $old_batch_number=$request->old_batch_number;
+    $expiry_date = $request->expiry;
+    try{
+        DB::beginTransaction();
+   Inventory::where('id',$inventory_id)->update([
+    'batch_number'=>$batch_number,
+    'expiry_date'=>$expiry_date
+   ]);
+if($batch_number!=$old_batch_number){
+   BinCard::where('batch_number',$old_batch_number)->update([
+    'batch_number'=>$batch_number,
+   ]);
+}
+DB::commit();
+   return response()->json([
+    'message'=>"Entries saved Successfully.Will be reflected on next reload",
+    'error'=>false
+   ]);
+}
+catch(Exception $e){
+    DB::rollback();
+
+   return response()->json([
+    'message'=>"Failed to update information",
+    'error'=>true
+   ]);
+}
 }
 }

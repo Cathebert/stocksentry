@@ -1,4 +1,4 @@
-  @extends('clerk.layout.main')
+@extends('cold.layout.main')
 @section('title','Lab Inventory Order')
 @push('style')
    
@@ -8,7 +8,7 @@
  <div class="container-fluid">
 <nav aria-label="breadcrumb">
   <ol class="breadcrumb">
-    <li class="breadcrumb-item"><a href="{{route('user.home')}}">Home</a></li>
+    <li class="breadcrumb-item"><a href="{{route('cold.home')}}">Home</a></li>
     <li class="breadcrumb-item"><a href="#">Inventory</a></li>
     <li class="breadcrumb-item active" aria-current="page">Items Order</li>
   </ol>

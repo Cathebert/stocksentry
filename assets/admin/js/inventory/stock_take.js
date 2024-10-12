@@ -78,7 +78,7 @@ function inputFile() {
     let custom_start = $("#start_date").val();
     let supervisor=$('#supervisor').val();
     let employees = $("#employees").val();
-   
+
 if(!supervisor){
     $.alert({
         icon: "fa fa-warning",
@@ -86,9 +86,9 @@ if(!supervisor){
         type: "orange",
         content: "Please select supervisor!",
     });
-    return;  
+    return;
 }
-   
+
 if (!employees) {
     $.alert({
         icon: "fa fa-warning",
@@ -107,7 +107,7 @@ if (!employees) {
      });
      return ;
    }
-    
+
      //var custom_end = $("#end_date").val();
 
      if (!custom_start) {
@@ -117,12 +117,12 @@ if (!employees) {
            type: "orange",
            content: "Please Set Stock date!",
        });
-       return; 
+       return;
      }
-   
-     
+
+
      console.log(obj);
-    
+
       doUpdate();
  }
  function doUpdate(period) {
@@ -142,10 +142,13 @@ if (!employees) {
              consumed: obj,
              period: period,
          },
-
+  beforeSend: function () {
+                    ajaxindicatorstart("loading data... please wait...");
+                },
          success: function (data) {
              //console.log(data)
              if (data.error == false) {
+              ajaxindicatorstop();
                  toastr.options = {
                      closeButton: true,
                      debug: false,
@@ -168,11 +171,12 @@ if (!employees) {
                  //$("#sel_" + id).prop("checked", true);
                  $("#fa_" + id).removeClass("fa-save");
                  $("#fa_" + id).addClass("fa-check");
-               
+
                  obj.length=0;
-              
-                
+
+
              } else {
+             ajaxindicatorstop();
                  toastr.options = {
                      closeButton: true,
                      debug: false,
@@ -202,7 +206,7 @@ if (!employees) {
  }
 
  function getPhysicalCount(id, name) {
-   
+
      var w = $("#s_" + name).val();
     var my_id = name;
     var q = $("#s_" + name).val();
@@ -214,7 +218,7 @@ if (!employees) {
 
     let startsWithBan = obj.find((item) => item.startsWith(name+"_"));
 
-  
+
     if (document.getElementById('se_'+name).checked == true) {
           if (startsWithBan) {
               obj= arrayRemove(obj, startsWithBan);
@@ -222,30 +226,30 @@ if (!employees) {
               console.log("No element starts with " + name + "_");
           }
         if ($("#s_" + name).val()) {
-            
+
             obj.push(my_id + "_" + q);
                         console.log(obj);
-         
+
      } else {
             obj = arrayRemove(obj, startsWithBan);
          }
      }
      console.log(obj);
-    
- 
-     
+
+
+
  }
  function saveConsumed(id) {
      // console.log(consumed_form)
 
      var period = $("#period").val();
-     
+
      var quantity = $("#s_" + id).val();
      let expected=$('#expected').val()
     let custom_start = $("#start_date").val();
     let supervisor=$('#supervisor').val();
     let employees = $("#employees").val();
-   
+
 if(!supervisor){
     $.alert({
         icon: "fa fa-warning",
@@ -253,9 +257,9 @@ if(!supervisor){
         type: "orange",
         content: "Please select supervisor!",
     });
-    return;  
+    return;
 }
-   
+
 if (!employees) {
     $.alert({
         icon: "fa fa-warning",
@@ -272,7 +276,7 @@ if (!employees) {
 
      if (custom_start) {
          saveConsumedItem(id, quantity);
-    
+
      } else {
          $.alert({
              icon: "fa fa-warning",
@@ -300,10 +304,13 @@ if (!employees) {
              consumed: quantity,
              period: period,
          },
-
+  beforeSend: function () {
+                    ajaxindicatorstart("loading data... please wait...");
+                },
          success: function (data) {
              //console.log(data)
              if (data.error == false) {
+             ajaxindicatorstop();
                  toastr.options = {
                      closeButton: true,
                      debug: false,
@@ -322,14 +329,15 @@ if (!employees) {
                      hideMethod: "fadeOut",
                  };
                  toastr["success"](data.message);
-                 
+
                  LoadTable();
                 // $("#sel_" + id).prop("checked", true);
                  $("#fa_"+id).removeClass("fa-save");
                  $("#fa_"+id).addClass("fa-check");
                   $("#fa_"+id).prop("disabled",true);
-             
+
              } else {
+             ajaxindicatorstop();
                  toastr.options = {
                      closeButton: true,
                      debug: false,
@@ -358,7 +366,7 @@ if (!employees) {
      });
  }
  function AddIdToList(id) {
-  
+
      if (document.getElementById(id).checked == true) {
          if (checked.includes(id)) {
          } else {
@@ -383,8 +391,8 @@ stoke = $("#inventories_taking").DataTable({
     processing: true,
     serverSide: true,
     paging: true,
-    destroy:true,
-    destroy:true,
+    destroy: true,
+    destroy: true,
     scrollCollapse: true,
     //scrollY: "200px",
     info: true,
@@ -405,13 +413,15 @@ stoke = $("#inventories_taking").DataTable({
     AutoWidth: true,
     columns: [
         { data: "id", width: "3%" },
-        { data: "name", width:'30%' },
+        { data: "name", width: "30%" },
         { data: "code" },
         { data: "batch_number" },
         { data: "unit" },
+        { data: "expiry" },
+        { data: "location" },
+        { data: "edit" },
         { data: "consumed" },
         { data: "status" },
-       
     ],
     //Set column definition initialisation properties.
     columnDefs: [
@@ -432,7 +442,7 @@ stoke = $("#inventories_taking").DataTable({
   stoke.on("click", "tbody tr", function () {
         let data = stoke.row(this).data();
         console.log(data)
-        
+
         if (document.getElementById("se_"+data["item_id"]).checked == false) {
             document.getElementById("se_"+data["item_id"]).checked = true;
             $("#s_" + data["item_id"]).focus();
@@ -442,7 +452,7 @@ stoke = $("#inventories_taking").DataTable({
             var q = $("#s_" + data["item_id"]).val();
             $("#s_" + data["item_id"]).val("");
             var item = id + "_" + q;
-        
+
             obj = arrayRemove(obj, item);
         }
     })
@@ -454,14 +464,14 @@ stoke = $("#inventories_taking").DataTable({
 }
 function SelectArea(value){
     const select_area=$('#selected_location').val();
-  
+
    stoke = $("#inventories_taking").DataTable({
        processing: true,
        serverSide: true,
        paging: true,
        destroy: true,
        scrollCollapse: true,
-      // scrollY: "200px",
+       // scrollY: "200px",
        info: true,
 
        lengthMenu: [10, 20, 50],
@@ -476,19 +486,22 @@ function SelectArea(value){
            dataType: "json",
            type: "GET",
            data: {
-               id:value,
+               id: value,
            },
        },
 
        AutoWidth: true,
        columns: [
            { data: "id", width: "3%" },
-        { data: "name", width:'30%' },
-        { data: "code" },
-        { data: "batch_number" },
-        { data: "unit" },
-        { data: "consumed" },
-        { data: "status" },
+           { data: "name", width: "30%" },
+           { data: "code" },
+           { data: "batch_number" },
+           { data: "unit" },
+           { data: "expiry" },
+           { data: "location" },
+           { data: "edit" },
+           { data: "consumed" },
+           { data: "status" },
        ],
        //Set column definition initialisation properties.
        columnDefs: [
@@ -506,72 +519,76 @@ function SelectArea(value){
            },
        ],
    });
- 
+
 
 }
 
 function LoadTable(){
+
     stoke = $("#inventories_taking").DataTable({
-    processing: true,
-    serverSide: true,
-    paging: true,
-    destroy: true,
-    destroy: true,
-    scrollCollapse: true,
-    //scrollY: "200px",
-    info: true,
+        processing: true,
+        serverSide: true,
+        paging: true,
+        destroy: true,
+        destroy: true,
+        scrollCollapse: true,
+        //scrollY: "200px",
+        info: true,
 
-    lengthMenu: [10, 20, 50],
-    responsive: true,
-    order: [[0, "desc"]],
-    oLanguage: {
-        sProcessing:
-            "<div class='loader-container'><div id='loader'></div></div>",
-    },
-    ajax: {
-        url: inventory,
-        dataType: "json",
-        type: "GET",
-    },
+        lengthMenu: [10, 20, 50],
+        responsive: true,
+        order: [[0, "desc"]],
+        oLanguage: {
+            sProcessing:
+                "<div class='loader-container'><div id='loader'></div></div>",
+        },
+        ajax: {
+            url: inventory,
+            dataType: "json",
+            type: "GET",
+        },
 
-    AutoWidth: true,
-    columns: [
-        { data: "id", width: "3%" },
-        { data: "name", width:'30%' },
-        { data: "code" },
-        { data: "batch_number" },
-        { data: "unit" },
-        { data: "consumed" },
-        { data: "status" },
-    ],
-    //Set column definition initialisation properties.
-    columnDefs: [
-        {
-            targets: [-1], //last column
-            orderable: false, //set not orderable
-        },
-        {
-            targets: [-2], //last column
-            orderable: false, //set not orderable
-        },
-        {
-            targets: [-3], //last column
-            orderable: false, //set not orderable
-        },
-    ],
-});
+        AutoWidth: true,
+        columns: [
+            { data: "id", width: "3%" },
+            { data: "name", width: "30%" },
+            { data: "code" },
+            { data: "batch_number" },
+            { data: "unit" },
+            { data: "expiry" },
+            { data: "location" },
+            { data: "edit" },
+            { data: "consumed" },
+            { data: "status" },
+        ],
+        //Set column definition initialisation properties.
+        columnDefs: [
+            {
+                targets: [-1], //last column
+                orderable: false, //set not orderable
+            },
+            {
+                targets: [-2], //last column
+                orderable: false, //set not orderable
+            },
+            {
+                targets: [-3], //last column
+                orderable: false, //set not orderable
+            },
+        ],
+    });
 
 }
+
 function getItems(value,name){
 var selected = $("#items_list option:selected")
     .toArray()
     .map((item) => item.value);
    if(selected.length==0){
-    LoadTable(); 
+   return;
    }
-    
     if(value==-1){
-        LoadTable() 
+        LoadTable()
     }
     let location = $("#item_locate").val();
 
@@ -597,7 +614,7 @@ var selected = $("#items_list option:selected")
             type: "GET",
             data: {
                 id: value,
-                values:selected
+                values: selected,
             },
         },
 
@@ -608,6 +625,10 @@ var selected = $("#items_list option:selected")
             { data: "code" },
             { data: "batch_number" },
             { data: "unit" },
+            { data: "expiry" },
+            { data: "location" },
+            { data: "edit" },
+
             { data: "consumed" },
             { data: "status" },
         ],
@@ -627,26 +648,25 @@ var selected = $("#items_list option:selected")
             },
         ],
     });
- 
+
 
 }
 function downloadItemSelected(){
     let download = $("#download_item").val();
-    let value = $("#items_list option:selected")
+       let value = $("#items_list option:selected")
         .toArray()
         .map((item) => item.value);
         if (value.length == 0) {
             return;
         }
-    //let value = $("#items_list").val();
       $.ajax({
           method: "GET",
-         
+
           url: download,
           data: {
-              
+
              ids: value,
-              
+
           },
 
           success: function (data) {
@@ -657,5 +677,27 @@ function downloadItemSelected(){
               // console.log(get_case_next_modal)
               alert("Error " + errorThrown);
           },
-      });   
+      });
+}
+function editEntry(id){
+    var load_edit_modal_url = $("#edit_inventory_modal").val();
+
+    $.ajax({
+        method: "GET",
+        url: load_edit_modal_url,
+        data: {
+            id: id,
+        },
+
+        success: function (data) {
+            //console.log(data)
+            $("#receive_item").html(data);
+            $("#inforg").modal("show"); // show bootstrap modal
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            // console.log(get_case_next_modal)
+            alert("Error " + errorThrown);
+        },
+    });
+
 }

@@ -1,4 +1,4 @@
- @extends('layouts.main')
+@extends('layouts.main')
 @section('title','Consumption Report')
 @section('content')
 
@@ -15,14 +15,12 @@
                     <div class="d-sm-flex align-items-center justify-content-between mb-4">
                         <h1 class="h3 mb-0 text-gray-800">Consumption Report</h1>
                          <div class="dropdow" style="text-align:right" >
-  <button  role="button" data-toggle="modal" data-target="#exampleModal">
-  <i class="fa fa-clock"> Schedule</i>
-</button>
+ 
 
 </div>
 
                     </div>
-<div class="dropdown" style="text-align:right" >
+<div class="dropdown" style="text-align:right">
   <button class="dropdown-toggle btn btn-outline-primary btn-sm" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
   <i class="fa fa-upload"> Export As</i>
 </button>
@@ -30,7 +28,7 @@
   <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
   
     <a class="dropdown-item" href=""  id="report_download"  ><i class="fa fa-download"></i> PDF File</a>
-    <a class="dropdown-item" href=""  id="report_download_excel"  ><i class="fa fa-share"></i>  Excel file</a>
+    <a class="dropdown-item" href=""  id="report_download_excel"  ><i class="fa fa-share"></i>  Excel File</a>
     <hr>
    
     
@@ -51,8 +49,30 @@
   <input type="hidden" class="form-control" id="get_details" value="{{route('report.loadmore')}}"/>
   <input type="hidden" class="form-control" id="filter" value="{{route('report.consumption-filter')}}"/>
   <input type="hidden" class="form-control" id="frequency_change" value="{{route('change_frequency')}}"/>
-  <input type="hidden" class="form-control" id="generate_report" value="{{route('report.consumptiondownload')}}"/>        
+  <input type="hidden" class="form-control" id="generate_report" value="{{route('report.consumptiondownload')}}"/> 
+  <input type="hidden" class="form-control"  id="lab_selected" value="{{route('report.lab_consumed_selected')}}"/>   
             <div class="row">
+            <div class="col-md-4 col-sm-12 col-xs-12 form-group"  >
+<div class="input-group mb-3">
+  <div class="input-group-prepend">
+    <label class="input-group-text" for="period">Location</label>
+    <span class="input-group-text"><i class="fa fa-home" aria-hidden="true"></i></span>
+  </div>
+  <select class="custom-select" id="period" name="lab" onchange="getLabConsumed(this.value)">
+    <option value="-1" selected> All</option>
+      @foreach ($laboratories as $lab)
+      @if($lab->id==0)
+      
+       @elseif($lab->id==99)
+       
+       @else
+        <option value="{{$lab->id}}">{{$lab->lab_name}}</option>
+       @endif
+   @endforeach
+</select>
+
+</div>
+  </div>
     <div class="col-md-4 col-sm-12 col-xs-12 form-group"  >
 <div class="input-group mb-3">
   <div class="input-group-prepend">

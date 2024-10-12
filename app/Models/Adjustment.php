@@ -8,5 +8,5 @@ use Illuminate\Database\Eloquent\Model;
 class Adjustment extends Model
 {
     use HasFactory;
-    protected $table="adjustment_details";
+    protected $table="item_adjustments";
 }

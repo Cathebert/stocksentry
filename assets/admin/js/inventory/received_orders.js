@@ -28,8 +28,9 @@ table = $("#received_orders_table").DataTable({
         { data: "lab", width: "10%" },
         { data: "delivery", width: "10%" },
         { data: "ordered_by", width: "10%" },
+          { data: "received_by", width: "10%" },
         { data: "approved_by", width: "10%" },
-        { data: "approved_by", width: "10%" },
+      
         { data: "action", width: "10%" },
     ],
     //Set column definition initialisation properties.

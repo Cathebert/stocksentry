@@ -190,6 +190,9 @@ function RunItemsDisposal(){
             
             
          },
+           beforeSend: function () {
+                    ajaxindicatorstart("loading data... please wait...");
+                },
          success: function (data) {
              if (data.error == false) {
                  toastr.options = {
@@ -213,9 +216,11 @@ function RunItemsDisposal(){
  reasons.length=0
                  quantities.length=0;
                  disposals.destroy();
+                 ajaxindicatorstop();
                  location.reload();
                 
              } else {
+              ajaxindicatorstop();
                  toastr.options = {
                      closeButton: true,
                      debug: false,
@@ -297,6 +302,9 @@ function ApproveDisposal(id){
          id: id,
          
      },
+       beforeSend: function () {
+                    ajaxindicatorstart("loading data... please wait...");
+                },
      success: function (data) {
          if (data.error == false) {
              toastr.options = {
@@ -317,9 +325,10 @@ function ApproveDisposal(id){
                  hideMethod: "fadeOut",
              };
              toastr["success"](data.message);
-
+ajaxindicatorstop();
             reloadTable();
          } else {
+         ajaxindicatorstop();
              toastr.options = {
                  closeButton: true,
                  debug: false,
@@ -343,6 +352,77 @@ function ApproveDisposal(id){
          // Welcome notification
      },
  });   
+}
+
+function DenyDisposal(id){
+ var deny_disposal = $("#deny_disposal").val();
+ $.ajaxSetup({
+     headers: {
+         "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
+     },
+ });
+
+ $.ajax({
+     method: "POST",
+     dataType: "JSON",
+     url: deny_disposal,
+     data: {
+         id: id,
+         
+     },
+       beforeSend: function () {
+                    ajaxindicatorstart("loading data... please wait...");
+                },
+     success: function (data) {
+         if (data.error == false) {
+             toastr.options = {
+                 closeButton: true,
+                 debug: false,
+                 newestOnTop: false,
+                 progressBar: false,
+                 positionClass: "toast-top-right",
+                 preventDuplicates: false,
+                 onclick: null,
+                 showDuration: "300",
+                 hideDuration: "1000",
+                 timeOut: "5000",
+                 extendedTimeOut: "1000",
+                 showEasing: "swing",
+                 hideEasing: "linear",
+                 showMethod: "fadeIn",
+                 hideMethod: "fadeOut",
+             };
+             toastr["success"](data.message);
+ajaxindicatorstop();
+            reloadTable();
+         } else {
+         ajaxindicatorstop();
+             toastr.options = {
+                 closeButton: true,
+                 debug: false,
+                 newestOnTop: false,
+                 progressBar: false,
+                 positionClass: "toast-top-right",
+                 preventDuplicates: false,
+                 onclick: null,
+                 showDuration: "300",
+                 hideDuration: "1000",
+                 timeOut: "5000",
+                 extendedTimeOut: "1000",
+                 showEasing: "swing",
+                 hideEasing: "linear",
+                 showMethod: "fadeIn",
+                 hideMethod: "fadeOut",
+             };
+             toastr["error"](data.message);
+         }
+         // Welcome notification
+         // Welcome notification
+     },
+     error:function(error){
+     ajaxindicatorstop();
+     }
+ });  
 }
 function reloadTable(){
     y = $("#disposal_list").DataTable({

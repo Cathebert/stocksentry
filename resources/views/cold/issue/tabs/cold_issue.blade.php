@@ -1,4 +1,4 @@
-     @extends('cold.layout.main')
+@extends('cold.layout.main')
 @section('title','Inventory')
 @push('style')
    
@@ -103,7 +103,7 @@
   </div>
  <div class="col-md-2 col-sm-12 col-xs-12 form-group" >
     <label for="receiving_date">Issue Date</label>
-    <input type="date" class="form-control" id="issue_date" value="{{ date('Y-m-d') }}" name="issue_date"  required>
+    <input type="date" class="form-control" id="issue_date" value="{{ date('Y-m-d') }}" name="issue_date"  required readonly>
     
   </div>
 
@@ -134,10 +134,10 @@
       <br>
  <div class="btn-group  btn-group-sm" role="group" aria-label="Basic example" style="float:right">
     @if(auth()->user()->authority==2 ||auth()->user()->authority==1 )
- <button type="button" class="btn  btn-primary btn-sm " style="text-color:white"id="save_issue" style="" onclick="showApprovals()"><i class="fa fa-hourglass-half"></i>Pending Approvals  <span class="badge badge-pill badge-danger" id="requests-badge">{{$badges}}</span></button>&nbsp;&nbsp;
+ <button type="button" class="btn  btn-primary btn-sm " style="text-color:white"id="save_issue" style="" onclick="showApprovals()"><i class="fa fa-hourglass-half"></i>Pending Approvals  <span class="badge badge-pill badge-danger" ></span></button>&nbsp;&nbsp;
  
  @endif
- <button type="button" class="btn  btn-success btn-sm " style="text-color:white"id="show_approved" style="" ><i class="fa fa-check"></i>Approved <span class="badge badge-pill badge-danger">{{$approved}}</span></button>&nbsp;&nbsp;
+ <button type="button" class="btn  btn-success btn-sm " style="text-color:white"id="show_approved" style="" ><i class="fa fa-check"></i>Approved <span class="badge badge-pill badge-danger"></span></button>&nbsp;&nbsp;
 </div>
 
    <br>
@@ -257,4 +257,3 @@
  <script src="{{asset('assets/admin/js/inventory/issues/add-issue.js') }}"></script>
 
 @endpush
-

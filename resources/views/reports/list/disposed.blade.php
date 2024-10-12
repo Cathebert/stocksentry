@@ -1,4 +1,4 @@
- @extends('layouts.main')
+@extends('layouts.main')
 @section('title','Stock Inventory')
 @section('content')
 
@@ -67,8 +67,8 @@
 
   <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
   
-    <a class="dropdown-item" href="#"  id="download_expired"><i class="fa fa-download"></i> PDF File</a>
-    <a class="dropdown-item" href="#" id="download_expired_excel"><i class="fa fa-share"></i>  Excel file</a>
+    <a class="dropdown-item" href=""  id="download_expired"><i class="fa fa-download"></i> PDF File</a>
+    <a class="dropdown-item" href="" id="download_expired_excel"><i class="fa fa-share"></i>  Excel file</a>
     <hr>
     
    
@@ -94,7 +94,7 @@
               <input type="hidden" class="form-control" id="filter_by_lab" value="{{route('report.disposedbylab')}}"/>
               <input type="hidden" class="form-control" id="filter_by_range" value="{{route('report.disposedbyrange')}}"/>
  
-            e
+            
             <div class="row">
     <div class="col-md-4 col-sm-12 col-xs-12 form-group"  >
 <div class="input-group mb-3">
@@ -180,9 +180,9 @@
     
        <th scope="col"></th>
      <th scope="col">Item</th>
-     <th scope="col">Brand</th>
-     <th scope="col">Batch Number</th>
      <th scope="col">Code</th>
+     <th scope="col">Brand</th>
+     <th scope="col">Batch #</th>
       <th scope="col">Lab</th>
      <th scope="col">Date Disposed</th>
      <th scope="col">Quantity disposed</th>

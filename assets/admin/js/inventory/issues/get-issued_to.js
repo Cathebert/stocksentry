@@ -62,6 +62,9 @@ function ReceiveIssue(id){
           data: {
               id: id,
           },
+            beforeSend: function () {
+                    ajaxindicatorstart("loading data... please wait...");
+                },
           success: function (data) {
               toastr.options = {
                 closeButton: true,
@@ -81,6 +84,7 @@ function ReceiveIssue(id){
                 hideMethod: "fadeOut",
             };
             toastr["success"](data.message);
+            ajaxindicatorstop();
                reLoadTable();
           },
          

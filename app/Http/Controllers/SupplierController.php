@@ -7,7 +7,14 @@ use App\Models\Supplier;
 use App\Models\Laboratory;
 use App\Models\LaboratorySection;
 use DB;
-
+use PDF;
+use Illuminate\Support\Facades\Cache;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Worksheet\AutoFilter;
+use PhpOffice\PhpSpreadsheet\Worksheet\Table;
+use PhpOffice\PhpSpreadsheet\Worksheet\Table\TableStyle;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use App\Services\LogActivityService;
 class SupplierController extends Controller
 {
     //
@@ -40,6 +47,7 @@ $data['lab_name']='Logged Into: '.$lab->lab_name;
         $supplier->updated_at   =   null;
         $supplier->save();
 DB::commit();
+  LogActivityService::saveToLog('Supplier Created','Member with name  '.auth()->user()->name.' '.auth()->user()->last_name.' created '.$request->supplier_name,'low');
 return response()->json([
     "error"=>false,
     'message'=>"Supplier added Successfully"
@@ -94,9 +102,10 @@ $data['lab_name']='Logged Into: '.$labs->lab_name;
    {
 $data['lab_name']='Logged Into: '.$lab->lab_name;
 }
-        return view('supplier.supplier_list',$data);
+       return view('supplier.supplier_list',$data);
     }
-public function loadAllSuppliers(Request $request){
+    
+    public function loadAllSuppliers(Request $request){
     
   $columns = array(
             0=>'id',
@@ -161,7 +170,7 @@ $x=1;
              $nestedData['expiry']="Not Set";
         }
                 
-                $nestedData['action']= " <a class='btn btn-info btn-sm' id='$term->id' onclick='editSupplier(this.id)'><i class='fa fa-edit'></i>Edit</a> | <a class='btn btn-danger btn-sm' id='$term->id' onclick='deleteSupplier(this.id)'><i class='fa fa-trash'></i>Delete</a>";
+                $nestedData['action']= " <a class='btn btn-info btn-sm' id='$term->id' onclick='editSupplier(this.id)'><i class='fa fa-edit'></i>Edit</a> | <a class='btn btn-warning btn-sm' id='$term->id' onclick='deleteSupplier(this.id)'><i class='fa fa-eye-slash'></i>Hide</a>";
     
                
                    $x++;
@@ -179,8 +188,8 @@ $x=1;
 
       echo json_encode($json_data);  
 }
-
-public function editSupplier(Request $request)
+    
+    public function editSupplier(Request $request)
     {
              $data['labs'] = Laboratory::get();
      
@@ -188,7 +197,6 @@ $data['supplier']=Supplier::where('id', $request->id)->first();
 $data['id']=$request->id;
 return view('supplier.modal.edit',$data);
     }
-
 public function labViewSupplier(){
     $data['suppliers']=Supplier::all();
          $lab=Laboratory::where('id',auth()->user()->laboratory_id)->select('lab_name')->first();
@@ -206,7 +214,7 @@ $data['lab_name']='Logged Into: '.$lab->lab_name;
 
     return view('provider.supplier.supplier_list',$data);
 }
-    public function update(Request $request)
+ public function update(Request $request)
     {
         
         
@@ -235,9 +243,10 @@ $data['lab_name']='Logged Into: '.$lab->lab_name;
         
     }
 
-    public function destroy(Request $request)
+     public function destroy(Request $request)
     {
-   
+    $supplier=Supplier::find($request->id)->supplier_name;
+    LogActivityService::saveToLog('Supplier Deleted','Member with name  '.auth()->user()->name.' '.auth()->user()->last_name.' removed '.$supplier.' from the system','low');
         Supplier::find($request->id)->delete();
 
         return response()->json([
@@ -246,5 +255,147 @@ $data['lab_name']='Logged Into: '.$lab->lab_name;
         ]);
     }
 
+public function downloadSupplier($type){
+$data['suppliers']=Cache::rememberForever('supplier', function () {
+    return Supplier::get();
+});
+
+switch($type){
+case 'pdf':
+
+
+$name="suppliers.pdf";
+    $path=public_path('suppliers').'/'.$name;
+        
+    $pdf=PDF::loadView('pdf.suppliers',$data);
+     return $pdf->download($name);
+$headers = [
+  'Content-type' => 'application/pdf', 
+  'Content-Disposition' => sprintf('attachment; filename="%s"', $name),
+  'Content-Length' => strlen($path)
+
+]; 
+
+return response()->download($path,$name, $headers);
+
+
+break;
+
+case "excel":
+$spreadsheet = new Spreadsheet();
+
+     $spreadsheet->getActiveSheet()->getDefaultColumnDimension()->setWidth(100, 'pt');
+    $spreadsheet->getActiveSheet()->getColumnDimension('A')->setAutoSize(true);
+      $drawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
+ $image = file_get_contents(url('/').'/assets/icon/logo_black.png');
+$imageName = 'logo.png';
+$temp_image=tempnam(sys_get_temp_dir(), $imageName);
+file_put_contents($temp_image, $image);
+$drawing->setName('Logo');
+$drawing->setDescription('Logo');
+$drawing->setPath($temp_image); 
+$drawing->setHeight(70);
+$drawing->setCoordinates('A1');
+$drawing->setOffsetX(110);
+
+
+$drawing->getShadow()->setDirection(45);
+$drawing->setWorksheet($spreadsheet->getActiveSheet());
+
+$spreadsheet->setActiveSheetIndex(0);
+$spreadsheet->getActiveSheet()->setCellValue('D1', 'SUPPLIERS LIST');
+$spreadsheet->getActiveSheet()->getStyle('D1')->getFont()->setBold(true);
+     
+$spreadsheet->getProperties()->setCreator('cathebert muyila')
+    ->setLastModifiedBy('Cathebert muyila')
+    ->setTitle('PhpSpreadsheet Table Test Document')
+    ->setSubject('PhpSpreadsheet Table Test Document')
+    ->setDescription('Test document for PhpSpreadsheet, generated using PHP classes.')
+    ->setKeywords('office PhpSpreadsheet php')
+    ->setCategory('Table');
+
+// Create the worksheet
+
+    
+
+$spreadsheet->setActiveSheetIndex(0);
+$spreadsheet->getActiveSheet()
+    ->setCellValue('A8', 'Name')
+    ->setCellValue('B8', 'Email')
+    ->setCellValue('C8', 'Phone')
+    ->setCellValue('D8', 'Address');
+   
+  
+
+$num=9;
+
+
+  for ($x=0; $x<count($data['suppliers']); $x++){
+
+  $dat=[
+
+    [
+    $data['suppliers'][$x]->supplier_name,
+    $data['suppliers'][$x]->email, 
+    $data['suppliers'][$x]->phone_number,
+    $data['suppliers'][$x]->Address,
+ 
+   
+]
+  
+
+  ];
+ $spreadsheet->getActiveSheet()->fromArray($dat, null, 'A'.$num);
+$num++;
+}
+
+$step=$num+1;
+//$spreadsheet->getActiveSheet()->fromArray($data, null, 'A2');
+
+
+// Create Table
+
+$table = new Table('A8:D'.$num, 'Expired_Data');
+
+// Create Columns
+
+// Create Table Style
+
+$tableStyle = new TableStyle();
+$tableStyle->setTheme(TableStyle::TABLE_STYLE_MEDIUM2);
+$tableStyle->setShowRowStripes(true);
+$tableStyle->setShowColumnStripes(true);
+$tableStyle->setShowFirstColumn(true);
+$tableStyle->setShowLastColumn(true);
+$table->setStyle($tableStyle);
+
+// Add Table to Worksheet
+
+$spreadsheet->getActiveSheet()->addTable($table);
+
+
+
+// Save
+
+$writer = new Xlsx($spreadsheet);
+$writer->save(public_path('suppliers').'/suppliers.xlsx');
+$path=public_path('suppliers').'/suppliers.xlsx';
+$name='suppliers.xlsx';
+$headers = [
+  'Content-type' => 'application/vnd.ms-excel', 
+  'Content-Disposition' => sprintf('attachment; filename="%s"', $name),
+  'Content-Length' => strlen($path)
+
+];
+return response()->download($path,$name, $headers);
+
+
+
+
+
+break;
+
+}
+}
 
 }

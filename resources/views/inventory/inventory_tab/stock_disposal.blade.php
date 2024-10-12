@@ -1,4 +1,4 @@
- @extends('layouts.main')
+@extends('layouts.main')
 @section('title','Inventory')
 @push('style')
    
@@ -45,7 +45,8 @@
    <input type="hidden" id="modal_dispose_url" value="{{route('disposal.list')}}"/>
             <input type="hidden" id="items_disposal_list" value="{{route('disposal.load')}}"/>
             <input type="hidden" id="approve_disposal"  value="{{route('disposal.approve')}}"/>
-            
+             <input type="hidden" id="deny_disposal"  value="{{route('disposal.cancel')}}"/>
+          
             <div class="row">
 
   

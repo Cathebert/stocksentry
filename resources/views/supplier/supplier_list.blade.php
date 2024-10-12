@@ -1,4 +1,4 @@
- @extends('layouts.main')
+@extends('layouts.main')
 @section('title','Suppliers')
 @section('content')
 <div class="container-fluid">
@@ -23,6 +23,21 @@
 
        
 		<div class="card-body">
+						<div class="dropdown" style="text-align:right" >
+  <button class="dropdown-toggle btn btn-outline-primary btn-sm" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+  <i class="fa fa-share"> Export As</i>
+</button>
+
+  <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+  
+      <a  class="dropdown-item" href="{{route('supplier.download',['type'=>'pdf'])}}"    id="user_pdf" ><i class="fa fa-file-pdf"></i>  PDF File</a>
+      <hr>
+    <a class="dropdown-item" href="{{route('supplier.download',['type'=>'excel'])}}"  id="user_excel"  ><i class="fa fa-file-excel"></i>  Excel file</a>
+    <hr>
+   
+    
+  </div>
+  </div>
             <input type="hidden" id="supplier_list_url" value="{{route('supplier.load')}}"/>
        <input type="hidden" id="edit_modal" value="{{route('supplier.edit')}}"/>
        <input type="hidden" id="delete_supplier" value="{{route('supplier.destroy')}}"/>

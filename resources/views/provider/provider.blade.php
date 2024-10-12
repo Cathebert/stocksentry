@@ -1,4 +1,4 @@
- @extends('provider.layout.main')
+@extends('provider.layout.main')
 @section('title',' Dashboard')
 @section('content')
  <div class="container-fluid">
@@ -476,7 +476,7 @@
 
             </div>
  
-<input type="hidden" id="inventory_health" value="{{route('stats.pie')}}" />
+<input type="hidden" id="inventory_health" value="{{route('labstats.pie')}}" />
 <input type="hidden" id="get_details" value="{{route('stats.detail_modal')}}"/>
 <input type="hidden" id="consumption-chart" value="{{route('dashboard.lab_manager_consumption')}}" />
 <input type="hidden" id="stock-level-chart" value="{{route('dashboard.lab_manager_stock-level')}}"/>
@@ -486,7 +486,8 @@
 <input type="hidden" id="compare_chart" value="{{route('dashboard.lab_manager_compare')}}"/>
 @endsection
    @push('js')
+     <script src="{{asset('assets/js/demo/chart-pie-demo.js')}}"></script>
              <script src="{{asset('assets/admin/js/inventory/reports/dashboard/reports.js')}}"> </script>
               <script src="{{asset('assets/admin/js/inventory/reports/dashboard/consumption.js')}}"> </script>
                 
-            @endpush     
+            @endpush

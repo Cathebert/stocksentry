@@ -24,6 +24,7 @@ t = $("#stock_history").DataTable({
     columns: [
         { data: "id",  },
         { data: "date",  },
+         { data: "capture",  },
         { data: "supervisor",  },
         { data: "view",  },
         { data: "action" },
@@ -94,7 +95,11 @@ function ApproveStockTaken(id){
                         data: {
                             id: id,
                         },
+                          beforeSend: function () {
+                    ajaxindicatorstart("approving stock... please wait...");
+                },
                         success: function (data) {
+                        ajaxindicatorstop();
                           if (data.error == false) {
                               toastr.options = {
                                   closeButton: true,
@@ -117,6 +122,7 @@ function ApproveStockTaken(id){
 
                               LoadTable();
                           } else {
+                          ajaxindicatorstop();
                               toastr.options = {
                                   closeButton: true,
                                   debug: false,
@@ -173,6 +179,7 @@ function LoadTable(){
         columns: [
             { data: "id" },
             { data: "date" },
+              { data: "capture" },
             { data: "supervisor" },
             { data: "view" },
             { data: "action" },
@@ -226,7 +233,11 @@ function CancelStockTaken(id){
                         data: {
                             id: id,
                         },
+                               beforeSend: function () {
+                    ajaxindicatorstart("please wait...");
+                },
                         success: function (data) {
+                           ajaxindicatorstop();
                           if (data.error == false) {
                               toastr.options = {
                                   closeButton: true,

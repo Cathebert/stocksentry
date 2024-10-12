@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\Inventory;
 use App\Models\Requisition;
 use App\Models\LaboratorySection;
+use App\Models\ItemOrder;
 use DB;
 use Illuminate\Support\Facades\Auth;
 class HomeController extends Controller
@@ -31,8 +32,9 @@ class HomeController extends Controller
     {
         $data['labs']=Laboratory::count();
         $data['users']=User::count();
-        $data['item']=Inventory::where([['lab_id', '=',auth()->user()->laboratory_id],[ 'expiry_date', '>', date('Y-m-d') ]])->count();
+        $data['item']=Inventory::where([['lab_id', '=',auth()->user()->laboratory_id],[ 'expiry_date', '>', date('Y-m-d') ]])->sum('quantity');
         $data['requests']=Requisition::where('status','approved')->count();
+        $data['to_supplier']=ItemOrder::where([['is_approved','=','yes'],['is_consolidated','=','no']])->count();
        // $data['notifications']=auth()->user()->unreadNotifications;
  $data['total']=DB::table('consumption_details')->sum('consumed_quantity');
    // dd($sum) ;  

@@ -1,4 +1,4 @@
-   @extends('layouts.main')
+@extends('layouts.main')
 @section('title','Inventory')
 @push('style')
    
@@ -36,13 +36,13 @@
         <input type="hidden" id="order_url" value="{{route('forecast.order')}}"/>
         <input type="hidden" id="load_approve" value="{{route('forecast.load_approve')}}"/>
         <input type="hidden" id="mark_approved" value="{{route('forecast.mark_approved')}}"/>
-        <input type="hidden" id="vieworder" value="{{route('order.show')}}"/>
+         <input type="hidden" id="vieworder" value="{{route('order.show')}}"/>
        
  <div class="row" >
  <form class="form-inline"  id="form_forecast">
   <div class="form-group mb-2">
   <label for="lab_id">Quantiy of Stock( in months)  </label>
-  <input type="number" aria-label="First name" id="order" class="form-control" name="order" value=4 >
+  <input type="number" aria-label="First name" id="order" class="form-control" name="order" value=1 readonly >
   </div>
   <div class="form-group mx-sm-3 mb-2">
    <label for="lab_id">Lead Time  </label>
@@ -57,7 +57,10 @@
 </form>
 </div>
       <br>
+      <div class="dropdown" style="text-align:right" hidden>
      
+    <a  href="{{route('view.orders')}}"  id="view_orders">   <i class="fa fa-server"></i> Orders</a>
+      </div>
      
 
    
@@ -65,7 +68,7 @@
   </div></div>
 
        <h5 class="card-title"><strong>Forecast</strong></h5>
-       @if(auth()->user()->authority==1)
+         @if(auth()->user()->authority==1)
         <div class="dropdown" style="text-align:right">
      
     <a  type="button" href="#"  id="approve_orders" class="btn btn-info">   <i class="fa fa-check"></i>Approve Orders</a>

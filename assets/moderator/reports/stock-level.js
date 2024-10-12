@@ -8,7 +8,7 @@ let t="";
      paging: true,
      select: true,
      info: true,
-     lengthMenu: [5, 10, 100],
+     lengthMenu: [10, 20, 50],
      responsive: true,
 
      order: [[0, "desc"]],
@@ -31,11 +31,11 @@ let t="";
 
          { data: "item_name",width:"30%" },
          { data: "catalog_number" },
-         { data: "place_purchase" },
+     { data: "place_of_purchase" },
          { data: "unit_issue" },
-         { data: "min" },
-         { data: "max" },
-         { data: "available" },
+         { data: "minimum_level" },
+         { data: "maximum_level" },
+         { data: "stock_on_hand" },
          { data: "status" },
      ],
      //Set column definition initialisation properties.
@@ -110,4 +110,75 @@ let t="";
      });
 
      return div;
+ }
+
+ function getLab(id){
+ if(!id){
+ return
+ }
+ 
+ getLabData(id)
+ 
+ }
+ function getLabData(id){
+ let get_lab_url=$('#lab_selected').val();
+ 
+ 
+ t = $("#stock_level_table").DataTable({
+     processing: true,
+     serverSide: true,
+     destroy: true,
+     paging: true,
+     select: true,
+     info: true,
+     lengthMenu: [5, 10, 100],
+     responsive: true,
+
+     order: [[0, "desc"]],
+     oLanguage: {
+         sProcessing:
+             "<div class='loader-container'><div id='loader'></div></div>",
+     },
+     ajax: {
+         url: get_lab_url,
+         dataType: "json",
+         type: "GET",
+         data:{
+         id:id,
+         },
+         
+     },
+
+     AutoWidth: false,
+     columns: [
+         {
+        data:"id"
+         },
+
+         { data: "item_name",width:"30%" },
+         { data: "catalog_number" },
+     { data: "place_of_purchase" },
+         { data: "unit_issue" },
+         { data: "minimum_level" },
+         { data: "maximum_level" },
+         { data: "stock_on_hand" },
+         { data: "status" },
+     ],
+     //Set column definition initialisation properties.
+     columnDefs: [
+         {
+             targets: [-1], //last column
+             orderable: false, //set not orderable
+         },
+         {
+             targets: [-2], //last column
+             orderable: false, //set not orderable
+         },
+         {
+             targets: [-3], //last column
+             orderable: false, //set not orderable
+         },
+     ],
+ });
+ 
  }

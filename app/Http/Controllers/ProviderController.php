@@ -33,21 +33,12 @@ class ProviderController extends Controller
                 ->select('l.lab_name','inv.consumed_quantity',DB::raw('sum(inv.consumed_quantity) as percentage') , DB::raw('round(avg(inv.consumed_quantity),2) as avg') )
                 
                 ->groupBy('l.lab_name')->get();
-        if($lab->has_section=='yes'){
-           $data['lab_sections']=DB::table('lab_sections as l')
-                    ->join('laboratory_sections as s','s.id','=','l.section_id')
-                    ->where('l.lab_id',auth()->user()->laboratory_id)->count();
-        }
+        
          
    
-   $section=LaboratorySection::where('id',auth()->user()->section_id)->select('section_name')->first();
-   if($section){
-     $data['lab_name']='Logged Into: '.$lab->lab_name.' / '.$section->section_name;  
-   }
-   else
-   {
+   
 $data['lab_name']='Logged Into: '.$lab->lab_name;
-}
+
 
 $is_registered=User::where('id',auth()->user()->id)->select('is_registered')->first();
     //$data['is_registered']=$is_registered->is_registered;

@@ -31,9 +31,22 @@ class ColdRoomStockTakeController extends Controller
    {
 $data['lab_name']='Logged Into: '.$lab->lab_name;
 }
+$data['labs']=Laboratory::get();
         return view('cold.inventory.tabs.cold_stocktaking',$data);
     }
 
-
+public function showColdRoomStockTakeHistory(){
+    $lab=Laboratory::where('id',auth()->user()->laboratory_id)->select('lab_name')->withTrashed()->first();
+   
+   $section=LaboratorySection::where('id',auth()->user()->section_id)->select('section_name')->first();
+   if($section){
+     $data['lab_name']='Logged Into: '.$lab->lab_name.' / '.$section->section_name;  
+   }
+   else
+   {
+$data['lab_name']='Logged Into: '.$lab->lab_name;
+}
+  return view('cold.inventory.tabs.cold_stock_history',$data);
+}
 
 }

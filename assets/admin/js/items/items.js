@@ -1,10 +1,10 @@
-  "use strict";
+"use strict";
 var url=$('#post_ur').val();
 var table_url=$('#item_data').val();
 var edit_item=$('#item_edit').val();
 var delete_item=$('#item_delete').val();
 var checked =[];
-var t;
+var f;
         $('#form_id').on('click','#upload-result', function(e){
            
             e.preventDefault();
@@ -20,10 +20,15 @@ var t;
                 dataType:"JSON",
                 url: url,
                 data: $('#form_id').serialize(),
+                  beforeSend: function () {
+                    ajaxindicatorstart("saving data... please wait...");
+                },
                 success: function(data) {
+                ajaxindicatorstop();
                 $("#form_id").reset();
               // Welcome notification
                // Welcome notification
+               
                 toastr.options = {
                   "closeButton": true,
                   "debug": false,
@@ -50,7 +55,7 @@ var t;
         });
       
         function getItems() {
-            t = $("#items_table").DataTable({
+            f = $("#items_table").DataTable({
                 processing: true,
                 serverSide: true,
                 destroy: true,
@@ -101,7 +106,7 @@ var t;
             });
         }
 
-        t = $("#items_table").DataTable({
+        f = $("#items_table").DataTable({
             processing: true,
             serverSide: true,
             lengthMenu: [10, 50, 100],
@@ -180,7 +185,7 @@ function EditItem(id){
 function deleteItem(id){
     Swal.fire({
   title: 'Are you sure?',
-  text: "You won't be able to revert this!",
+  text: "Deleted Items are available on Deleted Item button!",
   icon: 'warning',
   showCancelButton: true,
   confirmButtonColor: '#3085d6',
@@ -381,9 +386,16 @@ function searchByName(){
 
 function searchByLab(value) {
   var id=value;
-  if(id==99){
+  if(id==100){
             getItems()
             return
+  }
+  
+  if(id==999){
+            var type = "other";
+
+    LoadSearchedItems(id, type);
+            return;
   }
     var type = "lab";
 
@@ -408,7 +420,7 @@ function searchByCategory(){
 
  function LoadSearchedItems(value, type){
 var search_url=$('#search_url').val();
-    t = $("#items_table").DataTable({
+    f = $("#items_table").DataTable({
             processing: true,
             serverSide: true,
             destroy:true,
@@ -482,8 +494,31 @@ var search_url=$('#search_url').val();
                 url: download,
                 data: $('#form_id').serialize(),
                 success: function(data) {
+                if(data.error==false){
+                toastr.options = {
+                  "closeButton": true,
+                  "debug": false,
+                  "newestOnTop": false,
+                  "progressBar": false,
+                  "positionClass": "toast-top-right",
+                  "preventDuplicates": false,
+                  "onclick": null,
+                  "showDuration": "300",
+                  "hideDuration": "1000",
+                  "timeOut": "5000",
+                  "extendedTimeOut": "1000",
+                  "showEasing": "swing",
+                  "hideEasing": "linear",
+                  "showMethod": "fadeIn",
+                  "hideMethod": "fadeOut"
+                }
+                toastr["error"](data.message);
+                
+                }
+                else{
                      window.location=data.path;
               console.log(data.url);
+              }
                
                 },
                 error: function(error){
@@ -495,3 +530,143 @@ var search_url=$('#search_url').val();
             return false;
        
  })
+ 
+ function deletedItems(){
+let deleted_items=$('#deleted_items').val();
+   // alert(id);
+    $.ajax({
+        method:'GET',
+
+        url:  deleted_items,
+        success: function (data) {
+
+         
+             $('#edit_item').html(data);
+            $('#infor').modal('show'); // show bootstrap modal
+             $('.modal-title').text('Update Item Details'); 
+          
+           
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+           // console.log(get_case_next_modal)
+            alert('Error '+errorThrown);
+        }
+    });
+ 
+}
+
+function restoreItem(id){
+let restore=$('#restore').val()
+    Swal.fire({
+  title: 'Are you sure?',
+  text: "Restore item!",
+  icon: 'success',
+  showCancelButton: true,
+  confirmButtonColor: '#16a61d',
+  cancelButtonColor: '#d33',
+  confirmButtonText: 'Yes, restore it!'
+}).then((result) => {
+  if (result.isConfirmed) {
+    //delete 
+   
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
+        $.ajax({
+            method:'POST',
+            dataType:'JSON',
+            url: restore,
+        data:{
+            id:id,
+        },
+        success:function(data){
+
+   toastr.options = {
+       closeButton: true,
+       debug: false,
+       newestOnTop: false,
+       progressBar: false,
+       positionClass: "toast-top-right",
+       preventDuplicates: false,
+       onclick: null,
+       showDuration: "300",
+       hideDuration: "1000",
+       timeOut: "5000",
+       extendedTimeOut: "1000",
+       showEasing: "swing",
+       hideEasing: "linear",
+       showMethod: "fadeIn",
+       hideMethod: "fadeOut",
+   };
+
+   toastr["success"](data.message);
+   getRestored();
+    getItems();
+        },
+        error:function(error){
+
+        }
+        })
+    
+  }
+})
+}
+
+function getRestored(){
+  var get_restored=$("#load_deleted_items").val();
+ y = $("#items_deleted").DataTable({
+    processing: true,
+    serverSide: true,
+    paging: true,
+    destroy:true,
+    info: true,
+    responsive: true,
+    order: [[0, "desc"]],
+    oLanguage: {
+        sProcessing:
+            "<div class='loader-container'><div id='loader'></div></div>",
+    },
+    ajax: {
+        url:get_restored,
+        dataType: "json",
+        type: "GET",
+    },
+
+        
+           
+    AutoWidth: false,
+    columns: [
+            { data: "id", width: "3%" },
+            { data: "name",width:"30%" },
+            { data: "code", width: "3%" },
+            { data: "cat_number" },
+            { data: "image", width: "20%" },
+            { data: "brand", width: "3%" },
+            { data: "warehouse_size" },
+            { data: "hazardous" },
+            { data: "storage_temp" },
+            { data: "unit_issue" },
+            { data: "stock_level" },
+            { data: "section" },
+            { data: "options" },
+    ],
+    //Set column definition initialisation properties.
+    columnDefs: [
+        {
+            targets: [-1], //last column
+            orderable: false, //set not orderable
+        },
+        {
+            targets: [-2], //last column
+            orderable: false, //set not orderable
+        },
+        {
+            targets: [-3], //last column
+            orderable: false, //set not orderable
+        },
+    ],
+});
+
+}

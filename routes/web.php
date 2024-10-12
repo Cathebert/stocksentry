@@ -39,11 +39,15 @@ use App\Http\Controllers\ColdRoom\ColdRoomStockTakeController;
 use App\Http\Controllers\ColdRoom\ColdRoomStockDisposalController;
 use App\Http\Controllers\ColdRoom\ColdRoomAdjustmentController;
 use App\Http\Controllers\ColdRoom\ColdRoomIssueController;
+
 use App\Http\Controllers\DisposalReportController;
 use App\Http\Controllers\ContractController;
 use App\Http\Controllers\ExpiredItemController;
 use App\Http\Controllers\SystemMailController;
 use App\Http\Controllers\ScheduleReportController;
+
+use App\Http\Controllers\UserSettingController;
+use App\Http\Controllers\BackupController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -56,6 +60,20 @@ use App\Http\Controllers\ScheduleReportController;
 */
 
 //Route::get('/',[HomeController::class,'welcome'])->name('provider.login');
+
+Route::get('/clear-cache', function () {
+    $exitCode = Artisan::call('cache:clear');
+    $exitCode = Artisan::call('view:clear');
+    $exitCode = Artisan::call('route:clear');
+    $exitCode = Artisan::call('config:clear');
+    echo 'DONE'; //Return anything
+    
+    });
+Route::get('/schedule', function () {
+    $exitCode = Artisan::call('schedule:run');
+  
+    echo "Scheduled";
+    });
   Route::get('/',[LoginController::class,'LoginForm'])->name('user.login');
 
 
@@ -110,32 +128,70 @@ Route::get('/disposal-show',[InventoryController::class,'showDisposalModal'])->n
 Route::get('/disposal-list',[InventoryController::class,'disposalList'])->name('inventory.disposal_list');
 Route::get('/disposal-selected',[InventoryController::class,'selectedForDisposal'])->name('inventory.selected_dispose');
 Route::post('/run-disposal',[InventoryController::class,'runItemDisposal'])->name('inventory.run-disposal');
+Route::get('/edit_inventory_modal',[InventoryController::class,'editInventoryModal'])->name('inventory.edit_modal');
+Route::post('/edit_inventory_save',[InventoryController::class,'saveInventory'])->name('inventory.save_edit');
+
+
 //_______________________________Contract Management________________________________________//
 Route::get('/contract-show',[ContractController::class,'add'])->name('contract.add');
 Route::get('/contract-load',[ContractController::class,'load'])->name('contract.load');
 Route::get('/contract-add',[ContractController::class,'showModal'])->name('contract.show_modal');
 Route::post('/contract-save',[ContractController::class,'saveContract'])->name('contract.save');
 Route::post('/sub-type',[ContractController::class,'saveSubscriptionType'])->name('sub.type');
+Route::get('/view-contract',[ContractController::class,'viewContract'])->name('contract.view');
+Route::get('/edit-contract',[ContractController::class,'editContract'])->name('contract.edit');
+Route::post('/save_edited-contract',[ContractController::class,'saveEditContract'])->name('contract.save_edit');
+Route::get('/update-contract',[ContractController::class,'updateContract'])->name('contract.update');
+Route::post('/keepup-contract',[ContractController::class,'keepupContract'])->name('contract.keepup');
+Route::get('/filter-contract',[ContractController::class,'filterContract'])->name('contract.filter');
+Route::post('/contract-delete',[ContractController::class,'deleteContract'])->name('contract.delete');
+Route::get('/contract-download',[ContractController::class,'downloadContract'])->name('contract.download');
+Route::get('/contract-excel',[ContractController::class,'downloadContractExcel'])->name('contract.excel');
+
 //____________________________________Admin Stock History___________________________________//
 Route::get('/stock_view',[StockTakeController::class,'stockViewHistory'])->name('stock.view_history');
 Route::get('/stocktake_items',[StockTakeController::class,'itemsLoadSelected'])->name('stock.item_location');
 Route::get('/download_selected_item',[StockTakeController::class,'downloadItemsSelected'])->name('stock.download_item_selected');
 Route::get('/download_items/{id}',[StockTakeController::class,'download'])->name('stock_download');
+
 //------------------------------------Requisitions----------------------------------------//
 Route::get('/view-approved',[RequisitionController::class, 'viewApprovedRequest'])->name('requests.view-approved');
 Route::post('/save-approve',[RequisitionController::class, 'updateApproved'])->name('requisition.save-approved');
 Route::get('/filter',[RequisitionController::class, 'searchRequisition'])->name('requisition.filter');
 Route::post('/mark',[RequisitionController::class,'markToConsolidate'])->name('requisition.mark');
 Route::post('/remove',[RequisitionController::class,'removeToConsolidate'])->name('requisition.remove');
+Route::post('/requisition_remove',[RequisitionController::class,'removeRequisition'])->name('remove.requisition');
+
+//system mAILS
 Route::get('system_mails',[SystemMailController::class,'show'])->name('system_mails');
 Route::get('load_system',[SystemMailController::class,'load'])->name('mail.load');
 
 //_____________________schedule reports______________________//
 Route::get('scheduled_reports',[ScheduleReportController::class,'show'])->name('scheduled.show');
+
+
 Route::get('scheduled_load',[ScheduleReportController::class,'load'])->name('scheduled.load');
 Route::post('save_scheduled',[ScheduleReportController::class,'save'])->name('scheduled.save');
 Route::post('deactivate_schedule',[ScheduleReportController::class,'deactivate'])->name('scheduled.deactivate');
+Route::post('delete_schedule',[ScheduleReportController::class,'delete'])->name('scheduled.delete');
+//___________________Backup________________________________________//
+Route::get('back_ups',[BackupController::class,'showBackUp'])->name('backup.show');
+Route::post('schedule_backup',[BackupController::class,'scheduleBackUp'])->name('backup.schedule');
+Route::get('back_ups_load',[BackupController::class,'loadSheduledBackups'])->name('scheduled_backups.load');
+Route::post('deactivate_backup',[BackupController::class,'deactivate'])->name('backup.deactivate');
+Route::post('delete_backup',[BackupController::class,'delete'])->name('backup.delete');
 
+Route::get('view_generated',[BackupController::class,'viewBackUps'])->name('backups.showmodal');
+Route::get('load_generated',[BackupController::class,'loadBackups'])->name('backups.load_created');
+Route::post('generate_backup',[BackupController::class,'generateBackup'])->name('backups.generate');
+Route::get('backup_download/{name}',[BackupController::class,'downloadBackupFile'])->name('sy_backups.download');
+Route::get('download_backedup',[BackupController::class,'createDownload'])->name('backups.download');
+Route::post('backup_delete',[BackupController::class,'deleteBackup'])->name('delete.backedup');
+Route::post('backup_clear',[BackupController::class,'clearAllBackup'])->name('backups.clear_all');
+Route::post('backup_restore',[BackupController::class,'restoreBackup'])->name('backups.restore');
+
+
+//___________________Backup________________________________________//
 
         //__________________________________Stats______________________________________//
 Route::get('/inventory-health',[StatsController::class,'showInventoryHealth'])->name('stats.pie');
@@ -160,6 +216,9 @@ Route::get('/view-order',[ForecastController::class,'viewOrders'])->name('view.o
 Route::get('/orders-new',[ForecastController::class ,'loadNewOrders'])->name('orders.load-new');
 Route::get('/received-orders',[ForecastController::class,'viewReceivedOrders'])->name('received.orders');
 Route::get('/order-details',[ForecastController::class,'showOrderDetails'])->name('order.show');
+Route::get('/view_order-details',[ForecastController::class,'viewOrderDetailsApproval'])->name('orders.view');
+Route::get('/order-details_recieve',[ForecastController::class,'showOrderDetailReceived'])->name('order.show_received');
+Route::get('/orders-details_r',[ForecastController::class,'loadOrdersDetailsReceived'])->name('order.load_received');
 Route::get('/load-order',[ForecastController::class,'loadOrderDetails'])->name('order.load');
 Route::post('/consolidate',[ForecastController::class,'consolidateOrder'])->name('order.consolidate');
 Route::get('/download_order/{name}',[ForecastController::class,'downloadOrder'])->name('download_order');
@@ -178,6 +237,11 @@ Route::get('/orders-load-consolidated',[ForecastController::class,'loadOrderHist
 Route::get('/approve_order',[ForecastController::class,'loadOrders'])->name('forecast.load_approve');
 Route::get('/load_pending',[ForecastController::class,'loadPendingOrders'])->name('order.load_pending_approval');
 Route::post('/pending_approve',[ForecastController::class,'approvePendingOrder'])->name('forecast.mark_approved');
+Route::post('/deny_pending_approve',[ForecastController::class,'declinePendingOrder'])->name('forecast.mark_denied');
+Route::post('/orderpurchase_save',[ForecastController::class,'savePurchaseNumber'])->name('order.savepurchase');
+Route::post('/order_mark_received',[ForecastController::class,'markReceivedAll'])->name('order.mark_all_received');
+Route::post('/order_mark_no_number',[ForecastController::class,'markReceivedWithoutPurchaseNumber'])->name('order.mark_without_number');
+
 
           
  //____________________________admin Reports________________________________//
@@ -197,12 +261,15 @@ Route::get('/download-report',[ReportController::class, 'downloadReport'])->name
 Route::get('/expiry_download/',[ReportController::class,'expiryDownload'])->name('report.expiry_download');
 Route::get('/expiry_download-excel/{name}',[ReportController::class,'expiryDownloadExcel'])->name('report.expiry_download-excel');
 Route::get('/issue-report',[ReportController::class, 'showIssueReport'])->name('issue.report');
+Route::get('/issue-filter',[ReportController::class,'issueFilter'])->name('report.issue_filter');
 Route::get('/issue-table',[ReportController::class, 'loadIssueTable'])->name('report.issue_table');
 Route::get('/consumption-report',[ReportController::class,'showConsumptionReport'])->name('report.consumption');
 Route::get('/consumption-load',[ReportController::class,'loadConsumptionTable'])->name('report.consumption_table');
 Route::get('/consumption-more',[ReportController::class,'consumptionMoreDetails'])->name('report.loadmore');
 Route::get('/consumption-filter',[ReportController::class,'filterConsumption'])->name('report.consumption-filter');
 Route::get('/change-frequency',[ReportController::class,'changeFrequency'])->name('change_frequency');
+Route::get('/lab_selected_consumption',[ReportController::class,'labSelectedConsumption'])->name('report.lab_consumed_selected');
+
 Route::get('/download-consumption-report',[ReportController::class, 'downloadConsumptionReport'])->name('report.consumptiondownload');
 Route::get('/red/{name}',[ReportController::class,'download'])->name('redirect_download');
 Route::get('/consumed-excel/{name}',[ReportController::class,'excelDownload'])->name('report.consumed_download-excel');
@@ -212,7 +279,8 @@ Route::get('/disposal',[DisposalReportController::class,'showDisposal'])->name('
 Route::get('/load_disposal',[DisposalReportController::class,'loadDisposal'])->name('report.disposed_table');
 Route::get('/loaddisposebylab',[DisposalReportController::class,'loadByLab'])->name('report.disposedbylab');
 Route::get('/loaddisposebyrange',[DisposalReportController::class,'loadByRange'])->name('report.disposedbyrange');
-//_______requsition
+
+//_______requition
  Route::get('/requisition-report',[ReportController::class,'showRequisitionReport'])->name('requisition.report');
  Route::get('/load-requisition-list',[ReportController::class,'loadRequisitionReport'])->name('report.load-requisition');
  Route::get('/get-requisition-data',[ReportController::class,'getRequestedData'])->name('report.requisition-more-data');
@@ -235,7 +303,15 @@ Route::get('/loaddisposebyrange',[DisposalReportController::class,'loadByRange']
  Route::get('/load_out_of_stock',[ReportController::class,'loadOutOfStock'])->name('report.load_out_of_stock');
  Route::get('load-stout_out_details',[ReportController::class,'loadOutOfStockDetails'])->name('report.stock_out_details');
 
-      //-------------------Items --------------------------------------//
+//-----------------------------------Variance report---------------//
+ Route::get('/varianceReport',[ReportController::class,'showVarianceReport'])->name('reports.variance');
+ Route::get('/showVarianceReport',[ReportController::class,'loadVariance'])->name('report.variance_table');
+ Route::get('/showVarianceDetails',[ReportController::class,'VarianceDetails'])->name('report.variance_details');
+ Route::get('/showVarianceByLab',[ReportController::class,'VarianceByLab'])->name('report.variance_lab');
+ Route::get('/loadVarianceByLab',[ReportController::class,'loadVarianceByLab'])->name('report.load_variance_lab');
+
+
+ //-------------------Items --------------------------------------//
 Route::post('/add',[ItemController::class, 'addInventory'])->name('inventory.add');
 Route::get('/show',[ItemController::class, 'showItems'])->name('item.show');
 Route::get('/receive',[ItemController::class, 'receiveInventory'])->name('admin.receive_stock');
@@ -271,6 +347,10 @@ Route::get('/received-status',[ItemController::class ,'receivedItemCheckList'])-
 Route::get('/received_checklist',[ItemController::class,'receivedCheckListLoad'])->name('received.status');
 Route::get('/received_checklist_details',[ItemController::class,'checklistDetails'])->name('received.status_view_details');
 Route::get('/received_checklist_print/{id}/{type}',[ItemController::class,'printReceivedChecklist'])->name('received.checklistprint');
+Route::get('/deleted_items',[ItemController::class,'deletedItems'])->name('item.deleted');
+Route::get('/load_deleted_items',[ItemController::class,'loadDeletedItems'])->name('items.load_deleted');
+Route::post('/restore',[ItemController::class, 'restoreItem'])->name('item.restore');
+
 
 
 //------------------------Requisitions--------------------------------->
@@ -289,7 +369,7 @@ Route::get('/load_suppliers',[SupplierController::class,'loadAllSuppliers'])->na
 Route::post('/supplier-delete', [SupplierController::class, 'destroy'])->name('supplier.destroy');
 Route::get('/supplier_edit', [SupplierController::class, 'editSupplier'])->name('supplier.edit');
 Route::post('/supplier_update', [SupplierController::class, 'update'])->name('supplier.update');
-
+Route::get('/supplier/{type}',[SupplierController::class,'downloadSupplier'])->name('supplier.download');
 //--------------------------Laboratory--------------------------------------->
 Route::get('/laboratory',[LaboratoryController::class,'addLaboratory'])->name('lab.add');
 Route::post('/createLab',[LaboratoryController::class, 'createLaboratory'])->name('lab.create');
@@ -313,6 +393,21 @@ Route::get('/edit_user',[UserController::class,'editUser'])->name('user.edit');
 Route::post('/user_delete', [UserController::class, 'destroy'])->name('user.destroy');
 Route::post('/user_update', [UserController::class, 'update'])->name('user.update');
 Route::post('/user_reset',[UserController::class,'resetPassword'])->name('user.reset');
+Route::get('/user_download',[UserController::class,'downloadUser'])->name('user.download');
+Route::get('/user_filter',[UserController::class, 'filterUsers'])->name('user.filter');
+Route::get('/get_user_pdf/{name}',[UserController::class,'getUserPDFDownload'])->name('user.get_user_pdf');
+Route::get('/get_user_excel/{name}',[UserController::class,'getUserExcelFile'])->name('user.get_user_excel');
+Route::get('/get_deleted',[UserController::class,'showDeletedUsers'])->name('user.deleted');
+Route::get('/load_deleted_users',[UserController::class,'loadDeletedUsers'])->name('user.load_deleted');
+Route::post('/restore_user',[UserController::class,'restoreUser'])->name('user.restore');
+
+
+//_____________________Store settings______________________________//
+Route::get('/config_settings',[UserSettingController::class,'show'])->name('settings.setting');
+Route::post('/notification_approvals',[UserSettingController::class,'approve'])->name('setting.approvals');
+Route::get('/load-setting',[UserSettingController::class,'load'])->name('setting.load');
+Route::post('/remove-user',[UserSettingController::class,'remove'])->name('setting.remove');
+
 });
 Route::group(['prefix'=>'General','middleware'=>'auth'],function(){
 Route::get('/profile',[UserController::class,'profileView'])->name('userprofile');
@@ -341,6 +436,15 @@ Route::post('/approve-adjusted',[ConsumptionController::class,'approveAdjusted']
 Route::post('/cancel-adjusted',[ConsumptionController::class,'cancelAdjusted'])->name('inventory.cancel_adjusted');
 Route::post('/update_all',[ConsumptionController::class, 'updateMany'])->name('inventory.update_all');
 Route::get('/search-adjustment',[ConsumptionController::class, 'searchItemAdjustment'])->name('inventory.search_adjustment');
+Route::get('/show-adjustment',[ConsumptionController::class, 'showItemAdjustmentModal'])->name('inventory.adjust_show');
+
+Route::get('/adjust-list',[ConsumptionController::class,'adjustmentList'])->name('inventory.adjustment_list');
+Route::get('/adjustment-selected',[ConsumptionController::class,'selectedForAdjustment'])->name('inventory.selected_adjustment');
+Route::get('/adjustment_load_selected',[ConsumptionController::class, 'loadSelectedAdjusted'])->name('inventory.adjusted_item');
+Route::get('/show_adjusted',[ConsumptionController::class, 'viewSelectedAdjustment'])->name('inventory.show_adjusted');
+Route::post('/approve_adjustedbulk',[ConsumptionController::class, 'approveBulkAdjustment'])->name('inventory.adjust_bulk');
+Route::post('/cancel_adjustedbulk',[ConsumptionController::class, 'cancelBulkAdjusted'])->name('inventory.cancel_bulk');
+
 //___________________________________________Item Disposals_____________________________________________//
 Route::post('/run-disposal',[ItemDisposalController::class,'runItemDisposal'])->name('inventory.run-disposal');
 Route::get('/disposal-list',[ItemDisposalController::class,'showDisposalList'])->name('disposal.list');
@@ -348,7 +452,7 @@ Route::get('/disposal-load',[ItemDisposalController::class,'loadDisposedItems'])
 Route::get('/disposal_view',[ItemDisposalController::class,'viewDisposal'])->name('disposal.viewmodal');
 Route::get('/disposed-load-items',[ItemDisposalController::class,'getDisposedItem'])->name('disposal.load_data');
 Route::post('/disposal-approve',[ItemDisposalController::class,'approveDisposedItem'])->name('disposal.approve');
-
+Route::post('/disposal-cancel',[ItemDisposalController::class,'cancelDisposedItem'])->name('disposal.cancel');
 
 //_________________________stock Taking _______________________________________________________//
 Route::get('/stock_taking',[StockTakeController::class,'show'])->name('stock.take');
@@ -362,6 +466,7 @@ Route::get('/stock_view_details',[StockTakeController::class,'stockViewDetails']
 Route::get('/stock_load_data',[StockTakeController::class,'loadStockTakenDetails'])->name('stock.load_data');
 Route::post('/stocktake_approve_taken',[StockTakeController::class,'approveStockTaken'])->name('stock.approve_stock_taken');
 Route::post('/stocktake_cancel',[StockTakeController::class,'cancelStockTaken'])->name('stock.cancel_stock_taken');
+
 
 
 
@@ -379,6 +484,8 @@ Route::post('/delete-log',[ActivityLogController::class,'deleteLog'])->name('del
 
 Route::get('/help',[HelpController::class,'help'])->name('help');
 Route::get('/lab_help',[HelpController::class,'labHelp'])->name('lab_help');
+Route::get('/user_help',[HelpController::class,'userHelp'])->name('user_help');
+Route::get('/cold_help',[HelpController::class,'coldHelp'])->name('cold_help');
 
 //_____________________________________________Notifications___________________________//
 Route::get('/notifications', [NotificationController::class, 'show'])->name('notifications.show');
@@ -401,7 +508,6 @@ Route::get('/requistion_data',[RequisitionController::class,'requisitionGetData'
 Route::get('/consolidation-history',[RequisitionController::class,'showConsolidationHistory'])->name('consolidate.history');
 Route::get('/consolidate-load-history',[RequisitionController::class,'loadHistory'])->name('consolidated.load_history');
 Route::get('/consolidated_document/{id}',[RequisitionController::class,'downloadConsolidatedDocument'])->name('consolidated.document');
-Route::post('/requisition_remove',[RequisitionController::class,'removeRequisition'])->name('requisition.remove');
 
 
 });
@@ -435,8 +541,14 @@ Route::get('/lab_item_create',[LabInventoryController::class,'labcreateNewItem']
 //_____________________________________lab user__________________________________________________//
 Route::get('/lab-user',[UserController::class,'addLabUser'])->name('lab-user.add'); 
 Route::get('/lab-view-user',[UserController::class,'showLabUsers'])->name('lab-user.view');
-Route::put('/lab_update',[UserController::class,'labUpdateUser'])->name('lab_user.update');
-Route::post('/lab_delete_user',[UserController::class,'labUserDelete'])->name('lab_user.destroy');
+Route::get('/lab_load_user',[UserController::class,'loadLabUsers'])->name('lab_user.load');
+
+//
+
+Route::get('/lab_edit_user',[UserController::class,'labEditUser'])->name('lab_user.edit');
+Route::post('/lab_user_delete', [UserController::class, 'labUserDelete'])->name('lab_user.destroy');
+Route::post('/lab_user_update', [UserController::class, 'labUserUpdate'])->name('lab_user.update');
+Route::post('/lab_user_reset',[UserController::class,'labUserResetPassword'])->name('lab_user.reset');
 //________________________profile________________________________________________________//
 Route::get('/profile',[UserController::class,'labProfileView'])->name('lab.userprofile');
 Route::get('/password',[UserController::class,'labPassword'])->name('lab.password');
@@ -444,7 +556,6 @@ Route::get('/signature',[UserController::class,'labSignature'])->name('lab.signa
 Route::post('/initialize',[UserController::class,'InitializeUser'])->name('initializeUserDetails');
 //_________________________________suppier_list_____________________________________//
 Route::get('/lab-suppliers',[SupplierController::class,'labViewSupplier'])->name('lab_supplier.show');
-
 //___________________________________________stock_take___________________________________//
 Route::get('/lab-selected_stock_location',[LabInventoryController::class,'getSelectedStockLocation'])->name('stock.getselected_location');
 Route::get('/lab_view_stock',[StockTakeController::class,'labViewStockTaken'])->name('lab_stock.view_history');
@@ -466,15 +577,36 @@ Route::get('/orders-dashboard',[LabManagerReportController::class,'loadOrders'])
 Route::get('/lab-percentage',[LabManagerReportController::class,'labUsagePercentage'])->name('dashboard.percentage');
 Route::get('/period-report',[LabManagerReportController::class, 'reportPeriod'])->name('dashboard.lab_manager_period');
 Route::get('/compare-report',[LabManagerReportController::class,'compareReport'])->name('dashboard.lab_manager_compare'); 
+Route::get('/item_details',[LabManagerReportController::class, 'itemDetails'])->name('dashboard.item_details');
+Route::get('/top_consumed',[LabManagerReportController::class, 'getTopConsumed'])->name('dashboard.top_consumed');
+Route::get('/latest_orders',[LabManagerReportController::class, 'getLatestOrders'])->name('dashboard.latestOrders');
 
 //___________________________LAB REPORT TABLES ________________________________________//
 Route::get('/lab_show-report',[LabManagerTableReportController::class, 'showLabReport'])->name('lab_manager_reports.show');
 Route::get('/expiry-report',[LabManagerTableReportController::class, 'showExpiryReport'])->name('lab_manager_report.expiry');
+Route::get('/expired-report',[LabManagerTableReportController::class, 'showExpiredReport'])->name('lab_manager_report.expired');
+Route::get('/expired-table',[LabManagerTableReportController::class, 'loadExpired'])->name('lab_manager_report.expired_table');
+Route::get('/load_by_range',[LabManagerTableReportController::class, 'loadExpiredItemByRange'])->name('lab_manager_report.expiredbyrange');
 Route::get('/expiry-table',[LabManagerTableReportController::class, 'loadExpiryTable'])->name('lab_manager_report.expiry_table');
 Route::post('/schedule-report/{type}',[LabManagerTableReportController::class, 'scheduleReport'])->name('lab_manager_report.schedule_report');
 Route::get('/download-report',[LabManagerTableReportController::class, 'downloadReport'])->name('lab_manager_report.download');
+Route::get('/download_expired',[LabManagerTableReportController::class,'downloadExpired'])->name('lab_manager_report.expired_download');
+Route::get('/download_about_expire',[LabManagerTableReportController::class,'downloadAboutToExpire'])->name('lab_manager_report.about_expiry_download');
+Route::get('/stock_level_lab_download/{name}',[LabManagerTableReportController::class,'stockLevelDownload'])->name('lab_manager_report.stock_level_download');
+Route::get('/out_of_stock_lab_download/{name}',[LabManagerTableReportController::class,'downloadOutOfStock'])->name('lab_manager_report.out_of_stock_download');
+Route::get('/lab_show_disposal',[LabManagerTableReportController::class,'showDisposal'])->name('lab_manager_report.show-disposed');
+Route::get('/loaddisposebyperiod',[LabManagerTableReportController::class,'filterByPeriod'])->name('lab_manager_report.disposedbyrange');
+Route::get('/lab_load_disposal',[LabManagerTableReportController::class,'loadDisposal'])->name('lab_manager_report.disposed_table');
+Route::get('/lab_download_disposed',[LabManagerTableReportController::class,'labDownloadDisposed'])->name('lab_manager_report.downloaddisposed');
+ Route::get('show_stock_take',[LabManagerTableReportController::class,'showStockVariance'])->name('lab_manager_report.variance');
+
+
+
+//disposal
+
 Route::get('/issue-report',[LabManagerTableReportController::class, 'showIssueReport'])->name('lab_manager_issue.report');
 Route::get('/issue-table',[LabManagerTableReportController::class, 'loadIssueTable'])->name('lab_manager_report.issue_table');
+Route::get('/lab_issue_download/{name}',[LabManagerTableReportController::class,'labIssueDownload'])->name('lab_manager_report_issue.download');
 //__consum---------
 Route::get('/consumption-report',[LabManagerTableReportController::class,'showConsumptionReport'])->name('lab_manager_report.consumption');
 Route::get('/consumption-load',[LabManagerTableReportController::class,'loadConsumptionTable'])->name('lab_manager_report.consumption_table');
@@ -506,6 +638,15 @@ Route::get('/red/{name}',[LabManagerTableReportController::class,'download'])->n
  Route::get('/load_out_of_stock',[LabManagerTableReportController::class,'loadOutOfStock'])->name('lab_manager_report.load_out_of_stock');
  Route::get('load-stout_out_details',[LabManagerTableReportController::class,'loadOutOfStockDetails'])->name('lab_manager_report.stock_out_details');
 
+//system mAILS
+Route::get('labsystem_mails',[SystemMailController::class,'showlabMails'])->name('lab.system_mails');
+Route::get('load_system',[SystemMailController::class,'loadLabMail'])->name('lab.mail.load');
+
+//schedule
+Route::get('labscheduled_reports',[ScheduleReportController::class,'labshow'])->name('labscheduled.show');
+Route::get('labscheduled_load',[ScheduleReportController::class,'labload'])->name('labscheduled.load');
+
+Route::get('/lab_settings',[UserSettingController::class,'labSetting'])->name('labsetting.setting');
 
             });
 //____________________________Section Head________________________________________________//
@@ -514,22 +655,29 @@ Route::get('SectionHome',[SectionHeadController::class,'home'])->name('section.h
 	
 });
 
-Route::group([ 'middleware'=>'user'], function () {
+Route::group([ 'prefix'=>'LabUser','middleware'=>'user'], function () {
 
  Route::get('/user',[ClerkController::class,'index'])->name('user.home');  
-Route::get('/section-bincard',[SectionInventoryController::class, 'showSectionBinCard'])->name('section.bincard_inventory');
-Route::get('/section_consumption',[SectionInventoryController::class, 'showSectionConsumption'])->name('section.showupdate-consumption');
-Route::get('/section-stocktake',[SectionInventoryController::class, 'showSectionStockTake'])->name('section.showstocktake');
-Route::get('/section-stock-forecasting',[SectionInventoryController::class,'showSectionStockForecasting'])->name('section.showstock-forecasting');
-Route::get('/section-adjustments',[SectionInventoryController::class,'showSectionAdjustment'])->name('section.showstock-adjustment');
-Route::get('/section-disposal',[SectionInventoryController::class,'showSectionDisposal'])->name('section.show-disposal');
+Route::get('/user-bincard',[SectionInventoryController::class, 'showSectionBinCard'])->name('section.bincard_inventory');
+Route::get('/user_consumption',[SectionInventoryController::class, 'showSectionConsumption'])->name('section.showupdate-consumption');
+Route::get('/user-stocktake',[SectionInventoryController::class, 'showSectionStockTake'])->name('section.showstocktake');
+Route::get('/user-stocktakeHistory',[SectionStockTakeController::class,'showUsertockTakeHistory'])->name('section.view_history');
+Route::get('/user-stock-forecasting',[SectionInventoryController::class,'showSectionStockForecasting'])->name('section.showstock-forecasting');
+Route::get('/user-adjustments',[SectionInventoryController::class,'showSectionAdjustment'])->name('section.showstock-adjustment');
+Route::get('/user-disposal',[SectionInventoryController::class,'showSectionDisposal'])->name('section.show-disposal');
+
+//__________________________________________USER PROFILE______________________________//
+Route::get('/profile',[UserController::class,'labUserProfileView'])->name('labuser.userprofile');
+Route::get('/password',[UserController::class,'labUserPassword'])->name('labuser.password');
+Route::get('/signature',[UserController::class,'labUserSignature'])->name('labuser.signature');
+//Route::post('/lab_user_update', [UserController::class, 'UserUpdate'])->name('user.update');
 //_______________________________________Section BINCARD_____________________________//
-Route::get('/section_load_bincard',[SectionBinCardController::class,'loadSectionBinCard'])->name('section_bincard');
+Route::get('/user_load_bincard',[SectionBinCardController::class,'loadSectionBinCard'])->name('section_bincard');
 
 //__________________________________Section Consumption________________________________//
-Route::get('section_load_consumption',[SectionConsumptionController::class,'loadSectionConsumption'])->name('section.load-consumption');
+Route::get('user_load_consumption',[SectionConsumptionController::class,'loadSectionConsumption'])->name('section.load-consumption');
 //____________________________issues_______________________________________//
-Route::get('/section_request',[SectionInventoryController::class, 'showSectionRequest'])->name('section.request');
+Route::get('/user_request',[SectionInventoryController::class, 'showSectionRequest'])->name('section.request');
 Route::get('/section_issue',[SectionInventoryController::class,'showSectionIssue'])->name('section.issue');
 Route::get('/section_receive_issued',[SectionInventoryController::class,'showSectionReceived'])->name('section.received_issued');
 
@@ -561,6 +709,21 @@ Route::get('/section-orders-dashboard',[SectionReportController::class,'loadOrde
 Route::get('/section-percentage',[SectionReportController::class,'labUsagePercentage'])->name('dashboard.percentage');
 Route::get('/section-period-report',[SectionReportController::class, 'reportPeriod'])->name('dashboard.section_period');
 Route::get('/section-compare-report',[SectionReportController::class,'compareReport'])->name('dashboard.section_compare'); 
+
+
+//___________________________user REPORT TABLES ________________________________________//
+Route::get('/user_show-report',[SectionReportController::class, 'showUserReport'])->name('user_reports.show');
+Route::get('/user_expired-report',[SectionReportController::class, 'showUserExpiredReport'])->name('user_report.expired');
+Route::get('/user_expiry-report',[SectionReportController::class, 'showUserExpiryReport'])->name('user_report.expiry');
+Route::get('/user_consumption-report',[SectionReportController::class,'showUserConsumptionReport'])->name('user_report.consumption');
+Route::get('/user_stock_level',[SectionReportController::class,'stockLevelReport'])->name('user_report.stock-level');
+Route::get('/user_out_of_stock',[SectionReportController::class,'showOutOfStockReport'])->name('user_reports.item_out_of_stock');
+Route::get('/user_show_disposal',[SectionReportController::class,'showDisposal'])->name('user_report.show-disposed');
+Route::get('/user_issue-report',[SectionReportController::class, 'showIssueReport'])->name('user_issue.report');
+Route::get('/user_requisition-report',[SectionReportController::class,'showRequisitionReport'])->name('user_requisition.report');
+Route::get('/user_supplier_order_report',[SectionReportController::class,'showSupplierOrderReport'])->name('user_report.supplier-order');
+Route::get('/user_stock_variance_report',[SectionReportController::class, 'showStockVarianceReport'])->name('user_report.variance');
+
             });
 
 Route::group([ 'prefix'=>'ColdRoom','middleware'=>'coldroom'], function () {
@@ -569,6 +732,7 @@ Route::get('/home',[ColdRoomController::class,'index'])->name('cold.home');
 Route::get('/coldroom-bincard',[ColdRoomBinCardController::class,'showColdRoomBinCard'])->name('cold.bincard_inventory');
 Route::get('/cold_consumption',[ColdRoomConsumptionController::class,'showColdRoomConsumption'])->name('cold.showupdate-consumption');
 Route::get('/cold-stocktake',[ColdRoomStockTakeController::class,'showColdRoomStockTake'])->name('cold.showstocktake');
+Route::get('/cold-stocktakeHistory',[ColdRoomStockTakeController::class,'showColdRoomStockTakeHistory'])->name('cold_stock.view_history');
 Route::get('/cold-disposal',[ColdRoomStockDisposalController::class,'showColdRoomDisposal'])->name('cold.show-disposal');
 Route::get('/cold-adjustment',[ColdRoomAdjustmentController::class,'showAdjustment'])->name('cold.showstock-adjustment');
 Route::get('/cold_issue',[ColdRoomIssueController::class, 'showColdIssue'])->name('cold.issue');
@@ -579,4 +743,19 @@ Route::get('/cold-received-status',[ColdRoomIssueController::class,'showReceived
 Route::get('/cold_profile',[ColdRoomController::class,'coldProfile'])->name('cold.profile');
 Route::get('/cold_signature',[ColdRoomController::class,'coldSignature'])->name('cold.signature');
 Route::get('/cold_password',[ColdRoomController::class,'coldPassword'])->name('cold.password');
+//______________________________reports___________________________________________________//
+Route::get('/room-reports',[ColdRoomController::class,'showReport'])->name('cold_reports.show');
+Route::get('/room-expired',[ColdRoomController::class,'showExpired'])->name('cold_report.expired');
+Route::get('/room_about_expiry',[ColdRoomController::class,'showAboutToExpire'])->name('cold_report.expiry');
+Route::get('/room_consumption',[ColdRoomController::class,'showConsumptionReport'])->name('cold_report.consumption');
+Route::get('/room_stock_level',[ColdRoomController::class,'showStockLevelReport'])->name('cold_report.stock-level');
+Route::get('/room_out_of_stock',[ColdRoomController::class,'showOutOfStock'])->name('cold_report.item_out_of_stock');
+Route::get('/room_item_disposed',[ColdRoomController::class,'showDisposed'])->name('cold_report.show-disposed');
+Route::get('/room_issue_report',[ColdRoomController::class,'showIssue'])->name('cold_report.show-issue');
+Route::get('/room_stock_level_lab',[ColdRoomController::class,'showLabStockLevel'])->name('cold.stock_level_selected');
+Route::get('/room_stock_variance',[ColdRoomController::class, 'showStockVariance'])->name('cold_report.variance');
+///_____________________schedule report______________________________//
+Route::get('/room_schedule',[ScheduleReportController::class,'Coldshow'])->name('cold_report.scheduled');
+//_______________________setting_____________________________________//
+Route::get('/cold_settings',[UserSettingController::class,'coldSetting'])->name('coldsetting.setting');
 });

@@ -1,4 +1,4 @@
-    "use strict";
+"use strict";
       var url=$('#post_url').val();
 var table_url=$('#table_data').val();
 
@@ -11,15 +11,7 @@ var token=$('#token').val();
             var item_name = $("#item_name").val();
             var warehouse_size = $("#warehouse_size").val();
             var cat_number = $("#cat_number").val()
-            if(!code){
-               $.alert({
-                   icon: "fa fa-warning",
-                   title: "Missing code!",
-                   type: "orange",
-                   content: "Please enter code",
-               });
-                return;
-            }
+         
      if(!item_name)  {
          $.alert({
              icon: "fa fa-warning",
@@ -30,27 +22,30 @@ var token=$('#token').val();
          return; 
      }   
      
-     if (!warehouse_size){
-          $.alert({
-              icon: "fa fa-warning",
-              title: "Missing item warehouse size!",
-              type: "orange",
-              content: "Please enter warehouse pack size",
-          });
-          return; 
-     }
+ 
+          
+     
+    
+       $('#upload-result').prop('disabled', true) 
+
+ 
          $.ajaxSetup({
              headers: {
                  "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
              },
          });
+       
             $.ajax({
                 method: "POST",
                 dataType:"JSON",
                 url: url,
                 data: $('#form_id').serialize(),
+                 beforeSend: function(){
+ ajaxindicatorstart('saving data... please wait...')
+  
+   },
                 success: function(data) {
-               
+                 ajaxindicatorstop();
               // Welcome notification
                // Welcome notification
                 toastr.options = {
@@ -71,6 +66,8 @@ var token=$('#token').val();
                   "hideMethod": "fadeOut"
                 }
                 toastr["success"](data.message);
+                 $('#upload-result').prop('disabled', false) 
+               
             $("#form_id")[0].reset();
             $('#uln').val(data.uln)
                 t.destroy();
@@ -333,3 +330,57 @@ t = $("#added_item").DataTable({
            },
        });
    }
+   
+ function ajaxindicatorstart(text)
+{
+    if(jQuery('body').find('#resultLoading').attr('id') != 'resultLoading'){
+    jQuery('body').append('<div id="resultLoading" style="display:none"><div><img src="https://stocksentry.org/assets/img/ajax-loader.gif"><div>'+text+'</div></div><div class="bg"></div></div>');
+    }
+ 
+    jQuery('#resultLoading').css({
+        'width':'100%',
+        'height':'100%',
+        'position':'fixed',
+        'z-index':'10000000',
+        'top':'0',
+        'left':'0',
+        'right':'0',
+        'bottom':'0',
+        'margin':'auto'
+    });
+ 
+    jQuery('#resultLoading .bg').css({
+        'background':'#000000',
+        'opacity':'0.7',
+        'width':'100%',
+        'height':'100%',
+        'position':'absolute',
+        'top':'0'
+    });
+ 
+    jQuery('#resultLoading>div:first').css({
+        'width': '250px',
+        'height':'75px',
+        'text-align': 'center',
+        'position': 'fixed',
+        'top':'0',
+        'left':'0',
+        'right':'0',
+        'bottom':'0',
+        'margin':'auto',
+        'font-size':'16px',
+        'z-index':'10',
+        'color':'#ffffff'
+ 
+    });
+ 
+    jQuery('#resultLoading .bg').height('100%');
+       jQuery('#resultLoading').fadeIn(300);
+    jQuery('body').css('cursor', 'wait');
+}
+function ajaxindicatorstop()
+{
+    jQuery('#resultLoading .bg').height('100%');
+       jQuery('#resultLoading').fadeOut(300);
+    jQuery('body').css('cursor', 'default');
+}

@@ -23,6 +23,7 @@ t = $("#scheduled_list").DataTable({
         type: "GET",
     },
 
+           
     AutoWidth: false,
     columns: [
         { data: "id", width: "3%" },
@@ -35,6 +36,7 @@ t = $("#scheduled_list").DataTable({
         { data: "file", width: "10%" },
         { data: "status", width: "10%" },
         { data: "action", width: "10%" },
+        { data: "delete", width: "10%" },
     ],
     //Set column definition initialisation properties.
     columnDefs: [
@@ -53,7 +55,7 @@ t = $("#scheduled_list").DataTable({
     ],
 });
  function changeText(value){
-    console.log($("#report_infor").html());
+    console.log(value);
     switch (value) {
     case '1':
      
@@ -67,17 +69,15 @@ $("#report_infor").text("Report will be generated and sent on a monthly basis");
     case '3':
 $("#report_infor").text("Report will be generated and sent on  a quarterly basis")
 
-    
-
     break;
     
-       case '4':
-         document.getElementById('report_infor').innerText="Report will be generated and sent on a yearly basis"
+   case '4':
+ 
         $("#report_infor").text("Report will be generated and sent on a yearly basis" );
             break;
     }
 }
-function Deactivate(id){
+function Deactivate(id,name){
 let deactivate=$('#deactivate').val();
  $.ajaxSetup({
      headers: {
@@ -90,6 +90,7 @@ let deactivate=$('#deactivate').val();
      url: deactivate,
      data: {
         id: id,
+        name:name
      },
      success: function (data) {
          toastr.options = {
@@ -117,3 +118,43 @@ let deactivate=$('#deactivate').val();
  });
 }
 
+function DeleteSchedule(id){
+let delete_schedule=$('#delete').val();
+ $.ajaxSetup({
+     headers: {
+         "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
+     },
+ });
+ $.ajax({
+     method: "POST",
+     dataType: "JSON",
+     url: delete_schedule,
+     data: {
+        id: id,
+      
+     },
+     success: function (data) {
+         toastr.options = {
+             closeButton: true,
+             debug: false,
+             newestOnTop: false,
+             progressBar: false,
+             positionClass: "toast-top-right",
+             preventDuplicates: false,
+             onclick: null,
+             showDuration: "300",
+             hideDuration: "1000",
+             timeOut: "5000",
+             extendedTimeOut: "1000",
+             showEasing: "swing",
+             hideEasing: "linear",
+             showMethod: "fadeIn",
+             hideMethod: "fadeOut",
+         };
+
+         toastr["success"](data.message);
+         window.location.reload();
+     },
+     error: function (error) {},
+ });
+}

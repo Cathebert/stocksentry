@@ -25,6 +25,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css" />
     <!-- Custom styles for this template-->
     <link href="{{asset('assets/css/sb-admin-2.min.css')}}" rel="stylesheet">
+          <link href="{{asset('assets/css/test.css')}}" rel="stylesheet">
       <link href="{{ asset('assets/vendor/bootstrap-datepicker/css/bootstrap-datepicker.css') }}" rel="stylesheet">
 
       @stack('style')
@@ -65,16 +66,19 @@
         @include('provider.layout.partials.sidebar')
         @include('provider.layout.partials.topbar')
 
-       
+       <div id="center">
             @yield('content')
 
             @include('layouts.partials.footer')
-       
+         </div>
     </div>
 </div>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.3/dist/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.1.3/dist/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
     <script src="{{asset('assets/vendor/bootstrap/js/bootstrap.bundle.min.js')}}"></script>
       
- 
+ <script src="{{asset('assets/vendor/bootstrap-datepicker/js/bootstrap-datepicker.min.js')}}"></script>
+
 
     <!-- Core plugin JavaScript-->
     <script src="{{asset('assets/vendor/jquery-easing/jquery.easing.min.js')}}"></script>
@@ -92,8 +96,9 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
     <!-- Page level plugins -->
    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="{{asset('assets/js/demo/chart-pie-demo.js')}}"></script>
+    
   <script src="{{asset('assets/admin/vendors/select2/dist/js/select2.full.min.js') }}"></script>
+   <script src="{{asset('assets/admin/js/inventory/loader.js') }}"></script>
    @stack('js')
    
 </body>

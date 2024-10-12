@@ -32,31 +32,7 @@ function getReceiver(id) {
                         "</option>"
                 );
             }
-            if (data.status == 0) {
-                var html = "";
-                html += ' <label for="section_id">Issue To Section</label>';
-                html +=
-                    '<select class="form-control" id="to_section_id" name="to_section_id" style="width: 75%"  >';
-                html += '<option value=""></option>';
-                data.sections.forEach((element) => {
-                    html +=
-                        "<option value=" +
-                        element.id +
-                        ">" +
-                        element.section_name +
-                        "</option>";
-
-                    console.log(element.section_name);
-                });
-                //console.log(data.sections);
-                html += "</select>";
-                $("#req").html(html);
-                $("#req").show();
-                document.getElementById("req").hidden = false;
-            } else {
-                $("#req").hide();
-                document.getElementById("req").hidden = true;
-            }
+            
         },
     });
 }
@@ -231,6 +207,9 @@ $("#save_issue").on("click", function () {
             form_data,
             quantity: obj,
         },
+          beforeSend: function () {
+                    ajaxindicatorstart("loading data... please wait...");
+                },
         success: function (data) {
             if (data.error == false) {
                 toastr.options = {
@@ -264,6 +243,7 @@ location.reload()
                  $("#requests-badge").text(added);
                   $("#siv").val(data.id);
                   document.getElementById('siv').value=data.id;
+                  ajaxindicatorstop();
                   location.reload();
                   //alert(data.id)
             } else {
@@ -345,7 +325,11 @@ $("#test").on("click", function () {
             selected: checked,
             items: obj,
         },
+         beforeSend: function () {
+                    ajaxindicatorstart("loading data... please wait...");
+                },
         success: function (data) {
+        ajaxindicatorstop();
             var gh = data.data.length;
             var q = data.quantity;
             console.log(q);
@@ -461,6 +445,9 @@ function ApproveItem(id) {
                         data: {
                             id: id,
                         },
+                          beforeSend: function () {
+                    ajaxindicatorstart("loading data... please wait...");
+                },
                         success: function (data) {
                             toastr.options = {
                                 closeButton: true,
@@ -489,6 +476,7 @@ function ApproveItem(id) {
                              var subtracted=sub_one+1;
                              $("#requests-badge").text(added);
                              $("#approved_badge").text(subtracted)
+                             ajaxindicatorstop();
                             reloadTable();
                         },
                         error: function (error) {

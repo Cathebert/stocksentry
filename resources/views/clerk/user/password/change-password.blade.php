@@ -1,4 +1,4 @@
- @extends('sectionhead.layout.main')
+@extends('clerk.layout.main')
 @section('title','Change Password')
 @push('style')
   
@@ -19,7 +19,7 @@
         
         <h5 class="card-title"> <strong>User Profile Information</strong></h5>
       <br>
-   @include('sectionhead.user.header')  
+   @include('clerk.user.header')  
     <div class="clearfix"></div>  
 <div class="row">
    

@@ -12,6 +12,7 @@ use App\Models\Inventory;
 use App\Models\User;
 use App\Models\BinCard;
 use App\Models\StockTake;
+use App\Models\UserSetting;
 use App\Notifications\StockUpdateNotification;
 use Illuminate\Support\Facades\Notification;
 use DB;
@@ -56,7 +57,8 @@ DB::beginTransaction();
 $stock=StockTake::where('id',$this->stock_take_id)->select('approved_by')->first();
 
           $user = User::where([['id','=',$stock->approved_by]])->select('id','email')->first();
-        Notification::send($user, new StockUpdateNotification()); 
+        //Notification::send($user, new StockUpdateNotification()); 
+        $user->notify(new StockUpdateNotification());
         DB::commit(); 
         }
         catch(Exception $e){

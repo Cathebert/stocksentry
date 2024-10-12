@@ -1,4 +1,4 @@
- @extends('clerk.layout.main')
+@extends('clerk.layout.main')
 @section('title','StockSentry')
 @push('style')
    
@@ -42,10 +42,10 @@
            <input type="hidden" class="form-control" id="save_selected" value="{{route('inventory.selected_save')}}">
               <input type="hidden" class="form-control" id="item_search" value="{{route('items.search')}}">
                <input type="hidden" class="form-control" id="inventory_received" value="{{route('item.recieved')}}">
-      <input type="hidden" class="form-control" id="inventory_taking" value="{{route('section_inventory.stocktake')}}"> 
+      <input type="hidden" class="form-control" id="inventory_taking" value="{{route('inventory.stock')}}"> 
          <input type="hidden" class="form-control" id="inventory_save_all" value="{{route('stock.saveall')}}"> 
-    <input type="hidden" class="form-control" id="selected_location" value="{{route('section.filter_stocktake')}}"/>
-       <input type="hidden" id="expected" value="{{$count}}"/>
+<input type="hidden" id="expected" value="{{$count}}"/>
+<input type="hidden" id="edit_inventory_modal" value="{{ route('inventory.edit_modal') }}"/>
 
  
             
@@ -66,26 +66,11 @@
   </select>
 </div>
   </div>
-    <div class="col-md-4 col-sm-12 col-xs-12 form-group"   >
-<div class="input-group mb-3">
-  <div class="input-group-prepend">
-    <label class="input-group-text btn btn-secondary" for="period">Stock Take Area</label>
-    <span class="input-group-text"><i class="fa fa-home" aria-hidden="true"></i></span>
-  </div>
-  <select class="form-control" id="storage_area" name="storage_area" onchange="SelectArea(this.value)">
-    <option value="0" selected> All</option>
-    <option value="1" > Store</option>
-    <option value="3" > Section </option>
-   
-     
-  </select>
-</div>
-  </div>
   
      <div class="col-md-3 col-sm-12 col-xs-12 form-group" >
   <div class="input-group ">
   <span class="input-group-text btn btn-secondary">Date:</span> 
-  <input type="date" aria-label="First name" class="form-control" id="start_date" name="start_date" value="{{date('Y-m-d')}}">
+  <input type="date" aria-label="First name" class="form-control" id="start_date" name="start_date" value="{{date('Y-m-d')}}" readonly>
    <span class="input-group-text btn btn-secondary"  hidden>-</span>
   <input type="date" aria-label="Last name" class="form-control " id="end_date" name="end_date" hidden>
 </div>
@@ -96,7 +81,7 @@
     <span class="input-group-text btn btn-secondary">Supervisor</span>
   </div>
   <select class="custom-select" id="supervisor" aria-label="Example select with button addon" name="supervisor">
-
+ <option value=""></option>
 @foreach ($users as $user )
       <option value="{{$user->id}}">{{$user->name.' '.$user->last_name}}</option>
 @endforeach
@@ -118,12 +103,9 @@
   </select>
 </div>
   </div> 
-                            <div class="col-md-4 col-sm-4 col-xs-12 form-group" >
-   <div class="input-group mb-3">
-  <div class="input-group-prepend">
-    <span class="input-group-text btn btn-secondary">Employees Involved</span>
-  </div>
-                               <select class=" form-control" id="employees" style="width: 50%" name="employee_involved[]" multiple >
+                           <div class="col-md-8 col-sm-4 col-xs-12 form-group" >
+                                <label for="fullname">Employees Involved <span class="text-danger"></span></label>
+                                <select class="form-control" id="employees" style="width: 50%" name="employee_involved[]" multiple >
                                     
                                     @foreach($users as $employee)
                                 
@@ -131,7 +113,8 @@
                                     @endforeach
                                 </select>
                             </div>
-                     
+
+                            
 
 </div>
   <script type="text/javascript">
@@ -139,7 +122,7 @@
     $('#employees').select2({
  placeholder: 'Select  employees Involved',
       allowClear: true,
-  
+
    
     });
      
@@ -153,17 +136,17 @@
   <i class="fa fa-cogs"></i>
   </a>
 
-  <div class="dropdown-menu" aria-labelledby="dropdownMenuLink" hidden>
+  <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
   
-    <a class="dropdown-item" href="#" onclick="inputFile()"><i class="fa fa-download" hidden></i> Import CVS File</a>
+    <a class="dropdown-item" href="#" onclick="inputFile()" hidden><i class="fa fa-download"></i> Import CVS File</a>
     <a class="dropdown-item" href="{{ route('stock.export') }}"><i class="fa fa-share"></i> Export Inventory</a>
   </div>
 </div>
   </div>
       </div>
 </div>
- <h6 id="status" style="text-align:center"> </h6>
-
+ 
+<h3  style="text-align:right" hidden><span class="badge badge-secondary">{{ $count }}</span></h3>
  
  
 
@@ -175,21 +158,23 @@
       
 
        
-<hr></br>
-  
+</br>
+ 
         <!---- table start ---->
        <div class="table-responsive">
-        <table class="table table-sm" id="inventories_taking" width="100%">
+        <table class="table table-bordered table-striped table-sm table-hover" id="inventories_taking" width="100%">
 <thead class="thead-light">
     <tr>
-       <th scope="col"></th>
-     <th scope="col">Code</th>
-       <th scope="col">Brand</th>
+      <th scope="col"></th>
+     <th scope="col">Item Name</th>
+       <th scope="col">Code</th>
         <th scope="col">Batch Number</th>
-        <th scope="col">Generic Name</th>
         <th scope="col">UOM </th>
+        <th scope="col">Expiry</th>
+          <th scope="col">Location </th>
+          <th scope="col">Edit Entry </th>
         <th scope="col">Physical Count</th>
-   <th scope="col">Action</th>
+       <th scope="col">Action</th>
       
     </tr>
   </thead>
@@ -201,12 +186,23 @@
 
 
  <div class="modal-footer">
-
+     
         <button type="button" class="btn btn-primary" id="save_all"  onclick="saveAll()">Save All</button>
       </div>
 
 <!----------Table end --------->
       </div>
+      
+      <!--------moddal-------------------->
+    <div class="modal" tabindex="-1" id="inforg" role="dialog" >
+  <div class="modal-dialog modal-lg" role="document" >
+    <div class="modal-content" id="receive_item">
+
+    </div>
+    </div>
+    </div>
+
+<!--------end modal------------->
      
   </div>
             @endsection

@@ -21,7 +21,7 @@ class ConsumptionNotification extends Notification
     {
        $this->path=$path;
        $this->start=$start;
-       $this->end=$end
+       $this->end=$end;
     }
 
     /**
@@ -41,7 +41,8 @@ class ConsumptionNotification extends Notification
     {
         return (new MailMessage)
                     ->line('This is a scheduled report for consumption from period.'.$this->start.' to '.$this->end)
-                    ->attach($this->path)
+                       ->line('Attached is the document ')
+                      ->attach($this->path)
                     ->line('Thank you for using our application!');
     }
 

@@ -82,7 +82,6 @@ case 4:
 
       protected function adminLogin(Request $request)
     {
-          $errors = [$this->username() => trans('auth.failed')];
        $this->validate($request,[
             'username'=>'required',
             'password'=>'required| min:8'
@@ -91,9 +90,7 @@ case 4:
           LogActivityService::saveToLog('Logged in','Member with username  '.auth()->user()->username.' logged in of system.','low');
            $this->redirectTo();
         }
-         return $this->sendFailedLoginResponse($request);
-        
-
+        return $this->sendFailedLoginResponse($request);
         //return back()->withInput($request->only('username'));
     }
  protected function sendFailedLoginResponse(Request $request)

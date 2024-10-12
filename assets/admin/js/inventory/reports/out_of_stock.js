@@ -8,7 +8,7 @@ t = $("#out_of_stock_table").DataTable({
     paging: true,
     select: true,
     info: true,
-    lengthMenu: [5, 10, 100],
+    lengthMenu: [10, 20, 50],
     responsive: true,
 
     order: [[0, "desc"]],
@@ -31,7 +31,7 @@ t = $("#out_of_stock_table").DataTable({
             defaultContent: "",
         },
 
-        { data: "item_name" },
+        { data: "item_name",width:"30%"},
         { data: "catalog_number" },
         { data: "place_purchase" },
         { data: "unit_issue" },

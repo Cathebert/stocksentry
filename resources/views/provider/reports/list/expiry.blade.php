@@ -15,9 +15,7 @@
                     <div class="d-sm-flex align-items-center justify-content-between mb-4">
                         <h1 class="h3 mb-0 text-gray-800">About To Expire Report</h1>
                          <div class="dropdow" style="text-align:right" >
-  <button  role="button" data-toggle="modal" data-target="#exampleModal">
-  <i class="fa fa-clock"> Schedule</i>
-</button>
+
 
 </div>
 
@@ -29,11 +27,10 @@
 
   <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
   
-    <a class="dropdown-item" href="{{route('report.download',['action'=>'download'])}}" ><i class="fa fa-download"></i> PDF File</a>
-    <a class="dropdown-item" href="{{route('report.download',['action'=>'excel'])}}"><i class="fa fa-share"></i>  Excel file</a>
+     <a class="dropdown-item" href="{{route('report.download',['action'=>'download'])}}" id="download"><i class="fa fa-download"></i> PDF File</a>
+     <a class="dropdown-item" href="{{route('report.download',['action'=>'excel'])}}" id="excel"><i class="fa fa-share"></i>  Excel file</a>
     <hr>
-    <a class="dropdown-item" href="{{route('report.download',['action'=>'print'])}}"><i class="fa fa-print"></i> Print Report </a>
-     <a class="dropdown-item" href="#"><i class="fa fa-envelope"></i> Mail To</a>
+   
   </div>
 </div>
                    <div class="row" >
@@ -48,7 +45,8 @@
           @csrf
           
                <input type="hidden" class="form-control" id="expiry_report" value="{{route('lab_manager_report.expiry_table')}}">
-  
+   <input type="hidden" class="form-control" id="download_url" value="{{route('lab_manager_report.about_expiry_download',['action'=>'download'])}}"/>
+
 
  
             

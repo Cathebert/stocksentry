@@ -2,73 +2,125 @@ var inventory = $("#load_inventory").val();
 var checked = [];
 var quantities = [];
 var table;
-   var item_search = $("#item_search").val();
+   var select_adjust = $("#adjust_url").val();
 	var search = $("#search_item").val();
 let item_id="";
     //--->save whole row entery > end
 
-    $("#search_item").autocomplete({
-        source: function (request, response) {
-           
-            $.ajax({
-                url: item_search,
-                type: "GET",
-                dataType: "json",
-                data: {
-                    search: request.term,
-                },
-                success: function (data) {
-                    console.log(data)
-                    
-                 
-                  if(data.length>0){
-               response($.map(data, function(item) {
-                        return {
-                            label: item.value + ' - ' + item.batch_number,
-                            value: item.value,
-                            id: item.id 
-                        };
-                    }));
-            }
-            else{
-              data.push({
-                        id: 0,
-                        label: "No results found"
-                    });
-                response(data)  
-            }
-            
-                },
-            });
-        },
-        select: function (event, ui) {
-             if (ui.item.id != 0) {
-            $("#search_item").val(ui.item.label);
-            console.log(ui.item);
-          item_id=ui.item.id
-            LoadTable(ui.item.id)
-            return false;
-             }
-        },
-        minLength: 2
-    });
-function incrementValue(){
-   var value=$('#adjusted').val()
-   var converted=Number(value);
-   var adjusted=converted+1
-$('#adjusted').val(adjusted)
-   console.log(adjusted);
+   $("#add_new").on("click", function () {
+       $.ajax({
+           method: "GET",
+
+           url: select_adjust,
+
+           success: function (data) {
+               $("#view_item_datails").html(data);
+               $("#inforg").modal("show"); // show bootstrap modal
+               $(".modal-title").text(" Select Items to  Adjust");
+           },
+           error: function (jqXHR, textStatus, errorThrown) {
+               // console.log(get_case_next_modal)
+               alert("Error " + errorThrown);
+           },
+       });
+   });
+function RunAdjustment(){
+        $(".btn-close").click();
+    if(selected.length==0){
+        $.alert({
+            icon: "fa fa-danger",
+            title: "Missing information!",
+            type: "red",
+            content: "Please select  items  you want to adjust!",
+        });
+        return;
+
 }
-function decrementValue() {
-    var value = $("#adjusted").val();
-    var converted = Number(value);
+
+   let adjust_selected = $("#adjust_selected").val();
+
+    disposals = $("#update_disposals").DataTable({
+        processing: true,
+        serverSide: true,
+        destroy: true,
+        paging: false,
+        select: true,
+        info: false,
+        sDom: "lrtip",
+        lengthMenu: [10, 20, 50],
+        responsive: true,
+
+        order: [[0, "desc"]],
+        oLanguage: {
+            sProcessing:
+                "<div class='loader-container'><div id='loader'></div></div>",
+        },
+        ajax: {
+            url: adjust_selected,
+            dataType: "json",
+            type: "GET",
+            data: {
+                selected: selected,
+            },
+        },
+        initComplete: function (settings, json) {
+            document.getElementById("dispose").hidden = false;
+        },
+        AutoWidth: false,
+
+        columns: [
+            { data: "id" },
+            { data: "item" },
+            { data: "code" },
+            { data: "batch" },
+            { data: "catalog" },
+            { data: "unit" },
+            { data: "available" },
+            { data: "quantity" },
+            { data: "reason" },
+        ],
+        //Set column definition initialisation properties.
+        columnDefs: [
+            {
+                targets: [-1], //last column
+                orderable: false, //set not orderable
+            },
+            {
+                targets: [-2], //last column
+                orderable: false, //set not orderable
+            },
+            {
+                targets: [-3], //last column
+                orderable: false, //set not orderable
+            },
+        ],
+    });
+}
+
+function incrementValue(id){
+   var myvalue=$('#adjusted_'+id).val()
+   var converted=Number(myvalue);
+   var adjusted=converted+1
+
+
+$('#adjusted_'+id).val(adjusted)
+ let note = $("#q_" + id).val();
+   console.log(adjusted);
+   addQuantityToAdjustment(id, adjusted, note);
+}
+function decrementValue(id) {
+    var my_value= $("#adjusted_"+id).val();
+
+    var converted = Number(my_value);
     if(converted==0){
 
     }
    else{
      var adjusted = converted - 1;
-     $("#adjusted").val(adjusted);
+      let note= $("#q_" + id).val();
+     $("#adjusted_"+id).val(adjusted);
      console.log(adjusted);
+     addQuantityToAdjustment(id,adjusted,note)
    }
 }
 function getNumber(id, name) {
@@ -100,9 +152,9 @@ function AddIdToArray(id) {
 }
 
 
-   
+
         //saveAdjustedItem(id, quantity);
-    
+
 
 function LoadTable(id) {
 table = $("#adjust_inventories").DataTable({
@@ -163,9 +215,9 @@ $("#adjust").on('click',function(e){
     var type=$('#type').val();
     var adjustment=$('#adjusted').val();
     var notes=$('#notes').val();
- 
+
     var update_selected = $("#update_selected").val();
- 
+
     if(!adjustment){
         $.alert({
             icon: "fa fa-danger",
@@ -195,9 +247,12 @@ return;
             notes:notes,
             item:item_id,
         },
-
+  beforeSend: function () {
+                    ajaxindicatorstart("loading data... please wait...");
+                },
         success: function (data) {
             //console.log(data)
+             ajaxindicatorstop();
             if (data.error == false) {
                 toastr.options = {
                     closeButton: true,
@@ -218,9 +273,11 @@ return;
                 };
                 toastr["success"](data.message);
                 $("#search_item").val("");
+
                 table.destroy();
-              
+
             } else {
+             ajaxindicatorstop();
                 toastr.options = {
                     closeButton: true,
                     debug: false,
@@ -239,6 +296,7 @@ return;
                     hideMethod: "fadeOut",
                 };
                 toastr["error"](data.message);
+
             }
             // show bootstrap modal
         },
@@ -259,6 +317,7 @@ $("#view_adjustment").on("click", function (e) {
                    // $('#boot').click();
                    $("#view_item_datails").html(data);
                    $("#inforg").modal("show"); // show bootstrap modal
+
                    $(".modal-title").text("Adjustments");
                },
                error: function (jqXHR, textStatus, errorThrown) {
@@ -268,7 +327,7 @@ $("#view_adjustment").on("click", function (e) {
            });
         })
 function ApproveAdjustment(id) {
-  let approve_selected= $('#approve_selected').val(); 
+  let approve_selected= $('#approve_selected').val();
  $.ajaxSetup({
      headers: {
          "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
@@ -279,12 +338,15 @@ function ApproveAdjustment(id) {
      dataType: "JSON",
      url: approve_selected,
      data: {
-        
+
          id: id,
      },
-
+ beforeSend: function () {
+                    ajaxindicatorstart("approving adjustment... please wait...");
+                },
      success: function (data) {
          //console.log(data)
+          ajaxindicatorstop();
          if (data.error == false) {
              toastr.options = {
                  closeButton: true,
@@ -332,11 +394,13 @@ function ApproveAdjustment(id) {
          alert("Error " + errorThrown);
      },
  });
-            
+
         }
-        
-        function cancelAdjustment(id) {
-  let cancel= $('#cancel').val(); 
+
+function cancelAdjustment(id) {
+
+  let cancel= $('#cancel').val();
+
  $.ajaxSetup({
      headers: {
          "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
@@ -347,11 +411,14 @@ function ApproveAdjustment(id) {
      dataType: "JSON",
      url: cancel,
      data: {
-        
+
          id: id,
      },
-
+ beforeSend: function () {
+                    ajaxindicatorstart("cancelling adjustment... please wait...");
+                },
      success: function (data) {
+       ajaxindicatorstop();
          //console.log(data)
          if (data.error == false) {
              toastr.options = {
@@ -400,12 +467,12 @@ function ApproveAdjustment(id) {
          alert("Error " + errorThrown);
      },
  });
-            
+
         }
  function reloadTable() {
-     var p;
+     var k;
      var load_forecast = $('#reload').val();
-     p = $("#item_adjust").DataTable({
+     k = $("#item_adjust").DataTable({
          processing: true,
          serverSide: true,
          destroy: true,
@@ -457,4 +524,422 @@ function ApproveAdjustment(id) {
              },
          ],
      });
- }      
+ }
+function getNote(id, name){
+    let note=$('#q_'+name).val()
+
+    var adjusted= $("#adjusted_" + name).val();
+   addQuantityToAdjustment(name, adjusted, note);
+  console.log(adjusted);
+
+}
+
+function addQuantityToAdjustment(id,adjusted,note){
+    var id_value_note=id+"_"+adjusted+'_'+note;
+            let startsWithBan = quantities.find((item) =>
+                item.startsWith(id + "_")
+            );
+            console.log(startsWithBan);
+
+            if (startsWithBan) {
+                quantities = arrayRemove(quantities, startsWithBan);
+                quantities.push(id_value_note);
+            } else {
+                quantities.push(id_value_note);
+            }
+}
+function getAdjustedValue(id){
+    var ad=id.split('_');
+    var splited_id=ad[1];
+    var my_value = $("#" + id).val();
+    var note=$('#q_'+splited_id).val();
+   addQuantityToAdjustment(splited_id,my_value,note)
+
+}
+
+function arrayRemove(arr, value) {
+    return arr.filter(function (item) {
+        return item != value;
+    });
+}
+
+function RunItemsAdjustment() {
+    let run_adjustment = $("#run_adjustment").val();
+
+    $.ajaxSetup({
+        headers: {
+            "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
+        },
+    });
+
+    if (quantities.length == 0) {
+        $.alert({
+            icon: "fa fa-danger",
+            title: "Missing information!",
+            type: "red",
+            content: "enter  details  for items you  want to adjust!",
+        });
+        return;
+
+    }
+     if (selected.length > quantities.length) {
+      $.confirm({
+          title: "Confirm!",
+          content:"Some details have not been enter.Do you really  want to continue?",
+          buttons: {
+              Oky: {
+                  btnClass: "btn-warning",
+                  action: function () {
+                      continueWithAdjustement();
+                      return;
+                  },
+              },
+              cancel: function () {},
+          },
+      });
+      return;
+     }
+    $.ajax({
+        method: "POST",
+        dataType: "JSON",
+        url: run_adjustment,
+        data: {
+            quantity: quantities,
+
+        },
+        beforeSend: function () {
+            ajaxindicatorstart("loading data... please wait...");
+        },
+        success: function (data) {
+            if (data.error == false) {
+                toastr.options = {
+                    closeButton: true,
+                    debug: false,
+                    newestOnTop: false,
+                    progressBar: false,
+                    positionClass: "toast-top-right",
+                    preventDuplicates: false,
+                    onclick: null,
+                    showDuration: "300",
+                    hideDuration: "1000",
+                    timeOut: "5000",
+                    extendedTimeOut: "1000",
+                    showEasing: "swing",
+                    hideEasing: "linear",
+                    showMethod: "fadeIn",
+                    hideMethod: "fadeOut",
+                };
+                toastr["success"](data.message);
+
+                quantities.length = 0;
+                selected.length=0;
+                 ajaxindicatorstop();
+                //disposals.destroy();
+
+                location.reload();
+            } else {
+                ajaxindicatorstop();
+                toastr.options = {
+                    closeButton: true,
+                    debug: false,
+                    newestOnTop: false,
+                    progressBar: false,
+                    positionClass: "toast-top-right",
+                    preventDuplicates: false,
+                    onclick: null,
+                    showDuration: "300",
+                    hideDuration: "1000",
+                    timeOut: "5000",
+                    extendedTimeOut: "1000",
+                    showEasing: "swing",
+                    hideEasing: "linear",
+                    showMethod: "fadeIn",
+                    hideMethod: "fadeOut",
+                };
+                toastr["error"](data.message);
+            }
+            // Welcome notification
+            // Welcome notification
+        },
+        error:function(error){
+             ajaxindicatorstop();
+        }
+    });
+}
+ function continueWithAdjustement(){
+    let continue_adjustment = $("#run_adjustment").val();
+     $.ajax({
+         method: "POST",
+         dataType: "JSON",
+         url: continue_adjustment,
+         data: {
+             quantity: quantities,
+         },
+         beforeSend: function () {
+             ajaxindicatorstart("loading data... please wait...");
+         },
+         success: function (data) {
+             if (data.error == false) {
+                 toastr.options = {
+                     closeButton: true,
+                     debug: false,
+                     newestOnTop: false,
+                     progressBar: false,
+                     positionClass: "toast-top-right",
+                     preventDuplicates: false,
+                     onclick: null,
+                     showDuration: "300",
+                     hideDuration: "1000",
+                     timeOut: "5000",
+                     extendedTimeOut: "1000",
+                     showEasing: "swing",
+                     hideEasing: "linear",
+                     showMethod: "fadeIn",
+                     hideMethod: "fadeOut",
+                 };
+                 toastr["success"](data.message);
+                 reasons.length = 0;
+                 quantities.length = 0;
+                 selected.length = 0;
+                 disposals.destroy();
+                 ajaxindicatorstop();
+                 location.reload();
+             } else {
+                 ajaxindicatorstop();
+                 toastr.options = {
+                     closeButton: true,
+                     debug: false,
+                     newestOnTop: false,
+                     progressBar: false,
+                     positionClass: "toast-top-right",
+                     preventDuplicates: false,
+                     onclick: null,
+                     showDuration: "300",
+                     hideDuration: "1000",
+                     timeOut: "5000",
+                     extendedTimeOut: "1000",
+                     showEasing: "swing",
+                     hideEasing: "linear",
+                     showMethod: "fadeIn",
+                     hideMethod: "fadeOut",
+                 };
+                 toastr["error"](data.message);
+             }
+             // Welcome notification
+             // Welcome notification
+         },
+         error: function (error) {
+             ajaxindicatorstop();
+         },
+     });
+ }
+function ViewAdjusted(id){
+ let view_disposal_modal_url = $("#view_adjusted_items").val();
+ $.ajax({
+     method: "GET",
+     url: view_disposal_modal_url,
+     data: {
+         id: id,
+     },
+
+     success: function (data) {
+         $("#adjusted-items").html(data);
+         $("#infor").modal("show"); // show bootstrap modal
+         $(".modal-title").text(" Adjusted Items");
+     },
+     error: function (jqXHR, textStatus, errorThrown) {
+         // console.log(get_case_next_modal)
+         alert("Error " + errorThrown);
+     },
+ });
+}
+function ApproveBulkAdjustment(id){
+    let approve_bulk = $("#approve_bulk").val();
+    $.ajaxSetup({
+        headers: {
+            "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
+        },
+    });
+    $.ajax({
+        method: "POST",
+        dataType: "JSON",
+        url: approve_bulk,
+        data: {
+            id: id,
+        },
+        beforeSend: function () {
+            ajaxindicatorstart("approving adjustment... please wait...");
+        },
+        success: function (data) {
+            //console.log(data)
+            ajaxindicatorstop();
+            if (data.error == false) {
+                toastr.options = {
+                    closeButton: true,
+                    debug: false,
+                    newestOnTop: false,
+                    progressBar: false,
+                    positionClass: "toast-top-right",
+                    preventDuplicates: false,
+                    onclick: null,
+                    showDuration: "300",
+                    hideDuration: "1000",
+                    timeOut: "5000",
+                    extendedTimeOut: "1000",
+                    showEasing: "swing",
+                    hideEasing: "linear",
+                    showMethod: "fadeIn",
+                    hideMethod: "fadeOut",
+                };
+                toastr["success"](data.message);
+                reloadBulkTable();
+            } else {
+                toastr.options = {
+                    closeButton: true,
+                    debug: false,
+                    newestOnTop: false,
+                    progressBar: false,
+                    positionClass: "toast-top-right",
+                    preventDuplicates: false,
+                    onclick: null,
+                    showDuration: "300",
+                    hideDuration: "1000",
+                    timeOut: "5000",
+                    extendedTimeOut: "1000",
+                    showEasing: "swing",
+                    hideEasing: "linear",
+                    showMethod: "fadeIn",
+                    hideMethod: "fadeOut",
+                };
+                toastr["error"](data.message);
+            }
+            // show bootstrap modal
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            // console.log(get_case_next_modal)
+            alert("Error " + errorThrown);
+        },
+    });
+
+}
+
+function reloadBulkTable(){
+    var o;
+    let bulk_adjustment_list = $("#load_adjusted").val();
+
+    o = $("#item_adjusted").DataTable({
+        processing: true,
+        serverSide: true,
+        paging: true,
+        destroy: true,
+        info: true,
+        responsive: true,
+        order: [[0, "desc"]],
+        oLanguage: {
+            sProcessing:
+                "<div class='loader-container'><div id='loader'></div></div>",
+        },
+        ajax: {
+            url: bulk_adjustment_list,
+            dataType: "json",
+            type: "GET",
+        },
+
+        AutoWidth: false,
+        columns: [
+            { data: "id", width: "3%" },
+            { data: "adjust_date", width: "10%" },
+            { data: "disposed_by", width: "15%" },
+            { data: "approved_by", width: "15%" },
+            { data: "items", width: "15%" },
+            { data: "action", width: "40%" },
+        ],
+        //Set column definition initialisation properties.
+        columnDefs: [
+            {
+                targets: [-1], //last column
+                orderable: false, //set not orderable
+            },
+            {
+                targets: [-2], //last column
+                orderable: false, //set not orderable
+            },
+            {
+                targets: [-3], //last column
+                orderable: false, //set not orderable
+            },
+        ],
+    });
+
+
+}
+
+function cancelBulkAdjustment(id) {
+    let cancel_bulk = $("#cancel_bulk").val();
+
+    $.ajaxSetup({
+        headers: {
+            "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
+        },
+    });
+    $.ajax({
+        method: "POST",
+        dataType: "JSON",
+        url: cancel_bulk,
+        data: {
+            id: id,
+        },
+        beforeSend: function () {
+            ajaxindicatorstart("cancelling adjustment... please wait...");
+        },
+        success: function (data) {
+            ajaxindicatorstop();
+            //console.log(data)
+            if (data.error == false) {
+                toastr.options = {
+                    closeButton: true,
+                    debug: false,
+                    newestOnTop: false,
+                    progressBar: false,
+                    positionClass: "toast-top-right",
+                    preventDuplicates: false,
+                    onclick: null,
+                    showDuration: "300",
+                    hideDuration: "1000",
+                    timeOut: "5000",
+                    extendedTimeOut: "1000",
+                    showEasing: "swing",
+                    hideEasing: "linear",
+                    showMethod: "fadeIn",
+                    hideMethod: "fadeOut",
+                };
+                toastr["success"](data.message);
+                reloadBulkTable();
+            } else {
+                toastr.options = {
+                    closeButton: true,
+                    debug: false,
+                    newestOnTop: false,
+                    progressBar: false,
+                    positionClass: "toast-top-right",
+                    preventDuplicates: false,
+                    onclick: null,
+                    showDuration: "300",
+                    hideDuration: "1000",
+                    timeOut: "5000",
+                    extendedTimeOut: "1000",
+                    showEasing: "swing",
+                    hideEasing: "linear",
+                    showMethod: "fadeIn",
+                    hideMethod: "fadeOut",
+                };
+                toastr["error"](data.message);
+            }
+            // show bootstrap modal
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            // console.log(get_case_next_modal)
+            alert("Error " + errorThrown);
+        },
+    });
+}

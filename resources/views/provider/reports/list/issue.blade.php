@@ -15,9 +15,7 @@
                     <div class="d-sm-flex align-items-center justify-content-between mb-4">
                         <h1 class="h3 mb-0 text-gray-800">Issue Report</h1>
                          <div class="dropdow" style="text-align:right" >
-  <button  role="button" data-toggle="modal" data-target="#exampleModal">
-  <i class="fa fa-clock"> Schedule</i>
-</button>
+
 
 </div>
 
@@ -29,11 +27,10 @@
 
   <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
   
-    <a class="dropdown-item" href="" ><i class="fa fa-download"></i> PDF File</a>
-    <a class="dropdown-item" href=""><i class="fa fa-share"></i>  Excel file</a>
+    <a class="dropdown-item" href="{{route('lab_manager_report_issue.download',['name'=>'pdf'])}}"   ><i class="fa fa-download"></i> PDF File</a>
+    <a class="dropdown-item" href="{{route('lab_manager_report_issue.download',['name'=>'excel'])}}" ><i class="fa fa-share"></i>  Excel file</a>
     <hr>
-    <a class="dropdown-item" href=""><i class="fa fa-print"></i> Print Report </a>
-     <a class="dropdown-item" href="#"><i class="fa fa-envelope"></i> Mail To</a>
+   
   </div>
 </div>
                    <div class="row" >
@@ -49,7 +46,6 @@
           
           <input type="hidden" class="form-control" id="issue_report" value="{{route('lab_manager_report.issue_table')}}">
           <input type="hidden" class="form-control" id="frequency_change" value="{{route('change_frequency')}}"/>
- <input type="hidden" class="form-control" id="generate_report" value="{{route('lab_manager_report.download')}}"/> 
  
             
             <div class="row">
@@ -60,7 +56,7 @@
     <span class="input-group-text"><i class="fa fa-home" aria-hidden="true"></i></span>
   </div>
   <select class="custom-select" id="period" name="lab" onchange="getSelected()">
-    <option value="99" selected> All</option>
+    <option value="-1" selected> All</option>
       @foreach ($laboratories as $lab)
    
        <option value="{{$lab->id}}">{{$lab->lab_name}}</option>
@@ -75,7 +71,7 @@
   <span class="input-group-text">Expiry Days Range:</span> 
    <span class="input-group-text"><i class="fa fa-sort-numeric-asc" aria-hidden="true"></i></span>
   <select class="custom-select" id="days_range" name="period" onchange="getSelectedRange()">
-   <option value="99" selected>All</option>
+   <option value="-1" selected>All</option>
    
     <option value="2"> >1 to < 30 days</option>
       <option value="3" > > 30  to < 60 days </option>
@@ -144,8 +140,8 @@
       
        <th scope="col"></th>
      <th scope="col">Stock Transfer #</th>
-       <th scope="col">From Lab/Section</th>
-        <th scope="col">To Lab/Section</th>
+       <th scope="col">From Lab</th>
+        <th scope="col">To Lab</th>
         <th scope="col">Issue Date</th>
         <th scope="col">Status</th>
         

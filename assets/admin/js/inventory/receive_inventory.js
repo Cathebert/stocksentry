@@ -1,4 +1,4 @@
-    "use strict";
+"use strict";
       var url=$('#post_url').val();
 var fetch_data=$('#fetch_data').val();
      var item_search=$('#item_search').val();
@@ -205,6 +205,8 @@ $('#save_received').on('click',function(){
    var supplier = $("#supplier_id").val();
    var select_id = $("#section_id").val();
    var gnr_number=$('#grn_number').val();
+   let checker=	$('#checked_off_by').val();
+   let reviewer= $('#reviewed_by').val();
 if(!lab_id){
 $.alert({
     icon: "fa fa-warning",
@@ -234,7 +236,25 @@ return;
   });
     return;
    }
-
+   if(!checker){
+  $.alert({
+      icon: "fa fa-warning",
+      title: "Missing information!",
+      type: "orange",
+      content: "Please Select who checked off the items!",
+  });
+    return;
+   }
+   
+     if(!reviewer){
+  $.alert({
+      icon: "fa fa-warning",
+      title: "Missing information!",
+      type: "orange",
+      content: "Please Select who reviewed  the items!",
+  });
+    return;
+   }
    
 var data=$('#receving_form').serialize();
 var save_url=$('#save_form_item').val();
@@ -250,9 +270,13 @@ console.log(data);
           dataType:"JSON",
           url: save_url,
           data: data,
+            beforeSend: function () {
+                    ajaxindicatorstart("loading data... please wait...");
+                },
           success: function (data) {
             console.log('GRN :'+data.grn_number);
             var ght = data.grn_number;
+            ajaxindicatorstop();
               // Welcome notification
               // Welcome notification
               toastr.options = {

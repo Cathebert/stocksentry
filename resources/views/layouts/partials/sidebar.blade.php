@@ -1,4 +1,4 @@
-        <!-- Sidebar -->
+<!-- Sidebar -->
         <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
             <!-- Sidebar - Brand -->
@@ -126,6 +126,25 @@
                     </div>
                 </div>
             </li>
+            <hr class="sidebar-divider d-none d-md-block">
+             <li class="nav-item">
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseContract"
+                    aria-expanded="true" aria-controls="collapseContract">
+                    <i class="fas fa-fw fas fa-file-contract"></i>
+                    <span>Contract Management</span>
+                </a>
+                <div id="collapseContract" class="collapse" aria-labelledby="headingContract"
+                    data-parent="#accordionSidebar">
+                    <div class="bg-white py-2 collapse-inner rounded">
+                        <h6 class="collapse-header">Contracts</h6>
+                        <a class="collapse-item" href="{{route('contract.add')}}">Show Contract</a>
+                      
+                       
+                       
+                    
+                    </div>
+                </div>
+            </li>
  <li class="nav-item">
                 <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUsers"
                     aria-expanded="true" aria-controls="collapseUsers">
@@ -145,24 +164,6 @@
                 </div>
             </li>
              <hr class="sidebar-divider d-none d-md-block">
-             <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseContract"
-                    aria-expanded="true" aria-controls="collapseContract">
-                    <i class="fas fa-fw fas fa-file-contract"></i>
-                    <span>Contract Management</span>
-                </a>
-                <div id="collapseContract" class="collapse" aria-labelledby="headingContract"
-                    data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <h6 class="collapse-header">Contracts</h6>
-                        <a class="collapse-item" href="{{route('contract.add')}}">Add Contract</a>
-                        <a class="collapse-item" href="{{route('supplier.view')}}">All Contracts</a>
-                       
-                       
-                    
-                    </div>
-                </div>
-            </li>
             <!-- Nav Item - Charts -->
             <li class="nav-item" >
                 <a class="nav-link" href="{{route('reports.show')}}">
@@ -171,8 +172,8 @@
             </li>
 
             <!-- Nav Item - Tables -->
-            <li class="nav-item"  >
-                <a class="nav-link" href="#">
+            <li class="nav-item">
+                <a class="nav-link" href="{{route('settings.setting')}}">
                     <i class="fas fa-fw fa-cogs"></i>
                     <span>Settings</span></a>
             </li>

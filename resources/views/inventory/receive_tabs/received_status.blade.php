@@ -1,5 +1,5 @@
- @extends('layouts.main')
-@section('title','Received Items Status')
+@extends('layouts.main')
+@section('title','Received Items')
 @push('style')
    
 @endpush
@@ -8,7 +8,7 @@
 <nav aria-label="breadcrumb">
   <ol class="breadcrumb">
     <li class="breadcrumb-item"><a href="{{route('admin.home')}}">Home</a></li>
-    <li class="breadcrumb-item"><a href="#">Inventory</a></li>
+    <li class="breadcrumb-item"><a href="{{route('admin.receive_stock')}}">Inventory</a></li>
     <li class="breadcrumb-item active" aria-current="page">All Receipts</li>
   </ol>
 </nav>
@@ -30,9 +30,10 @@
               <input type="hidden" class="form-control" id="item_search" value="{{route('items.search')}}">
                <input type="hidden" class="form-control" id="inventory_received" value="{{route('item.recieved')}}">
             <input type="hidden" id="received_filters" value="{{route('items.filtered')}}"/>
-            <input type="hidden" class="form-control" id="loadTable" value="{{route('item.getadded')}}">    
-         <input type="hidden" id="received_status" value="{{route('received.status')}}"/>
-         <input type="hidden" id="view_received_status_details" value="{{route('received.status_view_details')}}"/>
+            <input type="hidden" class="form-control" id="loadTable" value="{{route('item.getadded')}}"> 
+             <input type="hidden" id="received_status" value="{{route('received.status')}}"/>
+         <input type="hidden" id="view_received_status_details" value="{{route('received.status_view_details')}}"/>   
+         
             <div class="row">
     <div class="col-md-3 col-sm-12 col-xs-12 form-group" hidden>
   <div class="input-group">
@@ -43,7 +44,7 @@
 </div>
   </div>
   
-   <div class="col-md-3 col-sm-12 col-xs-12 form-group" >
+   <div class="col-md-3 col-sm-12 col-xs-12 form-group" hidden >
    <div class="input-group mb-3">
   <div class="input-group-prepend">
     <button class="btn  btn btn-secondary" type="button">Supplier</button>
@@ -140,16 +141,18 @@
 <thead class="thead-light">
     <tr>
        
- <th width="5%">GRN #</th>
+    
+       <th width="5%">GRN #</th>
           <th width="20%">Received Date</th>
           <th width="30%">Supplier</th>
          <th width="20%">Checked By</th>
           <th width="20%">Reviewed By</th>
             <th width="20%">Received By</th>
             <th width="20%">Action</th>
+			</tr>
            
   </thead>
-   
+    
 </table>
       </div>
        </div>
@@ -169,8 +172,5 @@
             @endsection
 
     @push('js')
-    
-        <script src="{{asset('assets/admin/js/inventory/received_status.js') }}"></script>
-   
-   
+     <script src="{{asset('assets/admin/js/inventory/received_status.js') }}"></script>
    @endpush

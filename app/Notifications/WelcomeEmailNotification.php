@@ -14,10 +14,12 @@ class WelcomeEmailNotification extends Notification
     /**
      * Create a new notification instance.
      */
-    protected $arr;
-    public function __construct( $arr)
+    protected $password;
+    protected $username;
+    public function __construct( $password,$username)
     {
-        $this->arr=$arr;
+        $this->password=$password;
+        $this->username=$username;
     }
 
     /**
@@ -35,12 +37,13 @@ class WelcomeEmailNotification extends Notification
      */
     public function toMail(object $notifiable): MailMessage
     {
-       // dd($this->arr);
+       
         return (new MailMessage)
                     ->line('Welcome to  '.  env('APP_NAME'))
                     ->action('To login Please visit', url('/'))
-                    ->line('Thank you for using our application!. Please use your email address and the following password: ')
-                    ->line($this->arr);
+                    ->line('Welcome to our new site!. Here are your login credentials: ')
+                     ->line('Username: '.$this->username)
+                    ->line('Password: '.$this->password);
     }
 
     /**

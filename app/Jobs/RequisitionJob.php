@@ -13,10 +13,13 @@ use App\Models\ScheduleReport;
 use App\Models\EmailReceipient;
 use App\Models\SystemMail;
 use App\Notifications\RequisitionNotification;
+use App\Notifications\NoRequisitionNotification;
 use Carbon\Carbon;
 use App\Models\ItemOrder;
+use App\Models\Laboratory;
 use App\Models\User;
 use PDF;
+use DB;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Worksheet\AutoFilter;
 use PhpOffice\PhpSpreadsheet\Worksheet\Table;
@@ -30,9 +33,16 @@ class RequisitionJob implements ShouldQueue
      * Create a new job instance.
      */
     protected $report_id;
-    public function __construct($report_id)
+    protected $lab_id;
+    protected $start_date;
+    protected $attach_as;
+    
+    public function __construct($report_id,$lab_id,$start_date,$attach_as)
     {
         $this->report_id=$report_id;
+        $this->lab_id= $lab_id;
+        $this->start_date=$start_date;
+        $this->attach_as=$attach_as;
     }
 
     /**
@@ -41,21 +51,26 @@ class RequisitionJob implements ShouldQueue
     public function handle(): void
     {
         $report=ScheduleReport::where('id',$this->report_id)->first(); 
-$lab_id = $report->lab_id;
-$start = $report->start_date;
+    
+$lab_id = $this->lab_id;
+$start = $this->start_date;
 $end   =   date('Y-m-d');
+$lab=Laboratory::where('id',$lab_id)->select('id','lab_name')->first();
+$lab_name=$lab->lab_name;
 $terms=DB::table('item_orders as i')
                 ->join('users as u','u.id','i.ordered_by')
                 ->where('lab_id',$lab_id)
                 ->select('i.order_number','is_consolidated','i.is_approved','i.is_delivered','u.name','u.last_name')
-                     ->whereBetween('created_at',[$start,$end])->get();
+                     ->whereBetween('i.created_at',[$start,$end])
+                     ->get();
+  
 if(count($terms)>0){ 
     switch ($report->attach_as) {
         case 1:
            $name="requisition_level.pdf";
     $path=public_path('reports').'/'.$name;
     
-    $pdf=PDF::loadView('pdf.reports.requisition',['info'=>$terms])->save($path)
+    $pdf=PDF::loadView('pdf.reports.requisition',['info'=>$terms,'lab_name'=>$lab_name])->save($path);
             break;
         
        case 2:
@@ -64,7 +79,7 @@ if(count($terms)>0){
      $spreadsheet->getActiveSheet()->getDefaultColumnDimension()->setWidth(100, 'pt');
     $spreadsheet->getActiveSheet()->getColumnDimension('A')->setAutoSize(true);
       $drawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
- $image = file_get_contents(url('/').'/assets/icon/logo_black.png');
+ $image = file_get_contents('https://stocksentry.org/assets/icon/logo_black.png');
 $imageName = 'logo.png';
 $temp_image=tempnam(sys_get_temp_dir(), $imageName);
 file_put_contents($temp_image, $image);
@@ -80,7 +95,7 @@ $drawing->getShadow()->setDirection(45);
 $drawing->setWorksheet($spreadsheet->getActiveSheet());
 
 $spreadsheet->setActiveSheetIndex(0);
-$spreadsheet->getActiveSheet()->setCellValue('B7', ' Orders Summary List ');
+$spreadsheet->getActiveSheet()->setCellValue('B7', $lab_name.' Orders Summary List ');
 $spreadsheet->getActiveSheet()->getStyle('B7')->getFont()->setBold(true);
      
 $spreadsheet->getProperties()->setCreator('cathebert muyila')
@@ -93,7 +108,7 @@ $spreadsheet->getProperties()->setCreator('cathebert muyila')
 
 // Create the worksheet
 
-        \
+        
 
 $spreadsheet->setActiveSheetIndex(0);
 $spreadsheet->getActiveSheet()
@@ -187,5 +202,20 @@ ScheduleReport::where('id',$this->report_id)->update([
     ]);
 
      }
+     else{
+         $receivers=EmailReceipient::where('report_id',$this->report_id)->select('user_id')->get();
+    if(!empty($receivers)){
+    foreach($receivers as $user){
+        $notifier=User::find($user->user_id);
+       $notifier->notify(new NoRequisitionNotification($lab_name,$start,$end));
+    }
+
+}
+     
+     ScheduleReport::where('id',$this->report_id)->update([
+    
+        'start_date'=>now()
+    ]);
+}
     }
 }

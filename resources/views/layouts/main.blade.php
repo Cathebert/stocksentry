@@ -25,6 +25,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css" />
     <!-- Custom styles for this template-->
     <link href="{{asset('assets/css/sb-admin-2.min.css')}}" rel="stylesheet">
+     <link href="{{asset('assets/css/test.css')}}" rel="stylesheet">
       <link href="{{ asset('assets/vendor/bootstrap-datepicker/css/bootstrap-datepicker.css') }}" rel="stylesheet">
 
       @stack('style')
@@ -65,12 +66,14 @@
     <div id="wrapper">
         @include('layouts.partials.sidebar')
         @include('layouts.partials.topbar')
-
+<div id="center">
             @yield('content')
 
           
       
     @include('layouts.partials.footer') 
+    
+     </div>  
     </div>  
 </div>
 
@@ -100,8 +103,9 @@
     <!-- Page level plugins -->
      <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
      
-    <script src="{{asset('assets/js/demo/chart-pie-demo.js')}}"></script>
+   
     <script src="{{asset('assets/admin/vendors/select2/dist/js/select2.full.min.js') }}"></script>
+       <script src="{{asset('assets/admin/js/inventory/loader.js') }}"></script>
        @if(Session::has( 'error' ))
  
                                             

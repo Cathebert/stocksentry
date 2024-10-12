@@ -1,4 +1,4 @@
- @extends('layouts.main')
+@extends('layouts.main')
 @section('title','Create Laboratory')
 @section('content')
 <div class="container-fluid">
@@ -50,7 +50,7 @@
     <label for="exampleInputPassword1">Lab Phone Number</label>
     <input type="text" class="form-control" id="lab_phone" name="lab_phone">
   </div>
-  <div class="col-md-12 col-sm-12 col-xs-12 form-group">
+  <div class="col-md-12 col-sm-12 col-xs-12 form-group" hidden>
     <label for="exampleInputPassword1">Has Sections? </label>
     <div class="form-check">
   <input class="form-check-input" type="radio" name="has_section" id="has_section" value="no" checked  onchange="hasChanged(this.value)">

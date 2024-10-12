@@ -1,4 +1,4 @@
- <div class="modal-header">
+<div class="modal-header">
         <h5 class="modal-title" id="exampleModalLabel">Items List</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="close_item_modal"></button>
       </div>
@@ -37,7 +37,7 @@ var t="";
         paging: true,
         select: true,
         info: true,
-        lengthMenu: [5, 10, 15],
+        lengthMenu: [10, 20, 40],
         responsive: true,
 
         order: [[0, "desc"]],

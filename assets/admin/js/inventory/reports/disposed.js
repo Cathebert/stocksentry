@@ -9,7 +9,7 @@ t = $("#expiry_table").DataTable({
     serverSide: true,
     paging: true,
     scrollCollapse: true,
-
+  destroy: true,
     info: true,
 
     lengthMenu: [10, 20, 50],
@@ -97,7 +97,7 @@ function getTableData() {
         serverSide: true,
         paging: true,
         scrollCollapse: true,
-
+  destroy: true,
         info: true,
 
         lengthMenu: [10, 20, 50],
@@ -162,7 +162,7 @@ function getSelectedByLab(value) {
         serverSide: true,
         paging: true,
         scrollCollapse: true,
-
+  destroy: true,
         info: true,
 
         lengthMenu: [10, 20, 50],
@@ -225,7 +225,7 @@ function getSelectedByRange(value) {
         serverSide: true,
         paging: true,
         scrollCollapse: true,
-
+  destroy: true,
         info: true,
 
         lengthMenu: [10, 20, 50],
@@ -290,3 +290,121 @@ function getSelectedByRange(value) {
      }
  getTableData()
  }
+ $("#pdf").on("click", function (e) {
+   
+     e.preventDefault();
+     var download_url = $("#download_url").val();
+     var expiry_form = $("#expiry_form").serialize();
+     console.log(expiry_form);
+     $.ajax({
+         method: "GET",
+
+         url: download_url,
+         data: {
+             expiry_form,
+             type: "download",
+         },
+
+         success: function (data) {
+            if(data.error==true){
+toastr.options = {
+    closeButton: true,
+    debug: false,
+    newestOnTop: false,
+    progressBar: false,
+    positionClass: "toast-top-right",
+    preventDuplicates: false,
+    onclick: null,
+    showDuration: "300",
+    hideDuration: "1000",
+    timeOut: "5000",
+    extendedTimeOut: "1000",
+    showEasing: "swing",
+    hideEasing: "linear",
+    showMethod: "fadeIn",
+    hideMethod: "fadeOut",
+};
+toastr["error"](data.message);
+            }else{
+             window.location = data.url;
+        }
+             // show bootstrap modal
+         },
+         error: function (jqXHR, textStatus, errorThrown) {
+             // console.log(get_case_next_modal)
+             alert("Error " + errorThrown);
+         },
+     });
+ });
+
+ $("#excel").on("click", function (e) {
+     e.preventDefault();
+     var download_url = $("#download_url").val();
+     var expiry_form = $("#expiry_form").serialize();
+     console.log(expiry_form);
+     $.ajax({
+         method: "GET",
+
+         url: download_url,
+         data: {
+             expiry_form,
+             type: "excel",
+         },
+
+         success: function (data) {
+            if(data.error==true){
+toastr.options = {
+    closeButton: true,
+    debug: false,
+    newestOnTop: false,
+    progressBar: false,
+    positionClass: "toast-top-right",
+    preventDuplicates: false,
+    onclick: null,
+    showDuration: "300",
+    hideDuration: "1000",
+    timeOut: "5000",
+    extendedTimeOut: "1000",
+    showEasing: "swing",
+    hideEasing: "linear",
+    showMethod: "fadeIn",
+    hideMethod: "fadeOut",
+};
+toastr["error"](data.message);
+            }
+            else{
+             window.location = data.url;
+        }
+             // show bootstrap modal
+         },
+         error: function (jqXHR, textStatus, errorThrown) {
+             // console.log(get_case_next_modal)
+             alert("Error " + errorThrown);
+         },
+     });
+ });
+
+ $("#print").on("click", function (e) {
+     e.preventDefault();
+     var download_url = $("#download_url").val();
+     var expiry_form = $("#expiry_form").serialize();
+     console.log(expiry_form);
+     $.ajax({
+         method: "GET",
+
+         url: download_url,
+         data: {
+             expiry_form,
+             type: "print",
+         },
+
+         success: function (data) {
+             window.location = data.url;
+             // show bootstrap modal
+         },
+         error: function (jqXHR, textStatus, errorThrown) {
+             // console.log(get_case_next_modal)
+             alert("Error " + errorThrown);
+         },
+     });
+ });

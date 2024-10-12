@@ -1,4 +1,4 @@
-        <!-- Sidebar -->
+<!-- Sidebar -->
         <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
             <!-- Sidebar - Brand -->
@@ -148,8 +148,8 @@
             </li>
 
             <!-- Nav Item - Tables -->
-            <li class="nav-item"  hidden>
-                <a class="nav-link" href="#">
+            <li class="nav-item"  >
+                <a class="nav-link" href="{{route('labsetting.setting')}}">
                     <i class="fas fa-fw fa-cogs"></i>
                     <span>Settings</span></a>
             </li>

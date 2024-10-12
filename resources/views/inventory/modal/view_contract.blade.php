@@ -41,11 +41,19 @@
    
   
     <label for="exampleInputPassword1">Contract Start Date:{{date('d,M Y',strtotime($contract->contract_startdate))}}</label>
-
-    <label for="exampleInputPassword1">Subscription Type:{{$contract->name}}</label>
- <label for="exampleInputPassword1">Subscription Description:{{$contract->description}}</label>
-  <label for="exampleInputPassword1">Supplier:{{$contract->supplier_name}}</label>
- 
+   
+   
+   
+     <label for="exampleInputPassword1">Frequency: {{$contract->frequency}}</label>
+@if($contract->contract_unit==1)
+ <label for="exampleInputPassword1">Unit : Month</label>
+@else
+ <label for="exampleInputPassword1">Unit : Year</label>
+@endif
+ <label for="exampleInputPassword1">Contract End Date:{{date('d,M Y',strtotime($contract->contract_enddate))}}</label>
+ @if($supplier!=NULL)
+  <label for="exampleInputPassword1">Supplier:{{$supplier}}</label>
+ @endif
    
 
 

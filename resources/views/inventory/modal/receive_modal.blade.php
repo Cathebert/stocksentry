@@ -1,4 +1,4 @@
-      <script src="{{asset('assets/admin/js/repeter/repeater.js') }}"></script>
+<script src="{{asset('assets/admin/js/repeter/repeater.js') }}"></script>
          <script src="{{asset('assets/admin/js/inventory/repeater.js') }}"></script>
 <div class="modal-header">
         <h5 class="modal-title">Edit</h5>
@@ -109,7 +109,7 @@
  
   </select>
   </div>
-   <div class="col-md-4 col-sm-12 col-xs-12 form-group" id="any_expired" >
+  <div class="col-md-4 col-sm-12 col-xs-12 form-group" id="any_expired" >
     <label for="exampleInputPassword1">Any Items Damaged? (Y/N)
  ?</label>
     <select class="form-control" id="any_damaged" name="any_damaged" style="width: 75%">
@@ -146,7 +146,7 @@
   <select class="custom-select" id="store_location" name="store_location">
 
       <option value="1">Store</option>
-      <option value="2"   readonly  selected>Laboratory</option>
+      <option value="2">Cold Room</option>
       
   </select>
   

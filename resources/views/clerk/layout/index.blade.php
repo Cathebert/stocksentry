@@ -1,4 +1,4 @@
- @extends('clerk.layout.main')
+@extends('clerk.layout.main')
 @section('title',' Dashboard')
 @section('content')
  <div class="container-fluid">
@@ -6,8 +6,7 @@
                     <!-- Page Heading -->
                     <div class="d-sm-flex align-items-center justify-content-between mb-4">
                         <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
-                        <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i
-                                class="fas fa-download fa-sm text-white-50"></i> Generate Report</a>
+                       
                     </div>
 
                     <!-- Content Row -->
@@ -21,7 +20,7 @@
                                         <div class="col mr-2">
                                             <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
                                                 Stock In Hand</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{$item->item??'0' }}</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{$total??'0' }}</div>
                                         </div>
                                         <div class="col-auto">
                                             <i class="fas fa-calendar fa-2x text-gray-300"></i>
@@ -53,7 +52,7 @@
                     
 
                         <!-- Pending Requests Card Example -->
-                        <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="col-xl-3 col-md-6 mb-4" hidden>
                             <div class="card border-left-warning shadow h-100 py-2">
                                 <div class="card-body">
                                     <div class="row no-gutters align-items-center">
@@ -462,7 +461,7 @@
 
                 </div>
                 <!-- /.container-fluid -->
-<input type="hidden" id="inventory_health" value="{{route('stats.pie')}}" />
+<input type="hidden" id="inventory_health" value="{{route('labstats.pie')}}" />
 <input type="hidden" id="get_details" value="{{route('stats.detail_modal')}}"/>
 
 <input type="hidden" id="consumption-chart" value="{{route('dashboard.section_consumption')}}" />
@@ -473,9 +472,9 @@
 <input type="hidden" id="compare_chart" value="{{route('dashboard.section_compare')}}"/>
 @endsection
           @push('js')
+           <script src="{{asset('assets/js/demo/chart-pie-demo.js')}}"></script>
              <script src="{{asset('assets/admin/js/inventory/reports/dashboard/reports.js')}}"> </script>
               <script src="{{asset('assets/admin/js/inventory/reports/dashboard/consumption.js')}}"> </script>
                 
             @endpush     
             </div>
-           

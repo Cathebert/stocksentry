@@ -1,4 +1,4 @@
- @extends('layouts.main')
+@extends('layouts.main')
 @section('title','Stock History')
 @push('style')
    
@@ -88,7 +88,8 @@
     <tr>
        <th scope="col"></th>
        <th scope="col">Stock Date</th>
-       <th scope="col">Supervisor</th>
+        <th scope="col">Captured By</th>
+       <th scope="col">Supervised By</th>
          <th scope="col">View</th>
         <th scope="col">Action</th>
         

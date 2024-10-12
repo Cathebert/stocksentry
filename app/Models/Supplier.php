@@ -4,11 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Cache;
 class Supplier extends Model
 {
     use HasFactory;
-    
+     use SoftDeletes;
     
      protected $fillable = [
         'supplier_name',
@@ -18,6 +19,18 @@ class Supplier extends Model
         'phone_number',
         'contract_expiry',
     ];
+    
+    protected static function booted()
+    {
+        static::saving(function() {
+            Cache::forget('supplier');
+        });
+        
+        
+        static::deleted(function() {
+    Cache::forget('supplier');
+});
+    }
 
     /**
      * The attributes that should be cast.

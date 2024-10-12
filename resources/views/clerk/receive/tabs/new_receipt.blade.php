@@ -1,4 +1,4 @@
-  @extends('clerk.layout.main')
+@extends('clerk.layout.main')
 @section('title','Section Inventory Receive')
 @push('style')
    
@@ -112,13 +112,57 @@
   </div>
    <div class="col-md-3 col-sm-12 col-xs-12 form-group" >
     <label for="exampleInputPassword1">GRN Number</label>
-    <input type="text" class="form-control" id="grn_number"  name="grn_number" >
+    <input type="text" class="form-control" id="grn_number"  name="grn_number" maxlength="8" >
   </div>
 
   </div>
   
 </div>
+<hr>
+<div class="row">
+   <div class="col-md-3 col-sm-12 col-xs-12 form-group"  >
+    <label for="exampleInputPassword1">Checked Off By</label>
+    <select class="form-control" id="checked_off_by" name="checked_off_by" style="width: 75%">
+     <option value=""></option>
+  @foreach($users as $user)
+    <option value="{{ $user->id }}">{{$user->name.' '.$user->last_name}}</option>
+    @endforeach
+ 
+  </select>
+  </div>
+   <div class="col-md-3 col-sm-12 col-xs-12 form-group">
+    <label for="exampleInputPassword1">Check Off Date</label>
+    <input type="date" class="form-control" id="check_off_date" name="check_off_date" value="{{ date('Y-m-d')}}" >
+  </div>
+     <div class="col-md-3 col-sm-12 col-xs-12 form-group"  >
 
+       <label for="exampleFormControlTextarea1">Comment: <span class="text-danger"></span></label>
+    <textarea class="form-control"  rows="3" name="check_off_comment" id="check_off_comment" style="background-color:#fffff"></textarea>
+
+</div>
+</div>
+<div class="row">
+     <div class="col-md-3 col-sm-12 col-xs-12 form-group"  >
+    <label for="exampleInputPassword1">Reviewed By</label>
+    <select class="form-control" id="reviewed_by" name="reviewed_by" style="width: 75%">
+     <option value=""></option>
+  @foreach($users as $user)
+    <option value="{{ $user->id }}">{{$user->name.' '.$user->last_name}}</option>
+    @endforeach
+ 
+  </select>
+  </div>
+   <div class="col-md-3 col-sm-12 col-xs-12 form-group">
+    <label for="exampleInputPassword1">Reviewed Date</label>
+    <input type="date" class="form-control" id="reviewed_date" name="reviewed_date" value="{{ date('Y-m-d')}}" >
+  </div>
+   <div class="col-md-3 col-sm-12 col-xs-12 form-group"  >
+
+       <label for="exampleFormControlTextarea1">Reviewer Comment: <span class="text-danger"></span></label>
+    <textarea class="form-control"  rows="3" name="reviewer_comment" id="reviewer_comment" style="background-color:#fffff"></textarea>
+
+</div>
+</div>
 </form>
 </div>
 <hr></br>
@@ -129,19 +173,14 @@
 
 
 <form action="" autocomplete="off" class="form-horizontal" method="post" accept-charset="utf-8">
-  
         <div class="input-group">
-           <div class="input-group-prepend">
-
-    <span class="input-group-text btn btn-secondary"><i class="fa fa-search" aria-hidden="true"></i></span>
-  </div>
             <input name="searchtext" value="" class="form-control" type="text" placeholder="Search for Items" id="search_item">
          
              <div id="suggestion-box"></div>
             <span class="input-group-btn">&nbsp;
                <button class="btn btn-success " type="submit" id="add_item" disabled >
                 
-                   <span class="fa fa-check" role="status" aria-hidden="true" id="show_loader" ></span>
+                   <span  role="status" aria-hidden="true" id="show_loader" ></span>
  Add
                </button>
             </span>
@@ -149,22 +188,26 @@
     </form>
       </div>
     </div>
-  </div>
+  
 
 
 
-  <div class="col-sm-12">
+ 
      <br>
   <div class="print"></div>
       <div class="card-body" id="dtable">
-          <div class="card">
+          <div class="card" >
           <div></div>
+         <div>
+           <button type="button" class="btn  btn btn-primary" id="save_received" style="float:right;margin-right:93%; margin-top:2%"  disabled><i class="fa fa-save"></i> Save</button>
+          <button type="button" class="btn" onclick="removeAll()" style="color:#9F0000; float:right; margin-left:1%"  ><i class="fa fa-close"></i> Remove All</button>
+   </div>
         
-             <button type="button" class="btn  btn-sm btn-primary" id="save_received" style="float:right;margin-right:90%; margin-left:1%"  disabled><i class="fa fa-save"></i> Save</button>
-      
-   
+     </div>       
+     
+
 <hr>
-<br>
+
         <h5 class="card-title"><strong>Items </strong></h5>
         <div class="table-responsive">
         <table class="table table-sm" id="received_items"  width="100%">
@@ -178,12 +221,13 @@
         <th scope="col">Expiry Date</th>
           <th scope="col">Cost</th>
           <th scope="col">Total</th>
+          <th scope="col">Action</th>
     </tr>
   </thead>
 </table>
       </div>
        </div>
-       <form class="form-inline" style="float:right">
+       <form class="form-inline" style="float:right; margin-right:6%">
   <div class="form-group mb-2">
     <label for="staticEmail2" class="sr-only">Total:</label>
     <input type="text" readonly class="form-control-plaintext"style="font-weight: bold;" id="staticEmail2" value="Total:">
@@ -191,24 +235,33 @@
   <div class="form-group mx-sm-1 mb-1">
     <label for="cost" class="sr-only">Cost</label>
     <input type="text" class="form-control form-control-lg" id="cost" style="font-weight: bold;direction: rtl;" placeholder="0.00" readonly disabled >
+  
   </div>
   
 </form>
+
+</div>
+
+</div>
+ 
+</div>
+ 
+ <div class="modal" tabindex="-1" id="inforg" role="dialog" >
+  <div class="modal-dialog modal-xl" role="document" >
+    <div class="modal-content" id="receive_item">
 </div>
 </div>
 </div>
+
 <script type="text/javascript">
   $("#search_item").focus();
   </script>
- <div class="modal" tabindex="-1" id="inforg" role="dialog" >
-  <div class="modal-dialog modal-lg" role="document" >
-    <div class="modal-content" id="receive_item">
- </div>
- </div>
-   </div>
+
+
             @endsection
 
-            @push('js')
-            <script src="{{asset('assets/admin/js/inventory/receive_inventory.js') }}"></script>
-
-@endpush
+    @push('js')
+    
+     <script src="{{asset('assets/admin/js/inventory/receive_inventory.js') }}"></script>
+     
+   @endpush

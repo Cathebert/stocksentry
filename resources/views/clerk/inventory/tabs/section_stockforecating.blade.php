@@ -1,4 +1,4 @@
-   @extends('clerk.layout.main')
+@extends('clerk.layout.main')
 @section('title','StockSentry')
 @push('style')
    
@@ -38,7 +38,7 @@
  <form class="form-inline"  id="form_forecast">
   <div class="form-group mb-2">
   <label for="lab_id">Quantiy of Stock( in months)  </label>
-  <input type="number" aria-label="First name" id="order" class="form-control" name="order" value=4 readonly disabled >
+  <input type="number" aria-label="First name" id="order" class="form-control" name="order" value=1 readonly disabled >
   </div>
   <div class="form-group mx-sm-3 mb-2">
    <label for="lab_id">Lead Time  </label>

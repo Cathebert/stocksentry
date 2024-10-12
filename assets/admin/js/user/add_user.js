@@ -1,8 +1,9 @@
-    "use strict";
+"use strict";
       var url=$('#post_url').val();
 
      
         $('#form_id').on('click','#submit', function(e){
+       
          var name = $("#first_name").val()
          var last_name = $("#last_name").val()
          var email = $("#email").val();
@@ -54,7 +55,8 @@
              e.preventDefault();
              return
          }
-          
+           $('#btn_loader').addClass('fa-spinner fa-spin');
+                $("button[name='save_btn']").attr("disabled", "disabled");
             
                    $.ajaxSetup({
                        headers: {
@@ -68,8 +70,12 @@
                 dataType:"JSON",
                 url: url,
                 data: $('#form_id').serialize(),
+                  beforeSend: function () {
+                    ajaxindicatorstart("saving data... please wait...");
+                },
                 success: function(data) {
                   if(data.error==false){
+                   ajaxindicatorstop();
               // Welcome notification
                // Welcome notification
                 toastr.options = {
@@ -90,8 +96,12 @@
                   "hideMethod": "fadeOut"
                 }
                 toastr["success"](data.message);
+                 $('#btn_loader').removeClass('fa-spinner fa-spin');
+                 $("button[name='save_btn']").attr("disabled", false);
+                    ajaxindicatorstop();
                 }
                 else{
+                 ajaxindicatorstop();
                    toastr.options = {
                   "closeButton": true,
                   "debug": false,
@@ -173,7 +183,7 @@
    function getLabName(value){
      const receive_from = $("#lab_id").val();
      const get_sections = $("#get_sections").val();
-     if(value==99){
+          if(value==99){
     document.getElementById("not_coldroom").hidden = true;  
  document.getElementById("coldroom").hidden = false;
    document.getElementById("my_lab").hidden = true;
@@ -193,7 +203,6 @@ if(value==0){
   document.getElementById("coldroom").hidden = true; 
     $("#check").val(0);   
 }
-   
      $.ajax({
          method: "GET",
          dataType: "json",
@@ -221,4 +230,3 @@ if(value==0){
     let first = name.charAt(0);
     $('#username').val(first+""+lname);
    }
-   

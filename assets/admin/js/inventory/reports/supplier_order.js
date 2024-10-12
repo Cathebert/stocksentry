@@ -8,7 +8,7 @@ t = $('#supplier_order_table').DataTable({
     paging: true,
     select: true,
     info: true,
-    lengthMenu: [5, 10, 15],
+    lengthMenu: [10, 20, 20],
     responsive: true,
 
     order: [[0, "desc"]],
@@ -152,7 +152,7 @@ t = $("#supplier_order_table").DataTable({
     paging: true,
     select: true,
     info: true,
-    lengthMenu: [5, 10, 15],
+    lengthMenu: [10, 20, 50],
     responsive: true,
 
     order: [[0, "desc"]],
@@ -213,7 +213,7 @@ t = $("#supplier_order_table").DataTable({
     paging: true,
     select: true,
     info: true,
-    lengthMenu: [5, 10, 15],
+    lengthMenu: [10, 20, 50],
     responsive: true,
 
     order: [[0, "desc"]],
@@ -284,7 +284,7 @@ function getCustom(period, start, end) {
         paging: true,
         select: true,
         info: true,
-        lengthMenu: [5, 10, 15],
+        lengthMenu: [10, 20, 50],
         responsive: true,
 
         order: [[0, "desc"]],
@@ -353,7 +353,7 @@ function getSelectedLocation(id){
       paging: true,
       select: true,
       info: true,
-      lengthMenu: [5, 10, 15],
+      lengthMenu: [10, 20, 50],
       responsive: true,
 
       order: [[0, "desc"]],
@@ -421,7 +421,7 @@ function getSelectionBySupplier(id){
           paging: true,
           select: true,
           info: true,
-          lengthMenu: [5, 10, 100],
+          lengthMenu: [10, 20, 50],
           responsive: true,
 
           order: [[0, "desc"]],

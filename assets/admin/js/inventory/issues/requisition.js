@@ -1,5 +1,4 @@
-
-    var p = "";
+var p = "";
     var dat_url = $("#get_requisitions").val();
 
     p = $("#requisitions").DataTable({
@@ -72,6 +71,9 @@
                            data: {
                                id: id,
                            },
+                             beforeSend: function () {
+                    ajaxindicatorstart("loading data... please wait...");
+                },
                            success: function (data) {
                             if(data.error==false){
                                  toastr.options = {
@@ -92,6 +94,7 @@
                                      hideMethod: "fadeOut",
                                  };
                                  toastr["success"](data.message);
+                                 ajaxindicatorstop();
                              
                             }
                             else{
@@ -114,6 +117,7 @@
  };
  toastr["error"](data.message);
                             }
+                            ajaxindicatorstop();
                                p.destroy();
                                LoadRequestData();
                            },
@@ -410,4 +414,84 @@ $('#view_marked').on('click',function(e){
         },
     }); 
 }
+     function Remove(id){
+       var remove_item = $("#remove_item_request").val();
+
+       $.confirm({
+           title: "Confirm!",
+           content: "Do you really  want to remove this order!",
+           buttons: {
+               Oky: {
+                   btnClass: "btn-danger",
+                   action: function () {
+                       $.ajaxSetup({
+                           headers: {
+                               "X-CSRF-TOKEN": $(
+                                   'meta[name="csrf-token"]'
+                               ).attr("content"),
+                           },
+                       });
+                       $.ajax({
+                           method: "POST",
+                           url:remove_item,
+                           dataType: "JSON",
+                           data: {
+                               id: id,
+                           },
+                           success: function (data) {
+                            if(data.error==false){
+                                 toastr.options = {
+                                     closeButton: true,
+                                     debug: false,
+                                     newestOnTop: false,
+                                     progressBar: false,
+                                     positionClass: "toast-top-right",
+                                     preventDuplicates: false,
+                                     onclick: null,
+                                     showDuration: "300",
+                                     hideDuration: "1000",
+                                     timeOut: "5000",
+                                     extendedTimeOut: "1000",
+                                     showEasing: "swing",
+                                     hideEasing: "linear",
+                                     showMethod: "fadeIn",
+                                     hideMethod: "fadeOut",
+                                 };
+                                 toastr["success"](data.message);
+                             
+                            }
+                            else{
+ toastr.options = {
+     closeButton: true,
+     debug: false,
+     newestOnTop: false,
+     progressBar: false,
+     positionClass: "toast-top-right",
+     preventDuplicates: false,
+     onclick: null,
+     showDuration: "300",
+     hideDuration: "1000",
+     timeOut: "5000",
+     extendedTimeOut: "1000",
+     showEasing: "swing",
+     hideEasing: "linear",
+     showMethod: "fadeIn",
+     hideMethod: "fadeOut",
+ };
+ toastr["error"](data.message);
+                            }
+                               p.destroy();
+                               LoadRequestData();
+                           },
+                           error: function (error) {
+                               console.log(error);
+                           },
+                       });
+                   },
+               },
+
+               cancel: function () {},
+           },
+       });
  
+    }

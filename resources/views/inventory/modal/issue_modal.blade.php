@@ -1,4 +1,3 @@
-   
 <div class="modal-header">
         <h5 class="modal-title">Issue</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="Close_Button"></button>
@@ -162,10 +161,11 @@
                         </div><!-- end table responsive -->
 </div>
 <hr>
-                          <table class="table-borderless">
+                          <table class="table table-borderless">
                                 <thead>
                                     <tr>
                                         <th>Issued By</th>
+                                         <th></th> 
                                           <th>Signature</th> 
 </tr>
 </thead>
@@ -174,7 +174,9 @@
                                    {{$issued_by}}
                                 </td>
 
-                            
+                             <td>
+                                
+                                </td>
                              <td>
                                  <img src="{{ url('/').'/public/upload/signatures/'.$signature}}" width="40px" height="40px"/>
                                 </td>
@@ -183,16 +185,20 @@
 
                         <!--approver---->
                         @if($approver!=NULL)
-                        <table class="table-borderless">
+                        <table class="table table-borderless">
                                 <thead>
                                     <tr>
                                         <th>Approved By</th>
+                                         <th></th>
                                           <th>Signature</th> 
 </tr>
 </thead>
                             <tr>
                                 <td>
                                    {{$approver}}
+                                </td>
+                                <td>
+                                
                                 </td>
 
                             
@@ -204,10 +210,11 @@
 @endif
 
 @if($receiver!=NULL)
-  <table class="table-borderless">
+  <table class="table table-borderless">
                                 <thead>
                                     <tr>
                                         <th>Received By</th>
+                                        <th></th>
                                           <th>Signature</th> 
 </tr>
 </thead>
@@ -216,7 +223,9 @@
                                    {{$receiver}}
                                 </td>
 
-                            
+                            <td>
+                                 
+                                </td>
                              <td>
                                  <img src="{{ url('/').'/public/upload/signatures/'.$receiver_sign}}" width="40px" height="40px"/>
                                 </td>

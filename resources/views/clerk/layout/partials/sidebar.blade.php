@@ -1,4 +1,4 @@
-        <!-- Sidebar -->
+<!-- Sidebar -->
         <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
             <!-- Sidebar - Brand -->
@@ -91,8 +91,8 @@
    
              <hr class="sidebar-divider d-none d-md-block">
             <!-- Nav Item - Charts -->
-            <li class="nav-item" >
-                <a class="nav-link" href="#">
+            <li class="nav-item"  >
+                <a class="nav-link" href="{{route('user_reports.show')}}">
                     <i class="fas fa-fw fa-chart-area"></i>
                     <span>Reports</span></a>
             </li>
@@ -103,7 +103,11 @@
                     <i class="fas fa-fw fa-cogs"></i>
                     <span>Settings</span></a>
             </li>
-
+<li class="nav-item" >
+                <a class="nav-link" href="{{route('user_help')}}">
+                    <i class="fas fa-fw fa-support"></i>
+                    <span>Help</span></a>
+            </li>
             <!-- Divider -->
             <hr class="sidebar-divider d-none d-md-block">
 

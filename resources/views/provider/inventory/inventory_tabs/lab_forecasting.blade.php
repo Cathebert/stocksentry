@@ -1,4 +1,4 @@
-   @extends('provider.layout.main')
+@extends('provider.layout.main')
 @section('title','Lab Inventory')
 @push('style')
    
@@ -33,12 +33,16 @@
         <input type="hidden" id="load_ajusted" value="{{route('forecast.load')}}"/>
         <input type="hidden" id="run_forecast" value="{{route('forecast.generate')}}"/>
         <input type="hidden" id="order_url" value="{{route('forecast.order')}}"/>
+         <input type="hidden" id="load_approve" value="{{route('forecast.load_approve')}}"/>
+        <input type="hidden" id="mark_approved" value="{{route('forecast.mark_approved')}}"/>
+          <input type="hidden" id="mark_deny" value="{{route('forecast.mark_denied')}}"/>
+        <input type="hidden" id="vieworder" value="{{route('orders.view')}}"/>
        
  <div class="row" >
  <form class="form-inline"  id="form_forecast">
   <div class="form-group mb-2">
   <label for="lab_id">Quantiy of Stock( in months)  </label>
-  <input type="number" aria-label="First name" id="order" class="form-control" name="order" value=4 min='1' >
+  <input type="number" aria-label="First name" id="order" class="form-control" name="order" value=1 min='1' >
   </div>
   <div class="form-group mx-sm-3 mb-2" id="time_lead"  >
    <label for="lab_id">Lead Time  </label>
@@ -60,11 +64,10 @@
   </div></div>
 
        <h5 class="card-title"><strong>Forecast</strong></h5>
-
-        @if(auth()->user()->authority==2)
+           @if(auth()->user()->authority==2)
         <div class="dropdown" style="text-align:right">
      
-    <a  type="button" href="#"  id="view_orders" class="btn btn-info">   <i class="fa fa-check"></i>Approve Orders</a>
+    <a  type="button" href="#"  id="approve_orders" class="btn btn-info">   <i class="fa fa-check"></i>Approve Orders</a>
       </div>
       @endif
         <div id='real_table'></div>

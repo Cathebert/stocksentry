@@ -57,7 +57,7 @@ class LaboratoryObserver
     public function forceDeleted(Laboratory $laboratory): void
     {
         //
-        User::where('laboratory_id',$laboratory->id)->delete();
+          User::where('laboratory_id',$laboratory->id)->delete();
         Inventory::where('lab_id',$laboratory->id)->delete();
         LabSection::where('lab_id',$laboratory->id)->delete();
         BinCard::where('lab_id',$laboratory->id)->delete();

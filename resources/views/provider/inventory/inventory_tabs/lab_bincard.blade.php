@@ -1,4 +1,4 @@
- @extends('provider.layout.main')
+@extends('provider.layout.main')
 @section('title','Lab Inventory')
 @push('style')
    
@@ -42,7 +42,7 @@
      <div class="dropdown" style="text-align:right" >
   <form class="form-inline my-2 my-lg-0" id="search_form">
       <input class="form-control mr-sm-2" type="search" placeholder="Search Item" aria-label="Search" id="search_term">
-      <button class="btn btn-outline-primary my-2 my-sm-0" type="submit" onclick="searchTerm()" id="search_button">Search</button>
+      <button class="btn btn-outline-primary my-2 my-sm-0" type="submit" onclick="searchTerm()" id="search_button"><i class="fa fa-search" aria-hidden="true"></i></button>
     </form>
 </div>
   <div class="dropdown" style="text-align:left"  hidden>
@@ -83,8 +83,8 @@
 
 
   </div>
-  <div class="card-footer text-muted">
-    {{ $items->links()}}
+   <div class="card-footer text-muted">
+    {{ $items->onEachSide(1)->links()}}
   </div>
   @else
 <h6> No Inventory available </h6>

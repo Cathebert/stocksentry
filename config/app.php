@@ -170,6 +170,7 @@ return [
         App\Providers\RouteServiceProvider::class,
          Spatie\Permission\PermissionServiceProvider::class,
          Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class,
+           Yajra\DataTables\DataTablesServiceProvider::class,
     ])->toArray(),
 
     /*

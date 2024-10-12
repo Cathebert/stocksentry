@@ -151,7 +151,7 @@ $x=1;
                     $nestedData['address']= $term->lab_address;
                  $nestedData['action'] = "<button type='button' id='$term->id' onclick='EditLab(this.id)' class='btn btn-primary'><i class='fa fa-edit'></i> Edit </button> | 
                    <button type='button' id='$term->id' onclick='DeleteLab(this.id)' 
-                   class='btn btn-danger'><i class='fa fa-trash'></i> Delete </button ";
+                   class='btn btn-warning'><i class='fa fa-eye-slash'></i> Hide </button ";
                  
                     
               
@@ -224,7 +224,7 @@ public function deleteLab(Request $request){
  
 DB::commit();
     return response()->json([
-        'message'=>'Laboratory Deleted Successfully',
+        'message'=>'Laboratory hidden Successfully',
         'error' => false
     ]);
 }
@@ -236,7 +236,7 @@ catch(Exception $e){
 public function getSections(Request $request){
     
     $lab=Laboratory::where('id',$request->id)->select('lab_code')->first();
-    $name='.'.strtolower($lab->lab_code);
+    $name=strtolower($lab->lab_code);
 return response()->json([
             'name'=>$name,
             'status'=>0

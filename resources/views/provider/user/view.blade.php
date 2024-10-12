@@ -1,4 +1,4 @@
- @extends('provider.layout.main')
+@extends('provider.layout.main')
 @section('title','User List')
 @section('content')
 <div class="container-fluid">
@@ -23,10 +23,10 @@
 
        
 		<div class="card-body">
-            <input type="hidden" id="user_list_url" value="{{route('user.load')}}"/>
-       <input type="hidden" id="edit_modal" value="{{route('user.edit')}}"/>
-       <input type="hidden" id="delete_user" value="{{route('user.destroy')}}"/>
-        <input type="hidden" id="reset_user" value="{{route('user.reset')}}"/>
+            <input type="hidden" id="user_list_url" value="{{route('lab_user.load')}}"/>
+       <input type="hidden" id="edit_modal" value="{{route('lab_user.edit')}}"/>
+       <input type="hidden" id="delete_user" value="{{route('lab_user.destroy')}}"/>
+        <input type="hidden" id="reset_user" value="{{route('lab_user.reset')}}"/>
      
             <h5 class="card-title"><strong>User List </strong></h5>
         <div class="table-responsive">

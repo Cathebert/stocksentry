@@ -1,5 +1,5 @@
-  @extends('provider.layout.main')
-@section('title','Lab Inventory Receive')
+@extends('provider.layout.main')
+@section('title','Section Inventory Receive')
 @push('style')
    
 @endpush
@@ -23,8 +23,8 @@
       <div class="card-body">
         
         <h5 class="card-title"> <strong>Receive Items </strong></h5>
-        @include('provider.receive.receive_tabs.lab_receive_header')
-<form method="post" id="receving_form" action="{{route('items.save')}}">
+    @include("provider.receive.receive_tabs.lab_receive_header")
+<form method="post" id="receving_form">
    
           <input type="hidden" class="form-control" id="post_url" value="{{route('stock.receive')}}">
            <input type="hidden" class="form-control" id="fetch_data" value="{{route('items.fetch')}}">
@@ -44,27 +44,24 @@
   </div>
    <div class="col-md-3 col-sm-12 col-xs-12 form-group" >
     <label for="lab_id">Receiving Lab</label>
-     <select class="form-control" id="lab_id" name="lab_id" style="width: 75%" onchange="InitializeForm()" required>
-    <option value=""></option>
+     <select class="form-control" id="lab_id" name="lab_id"  onchange="InitializeForm()" required>
  
    @foreach ($laboratories as $lab)
        <option value="{{$lab->id}}" selected>{{$lab->lab_name}}</option>
    @endforeach
 </select>
 </div>
- @if($has_section=="yes")
+@if($has_section=="yes")
    <div class="col-md-3 col-sm-12 col-xs-12 form-group" id="req"  >
     <label for="section_id">Receiving Unit</label>
      <select class="form-control" id="section_id" name="section_id" style="width: 75%"  required>
     <option value=""></option>
-   
      @foreach ($sections as $sec)
        <option value="{{$sec->id}}">{{$sec->section_name}}</option>
    @endforeach
-  
 </select>
   </div>
-   @endif
+  @endif
    <div class="col-md-3 col-sm-12 col-xs-12 form-group"  hidden  >
     <label for="siv_number">Source SIV</label>
     <input type="text" class="form-control" id="siv_number" name="siv_number">
@@ -83,7 +80,9 @@
   </select>
 
 </div>
+
 </div>
+
 <script type="text/javascript">
   $(document).ready(function() {
     $('#supplier_id').select2({
@@ -112,10 +111,57 @@
   </div>
    <div class="col-md-3 col-sm-12 col-xs-12 form-group" >
     <label for="exampleInputPassword1">GRN Number</label>
-    <input type="text" class="form-control" id="grn_number"  name="grn_number" >
+    <input type="text" class="form-control" id="grn_number"  name="grn_number" maxlength="8" >
   </div>
-</div>
 
+  </div>
+  
+</div>
+<hr>
+<div class="row">
+   <div class="col-md-3 col-sm-12 col-xs-12 form-group"  >
+    <label for="exampleInputPassword1">Checked Off By</label>
+    <select class="form-control" id="checked_off_by" name="checked_off_by" style="width: 75%">
+     <option value=""></option>
+  @foreach($users as $user)
+    <option value="{{ $user->id }}">{{$user->name.' '.$user->last_name}}</option>
+    @endforeach
+ 
+  </select>
+  </div>
+   <div class="col-md-3 col-sm-12 col-xs-12 form-group">
+    <label for="exampleInputPassword1">Check Off Date</label>
+    <input type="date" class="form-control" id="check_off_date" name="check_off_date" value="{{ date('Y-m-d')}}" >
+  </div>
+     <div class="col-md-3 col-sm-12 col-xs-12 form-group"  >
+
+       <label for="exampleFormControlTextarea1">Comment: <span class="text-danger"></span></label>
+    <textarea class="form-control"  rows="3" name="check_off_comment" id="check_off_comment" style="background-color:#fffff"></textarea>
+
+</div>
+</div>
+<div class="row">
+     <div class="col-md-3 col-sm-12 col-xs-12 form-group"  >
+    <label for="exampleInputPassword1">Reviewed By</label>
+    <select class="form-control" id="reviewed_by" name="reviewed_by" style="width: 75%">
+     <option value=""></option>
+  @foreach($users as $user)
+    <option value="{{ $user->id }}">{{$user->name.' '.$user->last_name}}</option>
+    @endforeach
+ 
+  </select>
+  </div>
+   <div class="col-md-3 col-sm-12 col-xs-12 form-group">
+    <label for="exampleInputPassword1">Reviewed Date</label>
+    <input type="date" class="form-control" id="reviewed_date" name="reviewed_date" value="{{ date('Y-m-d')}}" >
+  </div>
+   <div class="col-md-3 col-sm-12 col-xs-12 form-group"  >
+
+       <label for="exampleFormControlTextarea1">Reviewer Comment: <span class="text-danger"></span></label>
+    <textarea class="form-control"  rows="3" name="reviewer_comment" id="reviewer_comment" style="background-color:#fffff"></textarea>
+
+</div>
+</div>
 </form>
 </div>
 <hr></br>
@@ -126,8 +172,8 @@
 
 
 <form action="" autocomplete="off" class="form-horizontal" method="post" accept-charset="utf-8">
-        <div class="input-group ">
-            <input name="searchtext" value="" class="form-control " type="text" placeholder="Search for Items" id="search_item">
+        <div class="input-group">
+            <input name="searchtext" value="" class="form-control" type="text" placeholder="Search for Items" id="search_item">
          
              <div id="suggestion-box"></div>
             <span class="input-group-btn">&nbsp;
@@ -138,28 +184,31 @@
                </button>
             </span>
         </div>
+       
     </form>
-      </div>
+       </div>
     </div>
   </div>
-<script type="text/javascript">
-  $("#search_item").focus();
-  </script>
 
 
-  <div class="col-sm-12">
+
+ 
      <br>
+    
   <div class="print"></div>
-      <div class="card-body" id="dtable">
+      <div class="card-body" id="dtable" style="margin-left:20px">
           <div class="card">
           <div></div>
-         
-
-   
-         <button type="button" class="btn  btn-sm btn-primary" id="save_received" style="float:right;margin-right:90%; margin-left:1%"  disabled><i class="fa fa-save"></i> Save</button>
+         <div>
+           <button type="button" class="btn  btn btn-primary" id="save_received" style="float:right;margin-right:93%; margin-top:2%"  disabled><i class="fa fa-save"></i> Save</button>
+          <button type="button" class="btn" onclick="removeAll()" style="color:#9F0000; float:right; margin-left:1%"  ><i class="fa fa-close"></i> Remove All</button>
+   </div>
+        
+            
      
-   
+
 <hr>
+
         <h5 class="card-title"><strong>Items </strong></h5>
         <div class="table-responsive">
         <table class="table table-sm" id="received_items"  width="100%">
@@ -173,12 +222,13 @@
         <th scope="col">Expiry Date</th>
           <th scope="col">Cost</th>
           <th scope="col">Total</th>
+          <th scope="col">Action</th>
     </tr>
   </thead>
 </table>
       </div>
        </div>
-       <form class="form-inline" style="float:right">
+       <form class="form-inline" style="float:right; margin-right:6%">
   <div class="form-group mb-2">
     <label for="staticEmail2" class="sr-only">Total:</label>
     <input type="text" readonly class="form-control-plaintext"style="font-weight: bold;" id="staticEmail2" value="Total:">
@@ -186,24 +236,34 @@
   <div class="form-group mx-sm-1 mb-1">
     <label for="cost" class="sr-only">Cost</label>
     <input type="text" class="form-control form-control-lg" id="cost" style="font-weight: bold;direction: rtl;" placeholder="0.00" readonly disabled >
+  
   </div>
   
 </form>
+
 </div>
+
 </div>
+ 
 </div>
 
  <div class="modal" tabindex="-1" id="inforg" role="dialog" >
-  <div class="modal-dialog modal-lg" role="document" >
+  <div class="modal-dialog modal-xl" role="document" >
     <div class="modal-content" id="receive_item">
+</div>
+</div>
+</div>
+</div>
+</div>
+<script type="text/javascript">
+  $("#search_item").focus();
+  </script>
 
-   </div>
-    </div>
-     </div>
-     </div>
+
             @endsection
 
-            @push('js')
-            <script src="{{asset('assets/admin/js/inventory/receive_inventory.js') }}"></script>
-
-@endpush
+    @push('js')
+    
+     <script src="{{asset('assets/admin/js/inventory/receive_inventory.js') }}"></script>
+     
+   @endpush

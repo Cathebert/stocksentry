@@ -1,4 +1,4 @@
-  @extends('clerk.layout.main')
+@extends('clerk.layout.main')
 @section('title','Lab Inventory Order')
 @push('style')
    
@@ -76,23 +76,10 @@
 
   
 
-@if(!empty($sections)&&count($sections)>0)
-<div class="col-md-3 col-sm-12 col-xs-12 form-group"  id="sec"  >
-    <label for="section_id"> Section</label>
-     <select class="form-control" id="section_id" name="section_id" style="width: 75%"  required >
-   
-     @foreach ($sections as $sec)
-    @if($sec->id==auth()->user()->section_id)
-       <option value="{{$sec->id}}" selected>{{$sec->section_name}}</option>
-     @endif
-   @endforeach
-</select>
-  </div>
-@endif
 
  <div class="col-md-2 col-sm-12 col-xs-12 form-group" >
     <label for="receiving_date">Date</label>
-    <input type="date" class="form-control" id="request_date" value="{{ date('Y-m-d') }}" name="request_date"  required>
+    <input type="date" class="form-control" id="request_date" value="{{ date('Y-m-d') }}" name="request_date"  required readonly>
     
   </div>
 
@@ -123,10 +110,10 @@
       <br>
  <div class="btn-group  btn-group-sm" role="group" aria-label="Basic example" style="float:right">
     @if(auth()->user()->authority==2 ||auth()->user()->authority==1 )
- <button type="button" class="btn  btn-primary btn-sm " style="text-color:white" style="" id='pending_request_approval'  ><i class="fa fa-hourglass-half"></i> Pending Approvals  <span class="badge badge-pill badge-danger" id="requests-badge">{{$requests}}</span></button>&nbsp;&nbsp;
+ <button type="button" class="btn  btn-primary btn-sm " style="text-color:white" style="" id='pending_request_approval'  ><i class="fa fa-hourglass-half"></i> Pending Approvals  <span class="badge badge-pill badge-danger" ></span></button>&nbsp;&nbsp;
  
  @endif
- <button type="button" class="btn  btn-success btn-sm " style="text-color:white" id="approved_request" style=""   ><i class="fa fa-check"></i> Approved  <span class="badge badge-pill badge-danger" id="appro">{{$approved}}</span></button>&nbsp;&nbsp;
+ <button type="button" class="btn  btn-success btn-sm " style="text-color:white" id="approved_request" style=""   ><i class="fa fa-check"></i> Approved  <span class="badge badge-pill badge-danger" ></span></button>&nbsp;&nbsp;
 <button type="button" class="" style="text-color:white "id="requisition_list" style=""  ><i class="fa fa-list"></i> Requisition list  </button>&nbsp;&nbsp;
 </div>
 

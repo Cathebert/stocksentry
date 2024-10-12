@@ -14,7 +14,10 @@ function ApproveItem(id){
            Oky: {
                btnClass: "btn-success",
                action: function () {
+   ajaxindicatorstart('Please wait a moment...');
+        // checkClientEmail(1);
 
+       
                  $.ajaxSetup({
                      headers: {
                          "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr(
@@ -30,6 +33,9 @@ function ApproveItem(id){
                      data: {
                          id: id,
                      },
+                       beforeSend: function () {
+                    ajaxindicatorstart("loading data... please wait...");
+                },
                      success: function (data) {
                          toastr.options = {
                               closeButton: true,
@@ -49,9 +55,11 @@ function ApproveItem(id){
                               hideMethod: "fadeOut",
                           };
                           toastr["success"](data.message);
+                          ajaxindicatorstop();
                      },
                      error: function (error) {
                         console.log()
+                        ajaxindicatorstop();
                      },
                  });
                },

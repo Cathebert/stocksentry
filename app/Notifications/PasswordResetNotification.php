@@ -40,7 +40,8 @@ class PasswordResetNotification extends Notification
     {
         return (new MailMessage)
                     ->line($this->name.' Your password has been successfully reset to '.$this->default)
-                    ->action('Notification Action', url('/'))
+                    ->line('You can login using your new password by clicking the login button')
+                    ->action('Login', url('/'))
                     ->line('Thank you for using our application!');
     }
 

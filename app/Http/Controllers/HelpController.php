@@ -13,4 +13,12 @@ class HelpController extends Controller
      public function labHelp(){
         return view('help.lab_help');
     }
+    
+     public function userHelp(){
+        return view('help.user_help');
+    }
+    
+     public function coldHelp(){
+        return view('help.cold_help');
+    }
 }

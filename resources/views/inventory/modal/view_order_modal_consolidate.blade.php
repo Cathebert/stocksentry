@@ -1,5 +1,4 @@
-
-      <div class="modal-header">
+<div class="modal-header">
         <h5 class="modal-title">Marked for Consolidation</h5>
       <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close" >
           <span aria-hidden="true">&times;</span>
@@ -76,7 +75,6 @@ var t;
  
         AutoWidth: false,
         columns: [
-         
            
                 {
             data:"id"
@@ -92,7 +90,6 @@ var t;
             { data: "total" },
              { data: "cost" },
             { data: "quantity" },
-
            
          
            
@@ -114,7 +111,6 @@ var t;
         ],
     });
 
- 
 
  function format(rowData) {
     let more_details= $('#get_details').val();
@@ -124,7 +120,7 @@ var t;
      $.ajax({
          url: more_details,
          data: {
-           id: rowData.id,
+           id: rowData.item_id,
            
          },
          dataType: "json",
@@ -182,18 +178,21 @@ var t;
  
         AutoWidth: false,
         columns: [
-             {
-            className: "dt-control",
-            orderable: false,
-            data: null,
-            defaultContent: "",
+           
+                {
+            data:"id"
         },
-            { data: "sr" },
-            { data: "request_lab" },
-            { data: "request_date" },
-            { data: "requested_by" },
-            { data: "approved_by" },
-            { data: "options" },
+        
+           { data: "item_name" },
+            { data: "request" },
+            { data: "code" },
+           
+            { data: "unit_issue" },
+            { data: "is_hazardous" },
+            { data: "store_temp" },
+            { data: "total" },
+             { data: "cost" },
+            { data: "quantity" },
          
            
         ],

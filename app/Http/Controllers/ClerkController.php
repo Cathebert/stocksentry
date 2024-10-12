@@ -7,13 +7,15 @@ use App\Models\User;
 use App\Models\Requisition;
 use App\Models\LaboratorySection;
 use App\Models\Laboratory;
+use App\Models\Inventory;
 use DB;
 use Illuminate\Support\Facades\Auth;
+
 class ClerkController extends Controller
 {
     //
     public function index(Request $request){
-            $data['total']=DB::table('consumption_details')->sum('consumed_quantity');
+            $data['total']=Inventory::where([['lab_id', '=',auth()->user()->laboratory_id],[ 'expiry_date', '>', date('Y-m-d') ]])->sum('quantity');
    // dd($sum) ;  
     $data['consumption']=DB::table('consumption_details as inv')
                 ->join('laboratories as l','l.id','=','inv.lab_id')
@@ -21,7 +23,7 @@ class ClerkController extends Controller
                 ->where('inv.section_id',auth()->user()->section_id)
                 ->groupBy('l.lab_name')->get();
                 
-                 $data['requests']=Requisition::where('section_id',auth()->user()->section_id)->count();
+                 $data['requests']=Requisition::where('lab_id',auth()->user()->laboratory_id)->count();
         $data['users']=User::where([['laboratory_id','=',auth()->user()->laboratory_id],['section_id','=',auth()->user()->section_id]])->count();
            $lab=Laboratory::where('id',auth()->user()->laboratory_id)->select('lab_name')->first();
    
@@ -40,7 +42,6 @@ return view('initialization.setup',$data);
 }
 else{
     return view('clerk.layout.index',$data);
-}
-
+    }
     }
 }

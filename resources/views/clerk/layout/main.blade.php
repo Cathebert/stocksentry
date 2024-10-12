@@ -25,6 +25,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css" />
     <!-- Custom styles for this template-->
     <link href="{{asset('assets/css/sb-admin-2.min.css')}}" rel="stylesheet">
+    <link href="{{asset('assets/css/test.css')}}" rel="stylesheet">
   @stack('style')
    
  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" media="screen" >
@@ -70,11 +71,11 @@
         @include('clerk.layout.partials.sidebar')
         @include('clerk.layout.partials.topbar')
 
-       
+       <div id="center">
             @yield('content')
 
             @include('clerk.layout.partials.footer')
-       
+        </div>
     </div>
 </div>
     <script src="{{asset('assets/vendor/bootstrap/js/bootstrap.bundle.min.js')}}"></script>
@@ -97,8 +98,9 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
     <!-- Page level plugins -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="{{asset('assets/js/demo/chart-pie-demo.js')}}"></script>
+   
       <script src="{{asset('assets/admin/vendors/select2/dist/js/select2.full.min.js') }}"></script>
+         <script src="{{asset('assets/admin/js/inventory/loader.js') }}"></script>
 
    @stack('js')
    

@@ -1,4 +1,4 @@
-    "use strict";
+"use strict";
 var url=$('#post_url').val();
 var lab_url = $("#lab_list_url").val();
 
@@ -47,8 +47,11 @@ var t=''
                 dataType:"JSON",
                 url: url,
                 data: $('#form_id').serialize(),
+                  beforeSend: function () {
+                    ajaxindicatorstart("saving data... please wait...");
+                },
                 success: function(data) {
-               
+               ajaxindicatorstop();
               // Welcome notification
                // Welcome notification
                 toastr.options = {

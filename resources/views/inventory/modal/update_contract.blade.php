@@ -22,7 +22,7 @@
           @csrf
           <input type="hidden" class="form-control" id="sub_url" value="{{route('contract.keepup')}}">
           <input type="hidden" class="form-control" id="id" name="contract_id" value="{{$id}}" />
- 
+   <input type="hidden" class="form-control" id="supplier_id" name="supplier_id" value="{{$contract->supplier_id}}" />
 
   
  
@@ -30,24 +30,39 @@
   <div class="row">
 <div class="col-md-4 col-sm-12 col-xs-12 form-group">
     <label for="exampleInputPassword1">Contract  Name</label>
-    <input type="text" class="form-control" id="contract_name" name="contract_name" value="{{$contract->contract_name}}" readonly>
+    <input type="text" class="form-control" id="contract_name" name="contract_name" value="{{$contract->contract_name}}" >
   </div>
   <div class="col-md-4 col-sm-12 col-xs-12 form-group">
     <label for="exampleInputPassword1">Contract  Number</label>
-    <input type="text" class="form-control" id="contract_number" name="contract_number" value="{{$contract->contract_number}}" readonly>
+    <input type="text" class="form-control" id="contract_number" name="contract_number" value="{{$contract->contract_number}}" >
   </div>
    <div class="col-md-4 col-sm-12 col-xs-12 form-group">
     <label for="exampleInputPassword1">Contract Description</label>
-    <input type="text" class="form-control" id="contract_descr" name="contract_desc" value="{{$contract->contract_description}}" readonly>
+    <input type="text" class="form-control" id="contract_descr" name="contract_desc" value="{{$contract->contract_description}}">
   </div>
    <div class="col-md-4 col-sm-12 col-xs-12 form-group">
     <label for="exampleInputPassword1">Contract Start Date</label>
-    <input type="date" class="form-control" id="contract_startdate" name="contract_startdate" value="{{$contract->contract_startdate}}">
+    <input type="date" class="form-control" id="c_startdate" name="contract_startdate" value="{{$contract->contract_startdate}}" readonly>
   </div>
-
+<div class="col-md-4 col-sm-12 col-xs-12 form-group">
+    <label for="exampleInputPassword1">Frequency</label>
+    <input type="number" class="form-control" id="c_frequency" name="contract_frequency" value="{{$contract->frequency}}" min="1">
+  </div>
+ <div class="col-md-4 col-sm-12 col-xs-12 form-group">
+    <label for="exampleInputPassword1"> Unit</label>
+    <select class="form-control" id="c_unit" name="cont_unit" style="width: 75%"  onchange="changeExpiryDate(this.value)">
+    
+       <option value="1" {{(!empty($contract->contract_unit) &&$contract->contract_unit =='1') ? "Selected" : "" }}>Month</option>
+         <option value="2" {{(!empty($contract->contract_unit) &&$contract->contract_unit =='2') ? "Selected" : "" }}>Year</option>
+  </select>
+  </div>
   <div class="col-md-4 col-sm-12 col-xs-12 form-group">
     <label for="exampleInputPassword1">Contract End Date</label>
-    <input type="date" class="form-control" id="contract_enddate" name="contract_enddate" value="{{$contract->contract_enddate}}">
+    <input type="date" class="form-control" id="c_enddate" name="contract_enddate" value="{{$contract->contract_enddate}}" onchange="changeContractDate()">
+  </div>
+  <div class="col-md-4 col-sm-12 col-xs-12 form-group">
+    <label for="exampleInputPassword1">Contract Next Update</label>
+    <input type="date" class="form-control" id="c_nextdate" name="contract_nextdate"  readonly>
   </div>
   
 
@@ -97,75 +112,78 @@
   </div>
 </div>
 <script type="text/javascript">
-$('#add_subscript').on('click',function(e){
-  e.preventDefault();
-
- let sub_url=$('#sub_save').val();
-  var sub_form = $("#sub_form").serialize();
-    $.ajaxSetup({
-        headers: {
-            "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
-        },
-    });
-    $.ajax({
-        method: "POST",
-        dataType: "JSON",
-        url: sub_url,
-        data: {
-            sub_form 
-      
-        },
-
-        success: function (data) {
-            //console.log(data)
-            if (data.error == false) {
-                toastr.options = {
-                    closeButton: true,
-                    debug: false,
-                    newestOnTop: false,
-                    progressBar: false,
-                    positionClass: "toast-top-right",
-                    preventDuplicates: false,
-                    onclick: null,
-                    showDuration: "300",
-                    hideDuration: "1000",
-                    timeOut: "5000",
-                    extendedTimeOut: "1000",
-                    showEasing: "swing",
-                    hideEasing: "linear",
-                    showMethod: "fadeIn",
-                    hideMethod: "fadeOut",
-                };
-                toastr["success"](data.message);
-                  $('#sub_close').modal('dispose');
-                
-             
-            } else {
-                toastr.options = {
-                    closeButton: true,
-                    debug: false,
-                    newestOnTop: false,
-                    progressBar: false,
-                    positionClass: "toast-top-right",
-                    preventDuplicates: false,
-                    onclick: null,
-                    showDuration: "300",
-                    hideDuration: "1000",
-                    timeOut: "5000",
-                    extendedTimeOut: "1000",
-                    showEasing: "swing",
-                    hideEasing: "linear",
-                    showMethod: "fadeIn",
-                    hideMethod: "fadeOut",
-                };
-                toastr["error"](data.message);
-            }
-            // show bootstrap modal
-        },
-        error: function (jqXHR, textStatus, errorThrown) {
-            // console.log(get_case_next_modal)
-            alert("Error " + errorThrown);
-        },
-    });
-})
+ const start=$('#c_enddate').val();
+  
+    const frequency=$('#c_frequency').val();
+   
+ let contract_unit=$('#c_unit').val();  
+  console.log('ContractUnit'+contract_unit)
+  console.log('end Date'+start);
+   console.log("frequency"+frequency);
+  if(contract_unit==1){
+   
+const a = dayjs(start);
+const b = a.add(frequency, 'M')
+const c=dayjs(b).format('YYYY-MM-DD')
+$('#c_nextdate').val(c);
+  }
+   if(contract_unit==2){
+   
+const a = dayjs(start);
+const b = a.add(frequency, 'y')
+const c=dayjs(b).format('YYYY-MM-DD')
+$('#c_nextdate').val(c);
+  }
+  
+  function changeExpiryDate(value){
+  const end_date=$('#c_enddate').val();
+  console.log(value)
+    const frequency_period=$('#c_frequency').val();
+    if(!frequency_period){
+      $('#c_frequency').focus();
+    }
+ 
+  if(value==1){
+  
+const d = dayjs(end_date);
+const m= d.add(frequency_period, 'M')
+const g=dayjs(m).format('YYYY-MM-DD')
+$('#c_nextdate').val(g);
+ console.log(value+':'+g)
+  }
+   if(value==2){
+   
+const k = dayjs(start);
+const l= k.add(frequency, 'y')
+const u=dayjs(l).format('YYYY-MM-DD')
+$('#c_nextdate').val(u);
+ console.log(value+':'+u)
+  }
+  }
+  function changeContractDate(){
+  const value=$('#c_unit').val();
+    const end_date=$('#c_enddate').val();
+  console.log(value)
+    const frequency_period=$('#c_frequency').val();
+    if(!frequency_period){
+      $('#c_frequency').focus();
+    }
+ 
+  if(value==1){
+  
+const d = dayjs(end_date);
+const m= d.add(frequency_period, 'M')
+const g=dayjs(m).format('YYYY-MM-DD')
+$('#c_nextdate').val(g);
+ console.log(value+':'+g)
+  }
+   if(value==2){
+   
+const k = dayjs(start);
+const l= k.add(frequency, 'y')
+const u=dayjs(l).format('YYYY-MM-DD')
+$('#c_nextdate').val(u);
+ console.log(value+':'+u)
+  }
+  }
   </script>

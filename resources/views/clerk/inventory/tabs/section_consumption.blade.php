@@ -1,4 +1,4 @@
- @extends('clerk.layout.main')
+@extends('clerk.layout.main')
 @section('title',' Inventory')
 @push('style')
    
@@ -42,8 +42,9 @@
           <input type="hidden" class="form-control" id="update_selected" value="{{route('inventory.selected_update')}}">
           <input type="hidden" class="form-control" id="item_search" value="{{route('items.search')}}">
           <input type="hidden" class="form-control" id="inventory_received" value="{{route('item.recieved')}}">
-  
-          <input type="hidden" class="form-control" id="load_inventory" value="{{route('section.load-consumption')}}"> 
+            <input type="hidden" id="check_quantity" value="{{route('inventory.check_quantity')}}"/>
+          <input type="hidden" class="form-control" id="load_inventory" value="{{route('inventory.load')}}"> 
+            <input type="hidden" id="modal_dispose_url" value="{{route('disposal.list')}}"/>
  
             
             <div class="row">
@@ -54,7 +55,7 @@
     <span class="input-group-text"><i class="fa fa-calendar" aria-hidden="true"></i></span>
   </div>
   <select class="custom-select" id="period" name="period" onchange="getSelected()" disabled>
-   
+    
     <option value="1" selected>Today</option>
     <option value="2" >This Week</option>
     <option value="3">This Month</option>
@@ -81,9 +82,13 @@
  <h6 id="status" style="text-align:center"> </h6>
 </div>
  <script type="text/javascript">
- $('#status').html("As of <strong>"+ getTodaysDate()+"</strong>")
+ 
+    $('#status').html("As of <strong>"+ getTodaysDate()+"</strong>")
+ 
  function getSelected (){
   var value=$('#period').val();
+
+  
 if(value==1){
 
 $('#status').html("As of <strong>"+ getTodaysDate()+"</strong>")
@@ -112,6 +117,10 @@ let lastDay =  moment().endOf('month').format('DD MMM YYYY');
   return date.toUTCString().slice(5, 16);;
  }
   }
+   function getTodaysDate(){
+   const date = new Date();
+  return date.toUTCString().slice(5, 16);;
+ }
   </script>
 <hr></br>
 
@@ -122,19 +131,20 @@ let lastDay =  moment().endOf('month').format('DD MMM YYYY');
     </div>
         <!---- table start ---->
                <div class="table-responsive">
-        <table class="table table-sm" id="update_inventories" width="100%">
+        <table class="table table-bordered table-striped table-sm table-hover" id="update_inventories" width="100%">
 <thead class="thead-light">
     <tr>
        <th scope="col"></th>
-     <th scope="col">Code</th>
-       <th scope="col">Brand</th>
-         <th scope="col">Batch Number</th>
-        <th scope="col">Generic Name</th>
-        <th scope="col">Last Update</th>
+       <th scope="col">Item Name</th>
+       <th scope="col">Code</th>
+       <th scope="col">Batch Number</th>
+       <th scope="col">Catalog #</th>
+           <th scope="col">Expiry</th>
+       <th scope="col">Last Update</th>
         <th scope="col">Next Update</th>
         <th scope="col">UOM </th>
-         <th scope="col">Available </th>
-          <th scope="col">Consumed</th>
+        <th scope="col">Available </th>
+        <th scope="col">Consumed</th>
   
        <th scope="col">Action</th>
       

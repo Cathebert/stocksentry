@@ -5,7 +5,7 @@
             <div id="content">
 
                 <!-- Topbar -->
-                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow" id="topbar">
 
                     <!-- Sidebar Toggle (Topbar) -->
                     <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
@@ -44,7 +44,7 @@
 
                         <!-- Nav Item - Alerts -->
                           <!-- Nav Item - Alerts -->
-                        <li class="nav-item dropdown no-arrow mx-1">
+                        <li class="nav-item dropdown no-arrow mx-1" hidden>
                             <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button"
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <i class="fas fa-bell fa-fw"></i>
@@ -83,9 +83,9 @@
                                         </div>
                                     </div>
                                     <div>
-                                        
+                                          <span class="font-weight-bold">{{ $notification->data['message'] }}</span>
                                         <div class="small text-gray-500">Stock issued with number {{ $notification->data['issue_approved'] }} status</div>
-                                        <span class="font-weight-bold">{{ $notification->data['message'] }}</span>
+                                      
                 
                                     </div>
                                   
@@ -100,14 +100,32 @@
                                         </div>
                                     </div>
                                     <div>
+                                        <span class="font-weight-bold">Pending Stock approval with transfer number {{ $notification->data['stock_transfer_no'] }} made to {{$notification->data['lab_name']}}</span>
+                                        <div class="small text-gray-500"> Made by {{ $notification->data['issuerer'] }}  </div>
                                         
-                                        <div class="small text-gray-500">Pending Stock approval with transfer number {{ $notification->data['stock_transfer_no'] }} </div>
-                                        <span class="font-weight-bold">Made by {{ $notification->data['issuerer'] }}  to {{$notification->data['lab_name']}}</span>
                 
                                     </div>
                                   
                                 </a>
-                                @endif               
+                                @endif      
+                                
+                                 @if($notification->type=="App\Notifications\PendingRequsitionNotification")
+ <a class="dropdown-item d-flex align-items-center"  id="{{ $notification->id }}" onclick="markAsRead(this.id)">
+                                    <div class="mr-3">
+                                         <div class="icon-circle bg-warning">
+                                            <i class="fas fa-exclamation-triangle text-white"></i>
+                                        </div>
+                                    </div>
+                                    <div>
+                                           <span class="font-weight-bold">Request to order items from store with request number <strong>{{ $notification->data['request_no'] }} </strong>is pending your approval . <a href="{{route('moderator.request')}}">approve here </a></span>
+                                        <div class="small text-gray-500">Order made by  {{$notification->data['user']}}</div>
+                                     
+                                        
+                
+                                    </div>
+                                  
+                                </a>
+                                @endif                  
                                   @empty
                                    <p style="text-align:center"> No notification</p>
                                    
@@ -267,9 +285,11 @@ var view_notification = "{{route('notifications.show')}}"
       },
   });
                         }
-
-
-                        function markAsRead(id){
+      
+      
+      
+      
+        function markAsRead(id){
    var view_notification = "{{route('notifications.markasread')}}"
   $.ajax({
       method: "GET",
@@ -289,7 +309,6 @@ var view_notification = "{{route('notifications.show')}}"
       },
   }); 
 }
-  
                      </script>
                         </li>
 

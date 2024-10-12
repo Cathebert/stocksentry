@@ -13,9 +13,12 @@ use App\Models\Consumption;
 use App\Models\ConsumptionDetails;
 use App\Models\EmailReceipient;
 use App\Models\SystemMail;
-use App\Models\Notification\ConsumptionNotification;
-use Carbon\Carbon;
+use App\Models\Laboratory;
+use App\Models\User;
+use DB;
 use PDF;
+use App\Notifications\ConsumptionNotification;
+use App\Notifications\NoConsumptionNotification;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Worksheet\AutoFilter;
 use PhpOffice\PhpSpreadsheet\Worksheet\Table;
@@ -29,9 +32,15 @@ class ConsumptionJob implements ShouldQueue
      * Create a new job instance.
      */
     protected $report_id;
-    public function __construct($report_id)
+   protected $lab_id;
+   protected $start_date;
+   protected $attach_as;
+    public function __construct($report_id,$lab_id, $start_date, $attach_as)
     {
         $this->report_id=$report_id;
+        $this->lab_id=$lab_id;
+        $this->start_date=$start_date;
+        $this->attach_as=$attach_as;
     }
 
     /**
@@ -40,10 +49,11 @@ class ConsumptionJob implements ShouldQueue
     public function handle(): void
     {
 $report=ScheduleReport::where('id',$this->report_id)->first(); 
-$lab_id = $report->lab_id;
-$start = $report->start_date;
+$lab_id = $this->lab_id;
+$start = $this->start_date;
 $end   =   date('Y-m-d');
-
+$lab=Laboratory::where('id',$lab_id)->select('id','lab_name')->first();
+$lab_name=$lab->lab_name;
 $terms =DB::table('items as t') 
               ->join('inventories AS l', 'l.item_id', '=', 't.id')
               ->join('consumption_details as c','c.item_id','=','l.id')
@@ -60,7 +70,9 @@ $terms =DB::table('items as t')
               ->orderBy('t.item_name','asc')
             ->groupBy('t.item_name')
                  ->get();
-                 foreach($terms as $term){
+
+    if(count($terms)>0){
+                     foreach($terms as $term){
  $consum=DB::table('items as t')
                   ->join('inventories  as r','r.item_id','=','t.id')
                   ->join('consumption_details as rd','rd.item_id','=','r.id')
@@ -74,14 +86,22 @@ $terms =DB::table('items as t')
                 )
                   ->where('t.id',$term->item_id)
                    ->get();
+}
+    
+    switch($report->attach_as){
+        case 1:
+            $name="consumption_report.pdf";
+            $path=public_path('reports').'/'.$name;
+            $pdf=PDF::loadView('pdf.reports.consumed_report',['items'=>$terms,'lab_name'=>$lab_name])->save($path);
+        break;
 
-    if(count($terms)>0){
+        case 2:
         $spreadsheet = new Spreadsheet();
 
      $spreadsheet->getActiveSheet()->getDefaultColumnDimension()->setWidth(100, 'pt');
     $spreadsheet->getActiveSheet()->getColumnDimension('A')->setAutoSize(true);
       $drawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
- $image = file_get_contents(url('/').'/assets/icon/logo_black.png');
+ $image = file_get_contents('https://stocksentry.org/assets/icon/logo_black.png');
 $imageName = 'logo.png';
 $temp_image=tempnam(sys_get_temp_dir(), $imageName);
 file_put_contents($temp_image, $image);
@@ -97,7 +117,7 @@ $drawing->getShadow()->setDirection(45);
 $drawing->setWorksheet($spreadsheet->getActiveSheet());
 
 $spreadsheet->setActiveSheetIndex(0);
-$spreadsheet->getActiveSheet()->setCellValue('B7', ' Consumed List ');
+$spreadsheet->getActiveSheet()->setCellValue('B7', $lab_name.' Consumed List ');
 $spreadsheet->getActiveSheet()->getStyle('B7')->getFont()->setBold(true);
      
 $spreadsheet->getProperties()->setCreator('cathebert muyila')
@@ -181,10 +201,19 @@ $headers = [
   'Content-Length' => strlen($path)
 
 ];
+break;
+
+}
+ScheduleReport::where('id',$this->report_id)->update([
+    
+        'start_date'=>now()
+    ]);
+
 $receivers=EmailReceipient::where('report_id',$this->report_id)->select('user_id')->get();
 if(!empty($receivers)){
     foreach($receivers as $user){
-        $user->notify(new ConsumptionNotification($path));
+    $notified=User::find($user->user_id);
+       $notified->notify(new ConsumptionNotification($path,$start,$end));
     }
 $mail=new SystemMail();
 $mail->lab_id=$lab_id;
@@ -193,21 +222,26 @@ $mail->type="Consumption";
 $mail->date=now();
 $mail->save();
 }
+
+}
+else{
 ScheduleReport::where('id',$this->report_id)->update([
     
         'start_date'=>now()
     ]);
 
-
-}
-else{
   $receivers=EmailReceipient::where('report_id',$this->report_id)->select('user_id')->get();
 if(!empty($receivers)){
     foreach($receivers as $user){
-        $user->notify(new NoConsumptionNotification());
+    $notified=User::find($user->user_id);
+       $notified->notify(new NoConsumptionNotification($lab_name,$start,$end));
+       
     }  
 }
 }
+
+
+
 
 
     }

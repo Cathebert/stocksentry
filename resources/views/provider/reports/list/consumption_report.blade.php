@@ -15,9 +15,7 @@
                     <div class="d-sm-flex align-items-center justify-content-between mb-4">
                         <h1 class="h3 mb-0 text-gray-800">Consumption Report</h1>
                          <div class="dropdow" style="text-align:right" >
-  <button  role="button" data-toggle="modal" data-target="#exampleModal">
-  <i class="fa fa-clock"> Schedule</i>
-</button>
+ 
 
 </div>
 
@@ -30,9 +28,9 @@
   <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
   
     <a class="dropdown-item" href=""  id="report_download"  ><i class="fa fa-download"></i> PDF File</a>
-    <a class="dropdown-item" href=""><i class="fa fa-share"></i>  Excel file</a>
+    <a class="dropdown-item" href="" id="report_download_excel"><i class="fa fa-share"></i>  Excel file</a>
     <hr>
-    <a class="dropdown-item" href=""><i class="fa fa-print"></i> Print Report </a>
+   
     
   </div>
 </div>
@@ -60,7 +58,7 @@
     <span class="input-group-text"><i class="fa fa-calendar-check" aria-hidden="true"></i></span>
   </div>
   <select class="custom-select" id="period" name="period" onchange="getSelected(this.value)">
-     <option value="99" selected></option>
+     <option value="-1" selected>All</option>
     <option value="0" > Today</option>
     <option value="1">Yesterday</option>
     <option value="2">This Week</option>
@@ -109,7 +107,7 @@
     <span class="input-group-text"><i class="fa fa-home" aria-hidden="true"></i></span>
   </div>
   <select class="custom-select" id="period" name="lab" onchange="getSelected()">
-    <option value="99" selected> All</option>
+    <option value="-1" selected> All</option>
       @foreach ($laboratories as $lab)
    @if($lab->id!=0)
        <option value="{{$lab->id}}">{{$lab->lab_name}}</option>

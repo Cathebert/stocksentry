@@ -15,9 +15,11 @@ class AboutToExpireNotification extends Notification
      * Create a new notification instance.
      */
     protected $path;
-    public function __construct($path)
+    protected $lab_name;
+    public function __construct($path,$lab_name)
     {
         $this->path=$path;
+        $this->lab_name=$lab_name;
     }
 
     /**
@@ -36,7 +38,8 @@ class AboutToExpireNotification extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-                    ->line('We are reminding you that the following items have 30 days before they expire.')
+                    ->line('We are reminding you that the following items from '.$this->lab_name.' have 30 days before they expire.')
+                    ->line('Please consider using them quickly to avoid loss due to expiry')
                     ->attach($this->path)
                     ->line('Thank you for using our application!');
     }

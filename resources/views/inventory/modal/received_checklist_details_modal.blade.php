@@ -1,4 +1,3 @@
-   
 <div class="modal-header">
         <h5 class="modal-title">Goods Received Note</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="Close_Button"></button>
@@ -127,18 +126,19 @@
 </thead>
                             <tr>
                                 <td>
-                                   {{$checker}}
+                                   {{$checker??""}}
                                 </td>
 
                                 <td>
-                                   {{$checker_date}}
+                                   {{$checker_date??""}}
                                 </td>
                                 <td>
-                                {{$checker_comment}}
+                                {{$checker_comment??""}}
                                 </td>
                                   <td>
-                             
+                             @if($checker_signature!="")
                                  <img src="{{ url('/').'/public/upload/signatures/'.$checker_signature}}" width="40px" height="40px"/>
+                                @endif
                                 </td>
                                 <tr>
                             </table>
@@ -156,25 +156,26 @@
 </thead>
                             <tr>
                                 <td>
-                                   {{$reviewer}}
+                                   {{$reviewer??""}}
                                 </td>
 
                                 <td>
-                                   {{$reviewer_date}}
+                                   {{$reviewer_date??""}}
                                 </td>
                                 <td>
-                                {{$reviewer_comment}}
+                                {{$reviewer_comment??""}}
                                 </td>
                                   <td>
-                             
+                             @if($reviewer_signature!="")
                                  <img src="{{ url('/').'/public/upload/signatures/'.$reviewer_signature}}" width="40px" height="40px"/>
+                                @endif
                                 </td>
                                 <tr>
                             </table>
                        <!--reviewer end -->
                         <div class="d-print-none mt-4">
                             <div class="float-start">
-                               <span><strong>Received By:</strong> {{$received_by}}</span><br>
+                               <span><strong>Received By:</strong> {{$received_by??""}}</span><br>
                             
                               
                             </div>

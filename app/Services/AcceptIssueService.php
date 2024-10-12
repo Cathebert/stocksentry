@@ -28,8 +28,9 @@ return 1;
     }
     protected function updateInventoryDetails($details, $issue)
     {
-        //dd(count($details));
+      
         $issue_id=$issue->id;
+      
         foreach ($details as $detail) {
             $inventory = Inventory::where('id', $detail->item_id)
                 ->where('lab_id', $issue->from_lab_id)
@@ -51,9 +52,16 @@ return 1;
 
             $inv= Inventory::where('recieved_id', $inventory->recieved_id)
                 ->where('lab_id', auth()->user()->laboratory_id)->select('id')->first();
-        $bincard= new BinCardService();
-
+            
+                if($inv!=NULL){
+                   $bincard= new BinCardService();
      $bincard->acceptIssuedCard($issue_id,$inv->id,$detail->quantity);
+               
+                }
+                else{
+                $this->createInventory($inventory, $detail->quantity, $issue->to_section_id,$issue->id);
+                }
+       
             } else {
                 $this->createInventory($inventory, $detail->quantity, $issue->to_section_id,$issue->id);
             }

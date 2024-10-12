@@ -1,4 +1,4 @@
-        <!-- Sidebar -->
+<!-- Sidebar -->
         <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
             <!-- Sidebar - Brand -->
@@ -99,7 +99,7 @@
             </li>
 
             <!-- Nav Item - Tables -->
-            <li class="nav-item" >
+            <li class="nav-item" hidden>
                 <a class="nav-link" href="#">
                     <i class="fas fa-fw fa-cogs"></i>
                     <span>Settings</span></a>

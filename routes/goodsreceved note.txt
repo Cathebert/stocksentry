@@ -1,0 +1,229 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>Lab Inventory | GRN # {{ $grn_number ?? '' }} </title>
+       <link rel="shortcut icon"
+                href="{{asset('assets/icon/logo_white.png')}}">
+    <style type="text/css">
+        @media print {
+            body {
+                margin: 3mm 8mm 5mm 5mm;
+            }
+        }
+
+        @page {
+            margin: 3mm 8mm 5mm 5mm;
+        }
+    </style>
+</head>
+<body>
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+
+    <tr>
+        <td>
+            <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                <tr>
+                    <td width="2%" style="justify-content: center;">
+                     
+                      
+                        <img src="{{ asset('assets/icon/logo_black.png') }}" style="margin-bottom: 0px;" height=70px >
+                      
+                  
+                    </td>
+             
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+
+<hr>
+<h1 class="heading4" style="text-align: center;">Goods Received Note</h1>
+<br>
+ <table width="100%" border="0" style="border-style:none;">
+<tr>
+<td class="heading3 " width="10%" style="text-align:left;border-right: none !important;border-left: none;border-right: none; border-top: none;border-bottom: none;"><strong>Supplied By :</strong> </td>
+<td></td>
+<td class="heading3 " width="10%" style="text-align:left;border-right: none !important;border-left: none;border-right: none; border-top: none;border-bottom: none;"><strong>Supplied To :</strong> </td>
+<tr>
+  <td class="heading4" width="40%" style="text-align:left;border-left: none;border-right: none;border-left: none;border-right: none; border-top: none;border-bottom: none;"> {{$supplier->supplier_name?? ''}}</td> 
+  <td></td>
+   <td class="heading4" width="40%" style="text-align:left;border-left: none;border-right: none;border-left: none;border-right: none; border-top: none;border-bottom: none;"> {{$lab?? ''}}</td>  
+</tr>
+<tr>
+  <td class="heading4" width="40%" style="text-align:left;border-left: none;border-right: none;border-left: none;border-right: none; border-top: none;border-bottom: none;"> {{$supplier->address?? ''}}</td> 
+  <td></td>
+   <td class="heading4" width="40%" style="text-align:left;border-left: none;border-right: none;border-left: none;border-right: none; border-top: none;border-bottom: none;"> Date: {{$received_date ??""}}</td>  
+</tr>
+<tr>
+  <td class="heading4" width="40%" style="text-align:left;border-left: none;border-right: none;border-left: none;border-right: none; border-top: none;border-bottom: none;"> {{$supplier->email?? ''}}</td> 
+  <td></td>
+   <td class="heading4" width="40%" style="text-align:left;border-left: none;border-right: none;border-left: none;border-right: none; border-top: none;border-bottom: none;"> GRN #: {{ $grn_number ?? ''}}</td>  
+</tr>
+
+<tr>
+  <td class="heading4" width="40%" style="text-align:left;border-left: none;border-right: none;border-left: none;border-right: none; border-top: none;border-bottom: none;"> {{$supplier->phone_number?? ''}}</td> 
+  <td></td>
+   <td class="heading4" width="40%" style="text-align:left;border-left: none;border-right: none;border-left: none;border-right: none; border-top: none;border-bottom: none;"> PO REF #: {{ $po_ref ?? ''}}</td>  
+</tr>
+</table>
+<br>
+<table border="1" cellpadding="0" cellspacing="0" width="100%"
+       style="border-collapse:collapse;font-size: 13px;border: 1px solid #000;">
+
+    <tr>
+        <td>
+          <span class="heading4" style="text-align: center;"><strong>Received Summary</strong></span>  
+        </td>
+    </tr>
+
+   
+    <tr>
+        
+        <td height="0" style="border: 0px solid #fff;" border="0" valign="top">
+            <table width="100%" border="0" cellpadding="2" cellspacing="0">
+                <tr>
+                    <td width="3%" align="center"
+                        style="border-right: 1px solid #000;border-bottom: 1px solid #000;font-size: 9pt;">
+                        <strong>Sr.</strong></td>
+                    <td width="50%" align="left"
+                        style="border-right: 1px solid #000;border-bottom: 1px solid #000;font-size: 9pt;"><strong>Item Name</strong>
+                    </td>
+                    <td width="25%" align="left"
+                        style="border-right: 1px solid #000;border-bottom: 1px solid #000;font-size: 9pt;"><strong>UOM</strong>
+                    </td>
+
+                    <td width="9%" align="center"
+                        style="border-right: 1px solid #000;border-bottom: 1px solid #000;font-size: 9pt;"><strong>Batch Number</strong>
+                    </td>
+                    <td width="7%" align="center"
+                        style="border-right: 1px solid #000;border-bottom: 1px solid #000;font-size: 9pt;">
+                        <strong>Cost</strong></td>
+                          <td width="7%" align="center"
+                        style="border-right: 1px solid #000;border-bottom: 1px solid #000;font-size: 9pt;">
+                        <strong>Quantity</strong></td>
+
+                    <td width="15%" align="center" style="border-bottom: 1px solid #000;font-size: 9pt;"><strong>Total</strong></td>
+                </tr>
+
+
+                @php $i=1;
+                  $Total=0;
+                 $x=0;
+                 $dat= array();
+                 
+  $sub=0;
+                 @endphp
+                @if(!empty($info) && count($info)>0)
+
+                   @foreach ($info  as $dat)
+                  
+ 
+               
+             
+                 
+                        
+                    @php
+                  
+                    
+                          $sub=$dat->cost*$dat->quantity;
+                                          $Total=$Total+$sub;
+                                         
+                    @endphp
+                 
+                        <tr>
+                            <td align="center"
+                                style="border-right: 1px solid #000;border-bottom: 1px solid #000;font-size: 9pt;">{{$i}}</td>
+                            <td align="left"
+                                style="border-right: 1px solid #000;border-bottom: 1px solid #000;font-size: 9pt;">{{$dat->item_name?? '' }}</td>
+                            <td align="left"
+                                style="border-right: 1px solid #000;border-bottom: 1px solid #000;font-size: 9pt;">{{ $dat->unit_issue }}</td>
+                            <td align="center"
+                                style="border-right: 1px solid #000;border-bottom: 1px solid #000;font-size: 9pt;">{{ $dat->batch_number }}</td>
+                            <td align="right"
+                                style="border-right: 1px solid #000;border-bottom: 1px solid #000;font-size: 9pt;">{{ $dat->cost }}</td>
+  <td align="right"
+                                style="border-right: 1px solid #000;border-bottom: 1px solid #000;font-size: 9pt;">{{ $dat->quantity}}</td>
+                            <td align="center"
+                                style="border-right: 1px solid #000;border-bottom: 1px solid #000;font-size: 9pt;">{{ $dat->quantity*$dat->cost }}
+                            </td>
+                        
+                        @php $i++; @endphp
+                        </tr>
+                  
+                    
+  
+                @endforeach
+                @endif
+                <tr>
+                   
+                
+
+                    
+                </tr>
+            </table>
+        </td>
+    </tr>
+
+
+    <tr>
+        <td>
+            <table border="0" cellpadding="5" cellspacing="0" width="100%">
+                <tr>
+                    <td width="72%" valign="top"><strong>Total</strong></br></br>
+                    </td>
+                    <td width="28%" border="0" style="border-left:1px solid black;">
+                        <table width="100%" border="0">
+                            <tr>
+                           
+                                <td width="25%" style="font-weight: bolder;" align="right">{{number_format($Total,2)  }}</td>
+                            </tr>
+
+                           
+
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <table border="0" cellpadding="5" cellspacing="0" width="100%">
+                <tr>
+                   
+                      
+                      <td style="font-size: 11px;"><strong style="font-size:13px;">Received By :{{$received_by}}</td>
+                      
+                    <td style="border-left: 1px solid #000;" valign="top" width="33%">
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                            <tr>
+                                 @if ($signature=='')
+                                 <td>
+                                    <strong style="font-size:13px;">Signature :</strong> <br/>
+                                  
+                                </td>
+                                <img src="{{ asset('assets/icon/sign.png') }}" width="50px" height="50px"/>
+                                
+                            @else
+                             <td>
+                                    <strong style="font-size:13px;">Signature :</strong> <br/>
+                                  
+                                </td>
+                                <img src="{{ url('/').'/public/signature/'.$signature }}" width="50px" height="50px"/>
+                                
+                             
+                             @endif
+                                
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+</body>
+</html>

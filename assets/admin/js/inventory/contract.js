@@ -1,5 +1,5 @@
-"use strict";
-let contract_url = $("#contract_url").val();
+"use strict"
+let contract_url=$('#contract_url').val();
 
 var t = "";
 t = $("#contract").DataTable({
@@ -27,13 +27,14 @@ t = $("#contract").DataTable({
         { data: "contract_name" },
         { data: "contract_desc" },
         { data: "contract_start" },
-        { data: "frequency" },
+          { data: "frequency" },
         { data: "contract_unit" },
         { data: "contract_end" },
-        { data: "sub_type" },
-        { data: "supplier" },
-        { data: "status" },
-        { data: "action", width: "30%" },
+         { data: "sub_type" },
+          { data: "supplier" },
+           { data: "status" },
+            { data: "action",width:"50%" },
+             { data: "delete" },
     ],
     //Set column definition initialisation properties.
     columnDefs: [
@@ -51,12 +52,13 @@ t = $("#contract").DataTable({
         },
     ],
 });
-function showContractAdd() {
-    let showAddModal = $("#shoW_modal").val();
+function showContractAdd(){
+    let showAddModal=$('#shoW_modal').val();
     $.ajax({
         method: "GET",
 
         url: showAddModal,
+      
 
         success: function (data) {
             $("#receive_item").html(data);
@@ -69,7 +71,7 @@ function showContractAdd() {
         },
     });
 }
-function viewContract(id) {
+function viewContract(id){
     let viewContract = $("#view_contract").val();
     $.ajax({
         method: "GET",
@@ -82,7 +84,28 @@ function viewContract(id) {
         success: function (data) {
             $("#receive_item").html(data);
             $("#inforg").modal("show"); // show bootstrap modal
-            $(".modal-title").text(" Contract Add ");
+            $(".modal-title").text(" Contract Details");
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            // console.log(get_case_next_modal)
+            alert("Error " + errorThrown);
+        },
+    });
+}
+function editContract(id){
+    let editContract = $("#edit_contract").val();
+    $.ajax({
+        method: "GET",
+
+        url: editContract,
+        data: {
+            id: id,
+        },
+
+        success: function (data) {
+            $("#receive_item").html(data);
+            $("#inforg").modal("show"); // show bootstrap modal
+            $(".modal-title").text(" Edit Contract ");
         },
         error: function (jqXHR, textStatus, errorThrown) {
             // console.log(get_case_next_modal)
@@ -103,7 +126,7 @@ function updateContract(id) {
         success: function (data) {
             $("#receive_item").html(data);
             $("#inforg").modal("show"); // show bootstrap modal
-            $(".modal-title").text(" Contract Add ");
+            $(".modal-title").text(" Contract Update ");
         },
         error: function (jqXHR, textStatus, errorThrown) {
             // console.log(get_case_next_modal)
@@ -111,18 +134,19 @@ function updateContract(id) {
         },
     });
 }
-function filterByNumber(val) {
-    let value = val;
-    let type = "number";
-    search(value, type);
+function filterByNumber(val){
+let value=val
+let type='number';
+search(value,type)
+
 }
 
-function filterByName(val) {
-    let value = val;
-    let type = "name";
-    search(value, type);
+function filterByName(val){
+    let value=val
+    let type='name';
+    search(value,type)
 }
-function search(value, type) {
+function search(value,type){
     let filter = $("#filter").val();
     t = $("#contract").DataTable({
         processing: true,
@@ -148,18 +172,19 @@ function search(value, type) {
         AutoWidth: true,
 
         columns: [
-            { data: "id" },
-            { data: "contract_number" },
-            { data: "contract_name" },
-            { data: "contract_desc" },
-            { data: "contract_start" },
-            { data: "frequency" },
-            { data: "contract_unit" },
-            { data: "contract_end" },
-            { data: "sub_type" },
-            { data: "supplier" },
-            { data: "status" },
-            { data: "action", width: "30%" },
+      { data: "id" },
+        { data: "contract_number" },
+        { data: "contract_name" },
+        { data: "contract_desc" },
+        { data: "contract_start" },
+        { data: "frequency" },
+        { data: "contract_unit" },
+        { data: "contract_end" },
+         { data: "sub_type" },
+          { data: "supplier" },
+           { data: "status" },
+            { data: "action",width:"50%" },
+             { data: "delete" },
         ],
         //Set column definition initialisation properties.
         columnDefs: [
@@ -177,4 +202,104 @@ function search(value, type) {
             },
         ],
     });
+
+}
+
+function deleteContract(id) {
+    var delete_contract = $("#delete_contract").val();
+    $.confirm({
+        title: "Confirm!",
+        content: "Do you really  want to delete this contract?!",
+        buttons: {
+            Oky: {
+                btnClass: "btn-danger",
+                action: function () {
+                    $.ajaxSetup({
+                        headers: {
+                            "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr(
+                                "content"
+                            ),
+                        },
+                    });
+
+                    $.ajax({
+                        method: "POST",
+                        url: delete_contract,
+                        dataType: "JSON",
+                        data: {
+                            id: id,
+                        },
+                        success: function (data) {
+                            toastr.options = {
+                                closeButton: true,
+                                debug: false,
+                                newestOnTop: false,
+                                progressBar: false,
+                                positionClass: "toast-top-right",
+                                preventDuplicates: false,
+                                onclick: null,
+                                showDuration: "300",
+                                hideDuration: "1000",
+                                timeOut: "5000",
+                                extendedTimeOut: "1000",
+                                showEasing: "swing",
+                                hideEasing: "linear",
+                                showMethod: "fadeIn",
+                                hideMethod: "fadeOut",
+                            };
+                            toastr["success"](data.message);
+                          location.reload();
+                        },
+                        error: function (error) {
+                            console.log();
+                        },
+                    });
+                },
+            },
+
+            cancel: function () {},
+        },
+    });
+
+    ///
+}
+
+
+
+function calculateEndDate(value){
+   const start=$('#contract_startdate').val();
+   if(!start){
+    $('#contract_startdate').focus();
+    return;
+   }
+    const frequency=$('#contract_frequency').val();
+    if(!frequency){
+      $('#contract_frequency').focus();
+    }
+  if(value==1){
+   
+const a = dayjs(start);
+const b = a.add(frequency, 'M')
+const c=dayjs(b).format('YYYY-MM-DD')
+$('#contract_enddate').val(c);
+  }
+   if(value==2){
+   
+const a = dayjs(start);
+const b = a.add(frequency, 'y')
+const c=dayjs(b).format('YYYY-MM-DD')
+$('#contract_enddate').val(c);
+  }
+}
+
+function contractType(value){
+  if(value==2){
+    document.getElementById('show_supplier').hidden=true
+     document.getElementById('contractor').hidden=false
+
+  }
+  else{
+     document.getElementById('show_supplier').hidden=false
+      document.getElementById('contractor').hidden=true
+  }
 }

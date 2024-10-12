@@ -84,6 +84,7 @@ $exists=DB::table('inventories')->where([['item_id','=',$inventory->item_id],['l
     $request_date= date('d,M Y',strtotime($requisition_approver->requested_date));
     $approver->notify(new OrderCompletedNotification($request_date));
     $requester->notify(new OrderCompletedNotification($request_date));
+   
 }
 catch(Exception $e){
             DB::rollback();

@@ -1,4 +1,4 @@
- @extends('layouts.main')
+@extends('layouts.main')
 @section('title','Received Items')
 @push('style')
    
@@ -8,7 +8,7 @@
 <nav aria-label="breadcrumb">
   <ol class="breadcrumb">
     <li class="breadcrumb-item"><a href="{{route('admin.home')}}">Home</a></li>
-    <li class="breadcrumb-item"><a href="#">Inventory</a></li>
+    <li class="breadcrumb-item"><a href="{{route('admin.receive_stock')}}">Inventory</a></li>
     <li class="breadcrumb-item active" aria-current="page">All Receipts</li>
   </ol>
 </nav>

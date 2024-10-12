@@ -60,44 +60,21 @@ class StatsController extends Controller
     }
     //
 public function showInventoryHealth(Request $request){
-$health = Inventory::pluck('expiry_date','id');
-$expired=0;
-$about_to_in_30=0;
-$expiring_in_60=0;
-$expirin_in_90=0;
-$good=0;
-$dat= array();
-foreach ($health as $key => $value) {
-   
-          $to = \Carbon\Carbon::createFromFormat('Y-m-d', $value);
-         $from = \Carbon\Carbon::createFromFormat('Y-m-d', date('Y-m-d'));
-        $diff_in_days = $from->diffInDays($to); 
-       
+$currentDate = Carbon::now();
 
-         switch($diff_in_days){
-            case  $diff_in_days < 1:
-                  $expired++;
-            break;
+    // Calculate dates for 30, 60, and 90 days from now
+    $date30Days = $currentDate->copy()->addDays(30);
+    $date60Days = $currentDate->copy()->addDays(60);
+    $date90Days = $currentDate->copy()->addDays(90);
 
-            case $diff_in_days>= 1 && $diff_in_days < 30:
-                 $about_to_in_30++;
-                break;
+    // Count items that have expired
+   $expired = DB::table('inventories')->where('expiry_date', '<', $currentDate)->count();
 
-            case  $diff_in_days>=30 && $diff_in_days <60:
-                    $expiring_in_60++;
-
-                    break;
-            case $diff_in_days>=60 && $diff_in_days <90:
-                  $expirin_in_90++;
-                  break;
-
-            case $diff_in_days>90:
-
- $good++;
- break;
-            }
-  
-        }
+    // Count items that will expire in the next 30, 60, and 90 days
+   $about_to_in_30 = DB::table('inventories')->whereBetween('expiry_date', [$currentDate, $date30Days])->count();
+   $expiring_in_60 = DB::table('inventories')->whereBetween('expiry_date', [$currentDate, $date60Days])->count();
+    $expirin_in_90 = DB::table('inventories')->whereBetween('expiry_date', [$currentDate, $date90Days])->count();
+    $good=DB::table('inventories')->where('expiry_date', '>', $date90Days )->count();
 /*     if($diff_in_days < 1){
     $expired++;
 }           
@@ -131,6 +108,56 @@ if( $diff_in_days>=30 && $diff_in_days <60){
                  ]);
     
 }
+public function showLabInventoryHealth(Request $request){
+$currentDate = Carbon::now();
+
+    // Calculate dates for 30, 60, and 90 days from now
+    $date30Days = $currentDate->copy()->addDays(30);
+    $date60Days = $currentDate->copy()->addDays(60);
+    $date90Days = $currentDate->copy()->addDays(90);
+
+    // Count items that have expired
+   $expired = DB::table('inventories')->where('lab_id',auth()->user()->laboratory_id)->where('expiry_date', '<', $currentDate)->count();
+
+    // Count items that will expire in the next 30, 60, and 90 days
+   $about_to_in_30 = DB::table('inventories')->where('lab_id',auth()->user()->laboratory_id)->whereBetween('expiry_date', [$currentDate, $date30Days])->count();
+   $expiring_in_60 = DB::table('inventories')->where('lab_id',auth()->user()->laboratory_id)->whereBetween('expiry_date', [$currentDate, $date60Days])->count();
+    $expirin_in_90 = DB::table('inventories')->where('lab_id',auth()->user()->laboratory_id)->whereBetween('expiry_date', [$currentDate, $date90Days])->count();
+    $good=DB::table('inventories')->where('lab_id',auth()->user()->laboratory_id)->where('expiry_date', '>', $date90Days )->count();
+/*     if($diff_in_days < 1){
+    $expired++;
+}           
+    if( $diff_in_days>=1 && $diff_in_days <30){
+                    $about_to_in_30++;
+                 
+                }
+if( $diff_in_days>=30 && $diff_in_days <60){
+    $expiring_in_60++;
+ 
+                   // $nestedData['status']="<span class='text-warning'>expiring (".$diff_in_days. " days)</span>";
+                }
+     if( $diff_in_days>=60 && $diff_in_days <90){
+        $expirin_in_90++;
+      
+                  //  $nestedData['status']="<span class='text-success'>expiring (".$diff_in_days." days)/span>";
+                }
+                if($diff_in_days>90){
+                  $good++;
+                  
+                } */
+               // $cars = array("Expired", "Expire In 30 days", "T");
+                $data[]=$expired;
+                 $data[]=$about_to_in_30;
+                 $data[]=$expiring_in_60;
+                 $data[]=$expirin_in_90;
+                 $data[]=$good;
+
+                 return response()->json([
+                    'data'=>$data,
+                 ]);
+    
+}
+
 public function showHealthModal(Request $request){
     $data['id']=$request->id;
     $data['label']=$request->label;

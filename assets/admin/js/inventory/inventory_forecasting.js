@@ -155,6 +155,9 @@ function PlaceOrder(){
              lead:lead,
             
          },
+           beforeSend: function () {
+                    ajaxindicatorstart("loading data... please wait...");
+                },
          success: function (data) {
              if (data.error == false) {
                  toastr.options = {
@@ -177,7 +180,8 @@ function PlaceOrder(){
                  toastr["success"](data.message);
 
                  $("#form_forecast")[0].reset();
-            
+                 ajaxindicatorstop();
+            window.location.reload()
                 p.destroy();
              } else {
                  toastr.options = {
@@ -223,7 +227,7 @@ else{
         destroy: true,
         paging: true,
         select: true,
-        info: false,
+        info: true,
         lengthMenu: [10, 20, 50],
         responsive: true,
 
@@ -287,7 +291,6 @@ value:value
     });
 
 }
-
 $("#approve_orders").on('click',function(){
     let load_approve=$('#load_approve').val();
    $.ajax({
@@ -319,6 +322,9 @@ function approveOrder(id){
      data: {
          id: id,
      },
+       beforeSend: function () {
+                    ajaxindicatorstart("loading data... please wait...");
+                },
      success: function (data) {
          if (data.error == false) {
              toastr.options = {
@@ -339,11 +345,80 @@ function approveOrder(id){
                  hideMethod: "fadeOut",
              };
              toastr["success"](data.message);
-
+ajaxindicatorstop();
            reloadOrders();
 
            
          } else {
+         ajaxindicatorstop();
+             toastr.options = {
+                 closeButton: true,
+                 debug: false,
+                 newestOnTop: false,
+                 progressBar: false,
+                 positionClass: "toast-top-right",
+                 preventDuplicates: false,
+                 onclick: null,
+                 showDuration: "300",
+                 hideDuration: "1000",
+                 timeOut: "5000",
+                 extendedTimeOut: "1000",
+                 showEasing: "swing",
+                 hideEasing: "linear",
+                 showMethod: "fadeIn",
+                 hideMethod: "fadeOut",
+             };
+             toastr["error"](data.message);
+         }
+         // Welcome notification
+         // Welcome notification
+     },
+ });   
+}
+
+function DeclineOrder(id){
+ const order_deny = $("#mark_deny").val();
+ $.ajaxSetup({
+     headers: {
+         "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
+     },
+ });
+ $.ajax({
+     method: "POST",
+     dataType: "JSON",
+     url: order_deny ,
+     data: {
+         id: id,
+     },
+       beforeSend: function () {
+                    ajaxindicatorstart("loading data... please wait...");
+                },
+     success: function (data) {
+         if (data.error == false) {
+             toastr.options = {
+                 closeButton: true,
+                 debug: false,
+                 newestOnTop: false,
+                 progressBar: false,
+                 positionClass: "toast-top-right",
+                 preventDuplicates: false,
+                 onclick: null,
+                 showDuration: "300",
+                 hideDuration: "1000",
+                 timeOut: "5000",
+                 extendedTimeOut: "1000",
+                 showEasing: "swing",
+                 hideEasing: "linear",
+                 showMethod: "fadeIn",
+                 hideMethod: "fadeOut",
+             };
+             toastr["success"](data.message);
+ajaxindicatorstop();
+           reloadOrders();
+
+           
+         } else {
+         ajaxindicatorstop();
              toastr.options = {
                  closeButton: true,
                  debug: false,
@@ -378,7 +453,7 @@ function reloadOrders(){
         destroy:true,
         paging: true,
         info: true,
-        lengthMenu: [5, 10, 15],
+        lengthMenu: [10, 20, 50],
         responsive: true,
         order: [[0, "desc"]],
         oLanguage: {

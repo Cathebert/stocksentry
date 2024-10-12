@@ -9,7 +9,7 @@ t = $("#expiry_table").DataTable({
     serverSide: true,
     paging: true,
     scrollCollapse: true,
-  
+    destroy: true,
     info: true,
 
     lengthMenu: [10, 20, 50],
@@ -40,9 +40,7 @@ t = $("#expiry_table").DataTable({
     columns: [
         { data: "id", width: "3%" },
         { data: "item", width: "15%" },
-        { data: "brand", width: "15%" },
         { data: "batch_number" },
-        { data: "name" },
         { data: "location" },
         { data: "expire_date" },
         { data: "quantity" },
@@ -85,7 +83,7 @@ t = $("#expiry_table").DataTable({
     serverSide: true,
     paging: true,
     scrollCollapse: true,
-
+  destroy: true,
     info: true,
 
     lengthMenu: [10, 20, 50],
@@ -114,11 +112,9 @@ t = $("#expiry_table").DataTable({
     },
     AutoWidth: false,
     columns: [
-        { data: "id", width: "3%" },
+       { data: "id", width: "3%" },
         { data: "item", width: "15%" },
-        { data: "brand", width: "15%" },
         { data: "batch_number" },
-        { data: "name" },
         { data: "location" },
         { data: "expire_date" },
         { data: "quantity" },

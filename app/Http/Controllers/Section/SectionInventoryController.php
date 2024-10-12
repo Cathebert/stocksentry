@@ -27,6 +27,7 @@ class SectionInventoryController extends Controller
     //
 
      public function showSectionBinCard(){
+       $date=date('Y-m-d');
          $data['users']=User::where([['laboratory_id','=',auth()->user()->laboratory_id]])->select('id','name','last_name')->get();
         $data['area']=LaboratorySection::select('id','section_name')->get();
         
@@ -35,7 +36,7 @@ class SectionInventoryController extends Controller
               ->join('items AS s', 's.id', '=', 't.item_id')
           ->select('t.id as id','s.item_name')
           ->groupBy('s.id')
-             ->where([['t.lab_id','=',auth()->user()->laboratory_id],['t.section_id','=',auth()->user()->section_id]])
+             ->where('t.lab_id',auth()->user()->laboratory_id)
           ->paginate(15);
       $lab=Laboratory::where('id',auth()->user()->laboratory_id)->select('lab_name')->first();
    
@@ -70,22 +71,18 @@ $data['lab_name']='Logged Into: '.$lab->lab_name;
     }
 
     public function showSectionConsumption(){
+     $date=date('Y-m-d');
          $data['items']= DB::table('inventories as t') 
               ->join('items AS s', 's.id', '=', 't.item_id')
           ->select('t.id as id','s.item_name')
              ->where([['t.lab_id','=',auth()->user()->laboratory_id],
-                ['t.section_id','=',auth()->user()->section_id]]);
+               ['t.expiry_date','>',$date]]);
                 
                      $lab=Laboratory::where('id',auth()->user()->laboratory_id)->select('lab_name')->first();
    
-   $section=LaboratorySection::where('id',auth()->user()->section_id)->select('section_name')->first();
-   if($section){
-     $data['lab_name']='Logged Into: '.$lab->lab_name.' / '.$section->section_name;  
-   }
-   else
-   {
+  
 $data['lab_name']='Logged Into: '.$lab->lab_name;
-}
+
         return view('clerk.inventory.tabs.section_consumption',$data);
     }
 
@@ -93,11 +90,12 @@ $data['lab_name']='Logged Into: '.$lab->lab_name;
         $order=ItemOrder::select('id')->latest('id')->first();
 
   $settings=Setting::find(1);
+  
   if($order->id){
-          $data['order']=$settings->order_prefix.'0001';
+          $data['order']=$settings->order_prefix.''.str_pad(mt_rand(0, 999999), 6, '0', STR_PAD_LEFT);
          }
          else{
-          $number=str_pad($order->id+1, 4, '0', STR_PAD_LEFT);
+          $number=str_pad(mt_rand(0, 999999), 6, '0', STR_PAD_LEFT);
         
           $data['order']=$settings->order_prefix.''.$number;
           
@@ -132,7 +130,7 @@ $data['lab_name']='Logged Into: '.$lab->lab_name;
     }
 
     public function showSectionDisposal(){
-    $lab=Laboratory::where('id',auth()->user()->laboratory_id)->select('lab_name')->first();
+             $lab=Laboratory::where('id',auth()->user()->laboratory_id)->select('lab_name')->first();
    
    $section=LaboratorySection::where('id',auth()->user()->section_id)->select('section_name')->first();
    if($section){
@@ -154,11 +152,11 @@ $data['lab_name']='Logged Into: '.$lab->lab_name;
 
 if($sr_number){
 
-             $data['sr_number']=$this->get_order_number($sr_number->id);
+             $data['sr_number']=$this->get_order_number(str_pad(mt_rand(0, 999999), 6, '0', STR_PAD_LEFT));
 }
 else{
        
-             $data['sr_number']=   $this->get_order_number(1);
+             $data['sr_number']=   $this->get_order_number(str_pad(mt_rand(0, 999999), 6, '0', STR_PAD_LEFT));
 }
       
     
@@ -176,21 +174,23 @@ else{
    {
 $data['lab_name']='Logged Into: '.$lab->lab_name;
 }
+
         return view('clerk.issue.tabs.section_request',$data);
+        
     }
 
-         public function showSectionIssue(){
+  public function showSectionIssue(){
         $data['laboratories']=Laboratory::get();
         $data['sections']=LaboratorySection::get();
         $sr_number=Requisition::select('id','sr_number')->orderBy('id', 'desc')->first();
 
 if($sr_number){
 
-             $data['sr_number']=$this->get_order_number($sr_number->id);
+             $data['sr_number']=$this->get_order_number(str_pad(mt_rand(0, 999999), 6, '0', STR_PAD_LEFT));
 }
 else{
        
-             $data['sr_number']=   $this->get_order_number(1);
+             $data['sr_number']=   $this->get_order_number(str_pad(mt_rand(0, 999999), 6, '0', STR_PAD_LEFT));
 }
       
     
@@ -231,10 +231,11 @@ $data['lab_name']='Logged Into: '.$lab->lab_name;
     private function get_order_number($id)
 
 {
-    return 'SR' . str_pad($id, 4, "0", STR_PAD_LEFT);
+    return 'SR' . str_pad($id, 6, "0", STR_PAD_LEFT);
 }
 
   public function receiveInventory(Request $request){
+  $data['users']=User::where('laboratory_id',auth()->user()->laboratory_id)->get();
           $data['suppliers']=Supplier::select('id','supplier_name')->get();
            $data['laboratories']=Laboratory::select('id','lab_name')->where('id',auth()->user()->laboratory_id)->get();
             $lab=Laboratory::where('id',auth()->user()->laboratory_id)->select('has_section','lab_name')->first();
@@ -579,9 +580,7 @@ public function loadSectionStockTake(Request $request){
                  $totalData = DB::table('inventories as t') 
               ->join('items AS s', 's.id', '=', 't.item_id')
               ->select('t.id as id','s.code','s.brand','s.item_description','t.quantity','t.batch_number','t.cost','s.item_name','t.expiry_date')
-          ->where([['t.lab_id','=',auth()->user()->laboratory_id],
-            ['t.section_id','=',auth()->user()->section_id]])
-          ->where('t.storage_location',$request->value)
+          ->where('t.lab_id',auth()->user()->laboratory_id)
            // ->where('t.expiry_date', '>', date('Y-m-d') )
           ->count();
 
@@ -597,10 +596,8 @@ public function loadSectionStockTake(Request $request){
             $terms = DB::table('inventories as t') 
               ->join('items AS s', 's.id', '=', 't.item_id')
               ->select('t.id as id','s.code','s.brand','s.item_description','t.item_id','t.quantity','t.batch_number','t.cost','s.unit_issue','s.item_name','t.expiry_date')
-         ->where([['t.lab_id','=',auth()->user()->laboratory_id],
-            ['t.section_id','=',auth()->user()->section_id]])
-          ->where('t.storage_location',$request->value)
-          //->where('t.expiry_date', '>', date('Y-m-d') )
+         ->where('t.lab_id',auth()->user()->laboratory_id)
+                   //->where('t.expiry_date', '>', date('Y-m-d') )
                 ->where(function ($query) use ($search){
                   return  $query->where('s.code', 'LIKE', "%{$search}%")
                   ->orWhere('s.brand','LIKE',"%{$search}%")
@@ -641,9 +638,9 @@ public function loadSectionStockTake(Request $request){
             $terms = DB::table('inventories as t') 
               ->join('items AS s', 's.id', '=', 't.item_id')
               ->select('t.id as id','s.code','s.brand','s.item_description','t.item_id','t.quantity','t.batch_number','t.cost','s.unit_issue','s.item_name','t.expiry_date')
-         ->where([['t.lab_id','=',auth()->user()->laboratory_id],
-            ['t.section_id','=',auth()->user()->section_id]])
-          ->where('t.storage_location',$request->value)
+         ->where('t.lab_id',auth()->user()->laboratory_id)
+           
+         
           //->where('t.expiry_date', '>', date('Y-m-d') )
                 ->where(function ($query) use ($search){
                   return  $query->where('s.code', 'LIKE', "%{$search}%")
@@ -664,9 +661,8 @@ public function loadSectionStockTake(Request $request){
                  $totalData = DB::table('inventories as t') 
               ->join('items AS s', 's.id', '=', 't.item_id')
               ->select('t.id as id','s.code','s.brand','s.item_description','t.quantity','t.batch_number','t.cost','s.item_name','t.expiry_date')
-          ->where([['t.lab_id','=',auth()->user()->laboratory_id],
-            ['t.section_id','=',auth()->user()->section_id]])
-          ->where('t.storage_location',3)
+          ->where('t.lab_id',auth()->user()->laboratory_id)
+         
            // ->where('t.expiry_date', '>', date('Y-m-d') )
           ->count();
 
@@ -682,9 +678,8 @@ public function loadSectionStockTake(Request $request){
             $terms = DB::table('inventories as t') 
               ->join('items AS s', 's.id', '=', 't.item_id')
               ->select('t.id as id','s.code','s.brand','s.item_description','t.item_id','t.quantity','t.batch_number','t.cost','s.unit_issue','s.item_name','t.expiry_date')
-         ->where([['t.lab_id','=',auth()->user()->laboratory_id],
-            ['t.section_id','=',auth()->user()->section_id]])
-          ->where('t.storage_location',3)
+         ->where('t.lab_id',auth()->user()->laboratory_id)
+        
           //->where('t.expiry_date', '>', date('Y-m-d') )
                 ->where(function ($query) use ($search){
                   return  $query->where('s.code', 'LIKE', "%{$search}%")
@@ -748,6 +743,7 @@ $x=1;
 
  public function loadSectionForecastItem(Request $request){
        
+         
          $columns = array(
             0=>'check',
             1=>'code',
@@ -755,40 +751,57 @@ $x=1;
             3=>'unit',
             4=>'cost',
             5=>'available',
-            6=>'id'
+            6=>'id',
+            7=>'in_store',
+         
            
            
         ); 
    $totalData =  DB::table('inventories as t') 
               ->join('items AS s', 's.id', '=', 't.item_id')     
-             ->where([['t.lab_id','=',auth()->user()->laboratory_id],['t.section_id','=',auth()->user()->section_id]])->count();
+             ->where([['t.lab_id','=',auth()->user()->laboratory_id]])->count();
 
             $totalRec = $totalData;
           // $totalData = DB::table('appointments')->count();
-
-          $limit = $request->input('length');
+            $limit = $request->input('length');
           $start = $request->input('start');
           $order = $columns[$request->input('order.0.column')];
           $dir = $request->input('order.0.dir');
 
            $search = $request->input('search.value');
+           $store1Id=auth()->user()->laboratory_id;
+$store2Id=0;
+            if(auth()->user()->laboratory_id!=0){
+
+          
             $terms =DB::table('inventories as t') 
               ->join('items AS s', 's.id', '=', 't.item_id')
-          ->select('t.id as id','s.code','s.item_name','s.unit_issue','t.cost','t.quantity')
- 
-             ->where([['t.lab_id','=',auth()->user()->laboratory_id],['t.section_id','=',auth()->user()->section_id]])
-
-                ->where(function ($query) use ($search){
-                  return  $query->where('s.item_name', 'LIKE', "%{$search}%")
-                  ->orWhere('s.code','LIKE',"%{$search}%");
-                      
-                     
-            })
+          ->select('t.id as id','s.id as item_id','s.code','s.item_name','s.unit_issue','t.cost','t.quantity',
+           DB::raw('SUM(CASE WHEN t.lab_id = ? THEN t.quantity ELSE 0 END) AS lab_total'),
+        DB::raw('SUM(CASE WHEN t.lab_id = ? THEN t.quantity ELSE 0 END) AS store_total')
+    )
+    ->setBindings([$store1Id, $store2Id])
             //->offset($start)
            ->groupBy('s.item_name')
            // ->limit($limit)
             //->orderBy('s.id','asc')
             ->get(); 
+
+        }
+        else{
+$terms =DB::table('inventories as t') 
+        ->join('items AS s', 's.id', '=', 't.item_id')
+        ->select('t.id as id','s.id as item_id','s.code','s.item_name','s.unit_issue','t.cost','t.quantity',
+        DB::raw('SUM(t.quantity) AS lab_total'),
+        DB::raw('SUM(CASE WHEN t.lab_id = ? THEN t.quantity ELSE 0 END) AS store_total')
+    )
+    ->setBindings([$store2Id])
+            //->offset($start)
+           ->groupBy('s.item_name')
+           // ->limit($limit)
+            //->orderBy('s.id','asc')
+            ->get();
+        }
 
           $totalFiltered =  $totalRec ;
 //  0 => 'id',
@@ -813,7 +826,8 @@ $x=1;
              
                      $nestedData['cost']= $term->cost;
                
-                 $nestedData['available']  =$term->quantity;              
+                 $nestedData['available']  =$term->lab_total; 
+                 $nestedData['in_store']  =$term->store_total;               
                    $x++;
                 $data[] = $nestedData;
            }
@@ -830,7 +844,7 @@ $x=1;
       echo json_encode($json_data);
     }
 
-    public function getReceivedChecklist(Request $request){
+  public function getReceivedChecklist(Request $request){
     $data['suppliers']=Supplier::get();
     $data['items']=DB::table('items as i')
                         ->join('inventories as inv','i.id','=','inv.item_id')

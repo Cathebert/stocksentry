@@ -1,4 +1,4 @@
- @extends('layouts.main')
+@extends('layouts.main')
 @section('title','Create Item')
 @push('style')
         <link href="{{ asset('assets/admin/Image-preview/dist/css/bootstrap-imageupload.css') }}" rel="stylesheet">
@@ -43,8 +43,8 @@
   </div>
 
  <div class="col-md-2 col-sm-12 col-xs-12 form-group">
-    <label for="exampleInputPassword1">Code <span class="text-danger">*</span></label>
-    <input type="text" class="form-control" id="code" name="code" required>
+    <label for="exampleInputPassword1">Code <span class="text-danger"></span></label>
+    <input type="text" class="form-control" id="code" name="code">
   </div>
 
    <div class="col-md-4 col-sm-12 col-xs-12 form-group">
@@ -70,7 +70,11 @@
   </div>
   <div class="col-md-4 col-sm-12 col-xs-12 form-group">
     <label for="exampleInputPassword1">Warehouse pack Size <span class="text-danger"></span></label>
-    <input type="text" class="form-control" id="warehouse_size" name="warehouse_size" required>
+    <input type="text" class="form-control" id="warehouse_size" name="warehouse_size" >
+  </div>
+   <div class="col-md-4 col-sm-12 col-xs-12 form-group">
+    <label for="exampleInputPassword1">Location <span class="text-danger"></span></label>
+    <input type="text" class="form-control" id="location" name="location" >
   </div>
    <div class="col-md-4 col-sm-12 col-xs-12 form-group">
     <label for="exampleInputPassword1">Catalog Number<span class="text-danger"></span></label>
@@ -216,7 +220,7 @@
 </div>
 
 <br>
-  <div class="col-sm-12">
+  <div class="col-sm-12" hidden>
     <div class="card">
       <div class="card-body">
         <h5 class="card-title"><strong>Added Today </strong></h5>

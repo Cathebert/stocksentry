@@ -1,4 +1,4 @@
-    @extends('layouts.main')
+@extends('layouts.main')
 @section('title','Inventory')
 @push('style')
    
@@ -39,7 +39,9 @@
       <input type="hidden"  id="filter_url"   value="{{route('requisition.filter')}}"/>      
        <input type="hidden" id="get_sections" value="{{route('lab.selected-sections')}}"/>          
         <input type="hidden" id="mark_consolidate"   value="{{route('requisition.mark')}}"/> 
-        <input type="hidden" id="view_marked_for_consolidation" value="{{route('requisition.view_marked')}}"/>     
+        <input type="hidden" id="view_marked_for_consolidation" value="{{route('requisition.view_marked')}}"/> 
+        <input type="hidden" id="remove_item_request"  value="{{route('remove.requisition')}}"/>
+        
                  
                  
     <div class="row" >

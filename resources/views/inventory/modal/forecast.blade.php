@@ -52,8 +52,11 @@
       @endif
 
         </tr>
+       
   </thead>
   <tbody>
+  
+  </tbody>
 </table>
  </div>
 
@@ -79,7 +82,8 @@
     info: false,
     lengthMenu: [10, 20, 50],
     responsive: true,
-
+ scrollCollapse: true,
+      scrollY: 400,
     order: [[0, "desc"]],
     oLanguage: {
         sProcessing:
@@ -162,6 +166,3 @@ function SelectAll(){
 
 
   </script>
-
-  
-   

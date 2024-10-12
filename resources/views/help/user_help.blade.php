@@ -1,7 +1,9 @@
- @extends('clerk.layout.main')
+@extends('clerk.layout.main')
 
 @section('title','User Help')
 @section('content')
+ <h1 style="text-align:center"><b> Quick Guide </b></h1>
+    <p style="text-align:center">This is a quick guide to help you use the system effectively. Click on the link and follow the instructions given </p><br>
 
 
 <div class="container">
@@ -28,24 +30,32 @@
 
              </li>
              <li>
-               -Enter Details like Purchase Order, Delivery Note Number and Store from the Physical Delivery Note
+               -Enter Details like Supplier, GRN Number , details of from  person who checked  and who reviewed the items
              </li>
-
+ 
               <li>
-               -Search the item to receive, then select add.
+               -Search the item to receive, once found  select it and click <button class="btn btn-success"> add</button>.A pop up will appear with details of the item
              </li>
              <li>
                -Enter details like batch number, expiry date e.t.c
 
              </li>
-
-               <li>
-               -Repeat until the items on the Delivery Note have been completed then select save.
-             </li>
-
+             
               <li>
-               -Once saved it will show you a report of the items received.
+               -Once all the Item details click <button class="btn btn-primary"> Add</button>.
+
              </li>
+            <li>
+               -The item will be added to the <strong>Item receive list</strong>.
+             </li>
+           <li>
+               -You can clear the  list or remove the an individual item.
+             </li>
+               <li>
+               -Repeat until the items on the Delivery Note have been completed then click <button class="btn btn-primary"> Save </button>.
+             </li>
+
+            
              <li>
                -Once saved it will show you a report of the items received.
              </li>
@@ -461,6 +471,77 @@
 </div>
 <!-----------------------------end disposal-------------->
 
+<!----------------------------Ordering Items for purchase----->
+
+<div class="card">
+    <div class="card-header" id="heading8">
+      <h5 class="mb-0">
+        <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapse8" aria-expanded="false" aria-controls="collapse7">
+   Order Item For Purchase
+        </button>
+      </h5>
+    </div>
+    <div id="collapse8" class="collapse" aria-labelledby="heading8" data-parent="#accordionExample">
+      <div class="card-body">
+      
+       <div class="row">
+        <div class="col">
+          <ol>
+            <li>
+               - Click  <i class="fas fa-boxes"></i> <strong>Inventory</strong> From Main Menu and Click <strong>Inventory </strong>.
+             </li>
+             <li>
+              -Select <strong> Stock Forecasting  </strong>   tab 
+
+
+             </li>
+             <li>
+               -Select Lead time and  click load inventory
+
+
+             </li>
+
+              <li>
+               -Select  items you want to order .
+
+
+
+             </li>
+             <li>
+               -Click <strong>Run Forecast</strong> , You can adjust the orders by entering in the order box. Once satisfied you can click <strong> Place Order</strong>
+
+
+             </li>
+ <li>
+               -This action requires approval 
+
+
+             </li>
+         <li>
+              
+
+
+             </li>    
+        </ol>
+    </div>
+       <div class="col-6">
+        <div>
+            <video width="450" height="600"  controls>
+              <source src="{{ url('/').'/public/upload/help/order_item.mp4' }}" type="video/mp4">
+ 
+                Your browser does not support the video tag.
+             </video>
+       </div>
+    </div>
+
+  </div>
+
+      <!---end card---->
+    </div>
+  </div>
+</div>
+
+<!----------------------------End ordering------------------>
 </div>
  </div>
 @endsection

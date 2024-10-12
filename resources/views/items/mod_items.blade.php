@@ -1,4 +1,4 @@
- @extends('provider.layout.main')
+@extends('provider.layout.main')
 @section('title','Items')
 @push('style')
      
@@ -48,6 +48,7 @@
          <input type='hidden' class="form-control" id="item-csvlist" value="{{route('item.uploadcsv-itemlist')}}"/>
          <input type="hidden" class="" id="search_url" value="{{route('item.filter-search')}}"/>
            <input type="hidden" class="form-control" id="table_data" value="{{route('lab_item.load')}}">
+             <input type="hidden" id="deleted_items" value="{{route('item.deleted')}}"/>
             <div class="row">
          
               
@@ -77,7 +78,7 @@
      @foreach ($laboratory as $lab)
        <option value="{{$lab->id}}">{{$lab->lab_name}}</option>
    @endforeach
-  
+    <option value="999">Other</option>
   </select>
 </div>
 </div>
@@ -136,8 +137,8 @@
        
      <button type="button" class="btn btn-primary" id="deactivate_item" style="x"hidden  onclick="deactivateItem()"><i class="fa fa-check"></i> Deactivate</button>&nbsp;&nbsp;
           <button type="button" class="btn btn-info" id="print_items" style="x" hidden><i class="fa fa-print" ></i> Print</button>&nbsp;&nbsp;
-          @if (auth()->user()->authority==1)
-               <button type="button" class="btn btn-secondary" id="import_list" style="x" onclick="inputFile()"><i class="fa fa-download"></i> Import  List</button>&nbsp;&nbsp;
+          @if (auth()->user()->authority==2)
+                <button type="button" class="btn btn-danger"  style="border-radius: 4px;" onclick="deletedItems()" ><i class="fa fa-trash"></i> Deleted Items</button>&nbsp;&nbsp;
 
           @endif
    

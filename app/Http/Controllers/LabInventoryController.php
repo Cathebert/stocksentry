@@ -26,18 +26,15 @@ class LabInventoryController extends Controller
     //
 
     public function showLabBinCard(){
+     $date=date('Y-m-d');
          $data['users']=User::where([['laboratory_id','=',auth()->user()->laboratory_id]])->select('id','name','last_name')->get();
         $data['area']=LaboratorySection::select('id','section_name')->get();
-        $data['items']= DB::table('inventories as t') 
-              ->join('items AS s', 's.id', '=', 't.item_id')
-          ->select('t.id as id','s.item_name')
-             ->where('t.lab_id','=',auth()->user()->laboratory_id);
-         
+       
       $data['items']= DB::table('inventories as t') 
-              ->join('items AS s', 's.id', '=', 't.item_id')
+           ->join('items AS s', 's.id', '=', 't.item_id')
           ->select('t.id as id','s.item_name')
           ->groupBy('s.id')
-             ->where('t.lab_id','=',auth()->user()->laboratory_id)
+             ->where('t.lab_id',auth()->user()->laboratory_id)
           ->paginate(15);
    $lab=Laboratory::where('id',auth()->user()->laboratory_id)->select('has_section','lab_name')->first();
             $data['has_section']=$lab->has_section;
@@ -144,10 +141,10 @@ $data['lab_name']='Logged Into: '.$lab->lab_name;
 
   $settings=Setting::find(1);
   if($order==NULL){
-          $data['order']=$settings->order_prefix.'0001';
+          $data['order']=$settings->order_prefix.''.str_pad(mt_rand(0, 999999), 6, '0', STR_PAD_LEFT);
          }
          else{
-          $number=str_pad($order->id+1, 4, '0', STR_PAD_LEFT);
+          $number=str_pad(mt_rand(0, 999999), 6, '0', STR_PAD_LEFT);
         
           $data['order']=$settings->order_prefix.''.$number;
          }
@@ -590,10 +587,10 @@ $uln=Item::select('uln')->latest()->take(1)->first();
   $settings=Setting::find(1);
 
          if($uln->uln==NULL){
-          $data['uln']=$settings->uln_prefix.'0001';
+          $data['uln']=$settings->uln_prefix.''.str_pad(mt_rand(0, 999999), 6, '0', STR_PAD_LEFT);
          }
          else{
-          $number=str_pad($uln->uln+1, 4, '0', STR_PAD_LEFT);
+          $number=str_pad(mt_rand(0, 999999), 6, '0', STR_PAD_LEFT);
         
           $data['uln']=$settings->uln_prefix.''.$number;
          }
@@ -612,7 +609,7 @@ $data['lab_name']='Logged Into: '.$lab->lab_name;
     }
 
      public function receiveInventory(Request $request){
-      $data['users']=User::where('laboratory_id',auth()->user()->laboratory_id)->get();
+     $data['users']=User::where('laboratory_id',auth()->user()->laboratory_id)->get();
           $data['suppliers']=Supplier::select('id','supplier_name')->get();
            $data['laboratories']=Laboratory::select('id','lab_name')->where('id',auth()->user()->laboratory_id)->get();
           // $data['sections']=LaboratorySection::select('id','section_name')->get();

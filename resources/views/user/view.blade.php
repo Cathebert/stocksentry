@@ -25,6 +25,7 @@
                     <thead>
                         <tr>
                             <th>ID</th>
+                             <th>Username</th>
                             <th>Name</th>
                             <th>Email</th>
                             <th>Phone Number</th>
@@ -38,6 +39,7 @@
                         @foreach($users as $user)
                             <tr>
                                 <td>{{ $i }}</td>
+                                  <td>{{ $user->username }}</td>
                                 <td>{{ $user->name }} {{ $user->last_name }}</td>
                                 <td>{{ $user->email }}</td>
                                 <td>{{ $user->phone_number ?: 'Unavailable' }}</td>
@@ -175,7 +177,7 @@
                                                 </div>
                                                 <div class="modal-footer">
                                                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                                                    <form action="{{ route('user.destroy', $user->id) }}" method="POST">
+                                                    <form action="{{ route('user.destroy', ['id'=>$user->id]) }}" method="POST">
                                                         @csrf
                                                         @method('post')
                                                         <button type="submit" class="btn btn-danger">Delete</button>

@@ -1,4 +1,4 @@
- @extends('layouts.main')
+@extends('layouts.main')
 @section('title','Stock Level')
 @section('content')
 
@@ -21,7 +21,7 @@
 </div>
 </div>
 
-<div class="dropdown" style="text-align:right" >
+<div class="dropdown" style="text-align:right" hidden >
   <button class="dropdown-toggle btn btn-outline-primary btn-sm" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
   <i class="fa fa-upload"> Export As</i>
 </button>

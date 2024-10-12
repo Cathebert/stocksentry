@@ -1,4 +1,4 @@
-    @extends('layouts.main')
+@extends('layouts.main')
 @section('title','Inventory')
 @push('style')
    
@@ -47,6 +47,7 @@
             <input type="hidden" id="mark_orderconsolidate"   value="{{route('order.mark-consolidate')}}"/> 
         <input type="hidden" id="view_marked_for_consolidation" value="{{route('order.view_marked')}}"/>     
         <input type="hidden" id="view_consolidated" value="{{route('orders.consolidated')}}"/> 
+        <input type="hidden" id="save_purchase" value="{{route('order.savepurchase')}}"/> 
     <div class="row" >
 
      <div class="col-md-3 col-sm-12 col-xs-12 form-group" >
@@ -59,7 +60,7 @@
   
 
 
-   <div class="col-md-3 col-sm-12 col-xs-12 form-group" >
+   <div class="col-md-3 col-sm-12 col-xs-12 form-group" hidden >
   <div class="input-group mb-3">
   <div class="input-group-prepend">
     <button class="btn  btn btn-secondary" type="button">Laboratory</button>

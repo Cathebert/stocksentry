@@ -14,9 +14,15 @@ class AdjustmentCreatedNotification extends Notification
     /**
      * Create a new notification instance.
      */
-    public function __construct()
+    protected $disposed_by;
+     protected $data;
+     protected $lab_name;
+    public function __construct($disposed_by,$data,$lab_name)
     {
         //
+        $this->disposed_by= $disposed_by;
+        $this->data= $data;
+        $this->lab_name=$lab_name;
     }
 
     /**
@@ -34,11 +40,10 @@ class AdjustmentCreatedNotification extends Notification
      */
     public function toMail(object $notifiable): MailMessage
     {
+
         return (new MailMessage)
-                    ->line('Item has been adjusted and is awaiting your approval.')
-                    ->line('Please login to take required action')
-                    ->action('Login', url('/'))
-                    ->line('Thank you for using our application!');
+        ->subject('Adjustment Created')
+        ->markdown('mail.notification.adjustment',['items' => $this->data,'adjuster'=>$this->disposed_by,'lab_name'=> $this->lab_name,'url'=>route('user.login')]);
     }
 
     /**

@@ -171,7 +171,11 @@ $("#save_issue").on("click", function () {
             quantity: obj,
             
         },
+          beforeSend: function () {
+                    ajaxindicatorstart("saving data... please wait...");
+                },
         success: function (data) {
+        ajaxindicatorstop();
             if (data.error == false) {
                 toastr.options = {
                     closeButton: true,
@@ -205,6 +209,7 @@ $("#save_issue").on("click", function () {
                 $('#sr_number').val(data.sr_number)
                 location.reload()
             } else {
+            ajaxindicatorstop();
                 toastr.options = {
                     closeButton: true,
                     debug: false,
@@ -479,7 +484,11 @@ function ApproveRequest(id){
                         data: {
                             id: id,
                         },
+                          beforeSend: function () {
+                    ajaxindicatorstart("saving data... please wait...");
+                },
                         success: function (data) {
+                        ajaxindicatorstop();
                        toastr.options = {
                   "closeButton": true,
                   "debug": false,
@@ -498,11 +507,13 @@ function ApproveRequest(id){
                   "hideMethod": "fadeOut"
                 }
                 toastr["success"](data.message);
+             
                              $("#appro").text(data.count);
                          
                              LoadRequestData();
                         },
                         error: function (error) {
+                           ajaxindicatorstop();
                             console.log(error);
                         },
                     });

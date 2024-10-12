@@ -1,4 +1,4 @@
- @extends('layouts.main')
+@extends('layouts.main')
 @section('title','Inventory')
 @push('style')
    
@@ -9,7 +9,7 @@
 <nav aria-label="breadcrumb">
   <ol class="breadcrumb">
     <li class="breadcrumb-item"><a href="{{route('admin.home')}}">Home</a></li>
-    <li class="breadcrumb-item"><a href="#">Inventory</a></li>
+    <li class="breadcrumb-item"><a href="{{route('admin.receive_stock')}}">Inventory</a></li>
     <li class="breadcrumb-item active" aria-current="page">New Receipt</li>
   </ol>
 </nav>
@@ -104,7 +104,7 @@
   </div>
    <div class="col-md-3 col-sm-12 col-xs-12 form-group" >
     <label for="exampleInputPassword1">GRN Number</label>
-    <input type="text" class="form-control" id="grn_number"  name="grn_number" >
+    <input type="text" class="form-control" id="grn_number"  name="grn_number" maxlength="8">
   </div>
 </div>
 <hr>
@@ -112,6 +112,7 @@
    <div class="col-md-3 col-sm-12 col-xs-12 form-group"  >
     <label for="exampleInputPassword1">Checked Off By</label>
     <select class="form-control" id="checked_off_by" name="checked_off_by" style="width: 75%">
+     <option value=""></option>
   @foreach($users as $user)
     <option value="{{ $user->id }}">{{$user->name.' '.$user->last_name}}</option>
     @endforeach
@@ -120,7 +121,7 @@
   </div>
    <div class="col-md-3 col-sm-12 col-xs-12 form-group">
     <label for="exampleInputPassword1">Check Off Date</label>
-    <input type="date" class="form-control" id="check_off_date" name="check_off_date" value="{{ date('Y-m-d')}}" readonly>
+    <input type="date" class="form-control" id="check_off_date" name="check_off_date" value="{{ date('Y-m-d')}}">
   </div>
      <div class="col-md-3 col-sm-12 col-xs-12 form-group"  >
 
@@ -133,6 +134,7 @@
      <div class="col-md-3 col-sm-12 col-xs-12 form-group"  >
     <label for="exampleInputPassword1">Reviewed By</label>
     <select class="form-control" id="reviewed_by" name="reviewed_by" style="width: 75%">
+     <option value=""></option>
   @foreach($users as $user)
     <option value="{{ $user->id }}">{{$user->name.' '.$user->last_name}}</option>
     @endforeach
@@ -141,7 +143,7 @@
   </div>
    <div class="col-md-3 col-sm-12 col-xs-12 form-group">
     <label for="exampleInputPassword1">Reviewed Date</label>
-    <input type="date" class="form-control" id="reviewed_date" name="reviewed_date" value="{{ date('Y-m-d')}}" readonly>
+    <input type="date" class="form-control" id="reviewed_date" name="reviewed_date" value="{{ date('Y-m-d')}}" >
   </div>
    <div class="col-md-3 col-sm-12 col-xs-12 form-group"  >
 
@@ -195,7 +197,7 @@
 
 <hr>
 
-        <h5 class="card-title"><strong>Items </strong></h5>
+        <h5 class="card-title"><strong>Item receive list </strong></h5>
         <div class="table-responsive">
         <table class="table table-sm" id="received_items"  width="100%">
 <thead class="thead-light">
@@ -251,5 +253,3 @@
      <script src="{{asset('assets/admin/js/inventory/receive_inventory.js') }}"></script>
      
    @endpush
-
-   

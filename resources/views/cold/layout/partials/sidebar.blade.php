@@ -1,4 +1,4 @@
-        <!-- Sidebar -->
+<!-- Sidebar -->
         <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
             <!-- Sidebar - Brand -->
@@ -92,18 +92,22 @@
              <hr class="sidebar-divider d-none d-md-block">
             <!-- Nav Item - Charts -->
             <li class="nav-item" >
-                <a class="nav-link" href="#">
+                <a class="nav-link" href="{{route('cold_reports.show')}}">
                     <i class="fas fa-fw fa-chart-area"></i>
                     <span>Reports</span></a>
             </li>
 
             <!-- Nav Item - Tables -->
-            <li class="nav-item" hidden>
-                <a class="nav-link" href="#">
+            <li class="nav-item" >
+                <a class="nav-link" href="{{route('coldsetting.setting')}}">
                     <i class="fas fa-fw fa-cogs"></i>
                     <span>Settings</span></a>
             </li>
-
+ <li class="nav-item" >
+                <a class="nav-link" href="{{route('cold_help')}}">
+                    <i class="fas fa-fw fa-support"></i>
+                    <span>Help</span></a>
+            </li>
             <!-- Divider -->
             <hr class="sidebar-divider d-none d-md-block">
 

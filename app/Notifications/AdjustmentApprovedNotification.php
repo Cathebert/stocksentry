@@ -35,7 +35,7 @@ class AdjustmentApprovedNotification extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-                    ->line('You adjustement has been approved')
+                    ->line('Your item adjustment has been approved')
 
                     ->line('Thank you for using our application!');
     }

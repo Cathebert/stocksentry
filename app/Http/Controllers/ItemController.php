@@ -16,6 +16,7 @@ use App\Models\User;
 use App\Models\BinCard;
 use App\Models\ReceivedItemCheckList;
 use App\Services\BinCardService;
+use App\Services\LogActivityService;
 use App\Jobs\UploadCSVFileItem;
 use Validator;
 use DB;
@@ -40,10 +41,10 @@ $uln=Item::select('uln')->latest('id')->first();
   $settings=Setting::find(1);
 
          if($uln->uln==NULL){
-          $data['uln']=$settings->uln_prefix.'0001';
+          $data['uln']=$settings->uln_prefix.''.str_pad(mt_rand(0, 999999), 6, '0', STR_PAD_LEFT);
          }
          else{
-          $number=str_pad($uln->uln+1, 4, '0', STR_PAD_LEFT);
+          $number=str_pad(mt_rand(0, 999999), 6, '0', STR_PAD_LEFT);
         
           $data['uln']=$settings->uln_prefix.''.$number;
          }
@@ -105,7 +106,7 @@ if(auth()->user()->authority==2){
             $totalData = DB::table('items as i') 
   ->leftjoin('laboratories as l','l.id','=','i.laboratory_id')
   //->join('laboratory_sections as ls','ls.id','=','i.laboratory_sections_id')
-
+  ->whereNull('i.deleted_at')
           // ->where('created_at','=',$date)
             ->count();
 
@@ -122,8 +123,9 @@ if(auth()->user()->authority==2){
             ->leftjoin('laboratories as l','l.id','=','a.laboratory_id')
   //->join('laboratory_sections as ls','ls.id','=','a.laboratory_sections_id')
  
-  ->select('a.id as id','a.laboratory_id','a.uln','a.code','a.brand','a.catalog_number','a.item_image','a.item_name','a.is_hazardous','a.store_temp','a.unit_issue','a.minimum_level','a.maximum_level','l.lab_name')
+  ->select('a.id as id','a.laboratory_id','a.uln','a.code','a.brand','a.catalog_number','a.item_image','a.item_name','a.warehouse_size','a.is_hazardous','a.store_temp','a.unit_issue','a.minimum_level','a.maximum_level','l.lab_name')
             // ->where('created_at','=',$date)
+             ->whereNull('a.deleted_at')
                   ->where(function ($query) use ($search){
                     return  $query->where('a.item_name', 'LIKE', "%{$search}%")
                     ->orWhere('a.code', 'LIKE', "%{$search}%")
@@ -159,7 +161,8 @@ if(auth()->user()->authority==2){
                   $nestedData['brand']= $term->brand??"";
                   $nestedData['name']= $term->item_name??"";
                    $nestedData['warehouse_size']=$term->warehouse_size??"";
-                $nestedData['cat_number']=$term->catalog_number??"";
+                //$nestedData['cat_number']=$term->catalog_number??"";
+                $nestedData['cat_number']=$term->id??"";
            $nestedData['hazardous']=$term->	is_hazardous;
              $nestedData['storage_temp']=$term->store_temp;
                       $nestedData['unit_issue']=$term->unit_issue;
@@ -256,7 +259,7 @@ return response()->json([
   ->join('laboratories as l','l.id','=','a.laboratory_id')
   //->join('laboratory_sections as ls','ls.id','=','a.laboratory_sections_id')
  
-  ->select('a.id as id','a.laboratory_id','a.uln','a.code','a.brand','a.catalog_number','a.item_image','a.item_name','a.is_hazardous','a.store_temp','a.unit_issue','a.minimum_level','a.maximum_level','l.lab_name')
+  ->select('a.id as id','a.laboratory_id','a.uln','a.code','a.brand','a.catalog_number','a.item_image','a.item_name','a.warehouse_size','a.is_hazardous','a.store_temp','a.unit_issue','a.minimum_level','a.maximum_level','l.lab_name')
              ->where('a.created_at','=',$date)
                   ->where(function ($query) use ($search){
                     return  $query->where('a.item_name', 'LIKE', "%{$search}%")
@@ -306,8 +309,8 @@ return response()->json([
     $nestedData['section']= $term->lab_name??"";
             
             
-                        $nestedData['options']="<a href='#' id='$term->Id' onclick='EditItem(this.id)' style='color:#3B71CA' > <i class='fa fa-edit title='Edit Item'></i></a>";
-                          $nestedData['options'].= "&nbsp  | &nbsp <a href='#' id='$term->Id' onclick='deleteItem(this.id)' style='color:red'> <i class='fa fa-trash  title='Delete'></i></a>";
+                        $nestedData['options']="<a href='#' id='$term->id' onclick='EditItem(this.id)' style='color:#3B71CA' > <i class='fa fa-edit title='Edit Item'></i></a>";
+                          $nestedData['options'].= "&nbsp  | &nbsp <a href='#' id='$term->id' onclick='deleteItem(this.id)' style='color:red'> <i class='fa fa-trash  title='Delete'></i></a>";
                 
     
                   
@@ -364,6 +367,19 @@ catch(Exception $e){
 }
     }
 
+ public function restoreItem(Request $request){
+ 
+     Item::where('id',$request->id)->restore(); 
+      $message="Item Successfully restored"; 
+    return response()->json([
+            'success' => true ,
+            'message' =>$message
+        ],200);
+
+
+
+    }
+
     public function updateItem(Request $request){
        
         $image_name="";
@@ -403,6 +419,7 @@ catch(Exception $e){
 'warehouse_size' =>   $request->warehouse_size,
 'catalog_number' =>   $request->cat_number,
 'place_of_purchase'=>$request->place_of_purchase,
+'location' =>$request->location,
 'is_hazardous' => $request->is_hazardous,
 'store_temp'  =>  $request->store_temp,
 'unit_issue'   =>   $request->unit_issue,
@@ -479,13 +496,10 @@ $image_name="";
           try{
             $uln_number=Item::select('uln')->latest()->take(1)->first();
         
-            if($uln_number->uln==NULL){
-         $uln='0001';
-         }
-         else{
-          $uln= str_pad($uln_number->uln+1, 4, '0', STR_PAD_LEFT);
-         
-         }
+       
+          $uln= str_pad(mt_rand(0, 999999), 6, '0', STR_PAD_LEFT);
+          $date=date('Y-m-d');
+       
              //dd($uln);
         $item=new Item();
   $item->laboratory_id  =   $request->laboratory;   
@@ -497,6 +511,7 @@ $item->item_name    =   $request->generic_name;
 $item->item_description=  $request->item_description;  
 $item->item_category=$request->item_category;
 $item->warehouse_size=  $request->warehouse_size;
+$item->location =  $request->location;
 $item->catalog_number=$request->cat_number;
 $item->place_of_purchase=$request->place_of_purchase;
 $item->is_hazardous = $request->is_hazardous;
@@ -505,14 +520,14 @@ $item->unit_issue   =   $request->unit_issue;
 $item->minimum_level    =   $request->min;
 $item->maximum_level    =   $request->max;
 $item->item_image    = $image_name;
-$created_at    =   now();
+$created_at    = now();
 $updated_at    = null;
 $item->save();
 
      DB::commit();
        $settings=Setting::find(1);
             $uln_number=Item::select('uln')->latest()->take(1)->first();
- $number=str_pad($uln_number->uln+1, 4, '0', STR_PAD_LEFT);
+ $number=str_pad(mt_rand(0, 999999), 6, '0', STR_PAD_LEFT);
         
           $uln=$settings->uln_prefix.''.$number;
         return   response()->json([
@@ -535,7 +550,7 @@ $item->save();
 protected function validateItemInput (array $data){
        return Validator::make($data,[
         'generic_name'=>'required',
-        'warehouse_size'=>'required',
+       
        
     ]);
 }
@@ -573,21 +588,24 @@ protected function validateItemInput (array $data){
        $temp->user_email=auth()->user()->email;
          $temp->user_id=auth()->user()->id;
        $temp->is_saved='no';
-       $temp->storage_location=NULL;
+       $temp->storage_location=$request->store_location;
        $temp->item_pp=$request->item_pp;
        $temp->has_expiry=$request->has_expiry;
-     $temp->any_damaged=$request->any_damaged;
+       $temp->any_damaged=$request->any_damaged;
        $temp->suitable_for_use=$request->suitable_for_use;
 
        $temp->correct_temp=$request->correct_temp;
-  
+  $time = strtotime('01/01/2100');
+
+$default = date('Y-m-d',$time);
+
           if($request->has_expiry=="yes"){
             $temp->any_expired=$request->any_expired;
        $temp->item_quantity=$request->input('additional.' . $key. '.item_quantity');
 
        $temp->item_cost=$request->input('additional.' . $key. '.item_cost');
                     $temp->batch_number = $request->input('additional.' . $key. '.item_batch');
-                     $temp->expiry_date = $request->input('additional.' . $key . '.item_expiry');
+                     $temp->expiry_date = $request->input('additional.' . $key . '.item_expiry') ?? $default;
                      $temp->created_at=now();
                      $temp->updated_at=NULL;
                  }
@@ -665,7 +683,7 @@ $date=date('Y-m-d');
             })
             //->offset($start)
             //->limit($limit)
-            ->orderBy($order, $dir)
+            ->orderBy('i.item_name', 'desc')
             ->get();
 
           $totalFiltered =  $totalRec ;
@@ -728,7 +746,7 @@ $total=0;
    ]);
   }
   public function saveReceivedItems(Request $request){
-    
+    //dd($request);
   
   
   try{
@@ -743,7 +761,7 @@ $received->received_description=config('stocksentry.received_from_supplier');
 $received->grn_number=$request->grn_number;
 $received->po_reference=$request->po_ref;
 $received->receiving_date=date('Y-m-d', strtotime($request->receiving_date));
-$received->received_id=auth()->user()->id;
+$received->receiver_id=auth()->user()->id;
 $received->received_by=auth()->user()->name." ".auth()->user()->last_name;
 $received->checked_off_by=$request->checked_off_by;
 $received->checked_off_date=$request->check_off_date;
@@ -771,7 +789,7 @@ $inventory->quantity=$temp->item_quantity;
 $inventory->expiry_date=$temp->expiry_date;
 $inventory->cost=$temp->item_cost;
 $inventory->pp_no= $temp->item_pp;
-$inventory->created_at=now();
+$inventory->created_at=$request->receiving_date;
 $inventory->updated_at=NULL;
 $inventory->save();
 
@@ -785,6 +803,7 @@ $itemchecklist->inventory_id=$item_id;
 $itemchecklist->item_id=$temp->item_id;
 $itemchecklist->any_expired=$temp->any_expired;
 $itemchecklist->any_damaged=$temp->any_damaged;
+
 $itemchecklist->correct_temp=$temp->correct_temp;
 $itemchecklist->suitable_for_use=$temp->suitable_for_use;
 $itemchecklist->save();
@@ -916,7 +935,7 @@ $value = $request->id;
       $data['issue_date']=date('d, M Y',strtotime($info->issuing_date));
       
       //aapprove
-     if($info->approve_status=='approved'){
+     if($info->approved_by!=NULL){
          $approver=User::select('name','last_name','email','signature')->where('id',$info->approved_by)->first();
          $data['approved_by']=$approver->name.' '.$approver->last_name;
          $data['approver_sign']=$approver->signature??NULL;
@@ -926,7 +945,9 @@ $value = $request->id;
        $data['approved_by']='';
          $data['approver_sign']='';   
      }
-     if($info->received_by!=NULL){
+      
+      //receiver
+      if($info->received_by!=NULL){
      $receiver=User::where('id',$info->received_by)->select('name','last_name','signature')->first();
     $data['receiver']=$receiver->name." ".$receiver->last_name;
     $data['receiver_sign']=$receiver->signature;
@@ -935,7 +956,6 @@ else{
    $data['receiver']=NULL; 
     $data['receiver_sign']=NULL;
 }   
-      //
       
       $from_lab=Laboratory::where('id',$info->from_lab_id)->select('lab_name')->first();
     $to_lab= Laboratory::where('id',$info->to_lab_id)->select('lab_name')->first();
@@ -1485,8 +1505,9 @@ public function searchFilterItem(Request $request){
                 break;
 
                 case 'lab':
+                //dd($request->value);
                          $totalData = DB::table('items as i') 
-  
+   ->join('laboratories as l','l.id','=','i.laboratory_id')
            ->where('i.laboratory_id','=',$request->value)
             ->count();
 
@@ -1517,7 +1538,39 @@ public function searchFilterItem(Request $request){
               ->orderBy($order, $dir)
               ->get();
                   break;
-                  
+            case 'other':
+          $totalData = DB::table('items as i') 
+   ->join('laboratories as l','l.id','=','i.laboratory_id')
+           ->where('i.laboratory_id','=',$request->value)
+            ->count();
+
+                  $totalRec = $totalData;
+            // $totalData = DB::table('appointments')->count();
+
+            $limit = $request->input('length');
+            $start = $request->input('start');
+            $order = $columns[$request->input('order.0.column')];
+            $dir = $request->input('order.0.dir');
+
+            $search = $request->input('search.value');
+            
+                   $terms = DB::table('items AS a')
+        
+  //->join('laboratory_sections as ls','ls.id','=','a.laboratory_sections_id')
+ 
+  ->select('a.id as id','a.laboratory_id','a.uln','a.code','a.brand','a.catalog_number','a.item_image','a.item_name','a.is_hazardous','a.store_temp','a.unit_issue','a.minimum_level','a.maximum_level')
+             ->where('a.laboratory_id','=',$request->value)
+                  ->where(function ($query) use ($search){
+                    return  $query->where('a.item_name', 'LIKE', "%{$search}%")
+                    ->orWhere('a.code', 'LIKE', "%{$search}%")
+                      ->orWhere('a.brand', 'LIKE', "%{$search}%");        
+                      
+              })
+              ->offset($start)
+              ->limit($limit)
+              ->orderBy($order, $dir)
+              ->get();  
+             break;
                   case 'section':
                          $totalData = DB::table('items as i') 
   
@@ -1609,12 +1662,19 @@ public function searchFilterItem(Request $request){
                   $nestedData['brand']= $term->brand??"";
                   $nestedData['name']= $term->item_name??"";
                    $nestedData['warehouse_size']=$term->warehouse_size??"";
-                $nestedData['cat_number']=$term->catalog_number??"";
+                  //$nestedData['cat_number']=$term->catalog_number??"";
+                $nestedData['cat_number']=$term->id??"";
            $nestedData['hazardous']=$term->	is_hazardous;
              $nestedData['storage_temp']=$term->store_temp;
                       $nestedData['unit_issue']=$term->unit_issue;
                         $nestedData['stock_level']= "Minimum: ". $term->minimum_level.' Maximum: '.$term->maximum_level;
-    $nestedData['section']= $term->lab_name??'';
+                    if($request->type=="other"){
+                    $nestedData['section']="Other";
+                    }
+                    else{
+                       $nestedData['section']= $term->lab_name??'';
+                    }    
+ 
                 
                         $nestedData['options']="<a href='#' id='$term->id' onclick='EditItem(this.id)' style='color:#3B71CA' > <i class='fa fa-edit title='Edit Item'></i></a>";
                           $nestedData['options'].= "&nbsp  | &nbsp <a href='#' id='$term->id' onclick='deleteItem(this.id)' style='color:red'> <i class='fa fa-trash  title='Delete'></i></a>";
@@ -1639,12 +1699,12 @@ public function searchFilterItem(Request $request){
   
 }
 public function exportItemList(Request $request){
+
         $name = $request->item_name;
         $code = $request->item_code;
         $labName = $request->item_lab;
         $labSection = $request->item_section;
         $category=$request->item_category;
-        
 
      $query = Item::query();
         if (!empty($name)) {
@@ -1662,7 +1722,7 @@ public function exportItemList(Request $request){
         if (!empty($labSection)) {
             $query->where('laboratory_sections_id', '=', $labSection);
         }
-if(empty($name) && empty($code)&&empty($labName) && empty($labSection) && empty($category)){
+if((empty($name)) && (empty($code)) && $labName==100 && (empty($labSection)) && (empty($category))){
     $items=Item::get();
 }
 
@@ -1670,13 +1730,14 @@ else
 {
  $items = $query->get();
 }
-//dd( $consolidated);
-if(empty($items) && $items->count()==0){
+
+if( count( $items)==0){
     return response()->json([
         'message'=>"Items not Found",
         'error'=>false,
         ]);
 }
+
      $spreadsheet = new Spreadsheet();
 
      $spreadsheet->getActiveSheet()->getDefaultColumnDimension()->setWidth(100, 'pt');
@@ -1801,7 +1862,8 @@ $writer->save(public_path('reports').'/'.$name);
 
 
 return response()->json([
-   
+'message'=>"downloading...",
+  'error'=>true,
     'path'=>$url,
     ]);
 
@@ -1902,7 +1964,6 @@ public function receivedItemCheckList(Request $request){
 
     return view('inventory.receive_tabs.received_status',$data);
 }
-
 public function receivedCheckListLoad(Request $request){
   $columns = array(
             0 =>'id',
@@ -2012,7 +2073,7 @@ if($infor->section_id!=0){
    $sec=$section->section_name??'';
    $data['lab']=$lab->lab_name.' | '.$sec;
 }
-$checker=User::where('id',$infor->reviewed_by)->select('name','last_name','signature')->first();
+$checker=User::where('id',$infor->checked_off_by)->select('name','last_name','signature')->first();
 $checker_first=$checker->name??'';
 $checker_last=$checker->last_name??'';
 $data['checker']=$checker_first.' '.$checker_last;
@@ -2064,7 +2125,7 @@ if($infor->section_id!=0){
    $sec=$section->section_name??'';
    $data['lab']=$lab->lab_name.' | '.$sec;
 }
-$checker=User::where('id',$infor->reviewed_by)->select('name','last_name','signature')->first();
+$checker=User::where('id',$infor->checked_off_by)->select('name','last_name','signature')->first();
 $checker_first=$checker->name??'';
 $checker_last=$checker->last_name??'';
 $data['checker']=$checker_first.' '.$checker_last;
@@ -2113,4 +2174,117 @@ else{
    
  }
 }
+public function deletedItems(){
+       
+           return view('inventory.modal.deleted_items');
+
+    
+}
+public function loadDeletedItems(Request $request){
+$columns = array(
+              0 =>'id',
+              1=>'code',
+              2=> 'image',
+              3=>'brand',
+              4=>'name',
+              5=>'warehouse_size',
+              6=>'cat_number',
+              7=>'hazardous',
+              8=>'storage_temp',
+              9=>'unit_issue',
+              10=>'stock_level',
+              11=>'section',
+              12=>'options',
+              
+          );
+  $date=date('Y-m-d');
+            $totalData = DB::table('items as i') 
+  ->leftjoin('laboratories as l','l.id','=','i.laboratory_id')
+  //->join('laboratory_sections as ls','ls.id','=','i.laboratory_sections_id')
+
+          // ->where('created_at','=',$date)
+          ->whereNotNull('i.deleted_at')
+            ->count();
+
+                  $totalRec = $totalData;
+            // $totalData = DB::table('appointments')->count();
+
+            $limit = $request->input('length');
+            $start = $request->input('start');
+            $order = $columns[$request->input('order.0.column')];
+            $dir = $request->input('order.0.dir');
+
+            $search = $request->input('search.value');
+              $terms = DB::table('items AS a')
+            ->leftjoin('laboratories as l','l.id','=','a.laboratory_id')
+  //->join('laboratory_sections as ls','ls.id','=','a.laboratory_sections_id')
+   ->whereNotNull('a.deleted_at')
+  ->select('a.id as id','a.laboratory_id','a.uln','a.code','a.brand','a.catalog_number','a.item_image','a.item_name','a.warehouse_size','a.is_hazardous','a.store_temp','a.unit_issue','a.minimum_level','a.maximum_level','l.lab_name')
+            // ->where('created_at','=',$date)
+                  ->where(function ($query) use ($search){
+                    return  $query->where('a.item_name', 'LIKE', "%{$search}%")
+                    ->orWhere('a.code', 'LIKE', "%{$search}%")
+                      ->orWhere('a.brand', 'LIKE', "%{$search}%");        
+                      
+              })
+              ->offset($start)
+              ->limit($limit)
+              ->orderBy($order, $dir)
+              ->get();
+
+            $totalFiltered =  $totalRec ;
+  //  0 => 'id',
+          
+
+            $data = array();
+            if (!empty($terms)) {
+  $x=1;
+              foreach ($terms as $term) {
+  $c=url('/'). "/public/upload/items/".$term->item_image ;
+  $default=url('/')."/assets/icon/not_available.jpg";
+
+  
+
+                  $nestedData['id']="<input type='checkbox' id='$term->id'  name='check' onclick='selectCheckedItem(this.id)'/>";
+                      $nestedData['code']=$term->code;
+                  if(empty($term->item_image)){
+                        $nestedData['image'] = "<img src='$default' class='img-thumbnail' alt='...' width='50px' height='50px'>";  
+                  }
+                  else{
+                  $nestedData['image'] = "<img src='$c' class='img-thumbnail' alt='...' width='50px' height='50px'>";
+                  }
+                  $nestedData['brand']= $term->brand??"";
+                  $nestedData['name']= $term->item_name??"";
+                   $nestedData['warehouse_size']=$term->warehouse_size??"";
+                $nestedData['cat_number']=$term->catalog_number??"";
+           $nestedData['hazardous']=$term->	is_hazardous;
+             $nestedData['storage_temp']=$term->store_temp;
+                      $nestedData['unit_issue']=$term->unit_issue;
+                        $nestedData['stock_level']= "Min: ". $term->minimum_level." Max: ".$term->maximum_level;
+    $nestedData['section']= $term->lab_name??"";
+                
+                    
+                          $nestedData['options']= "<a href='#' id='$term->id' onclick='restoreItem(this.id)' style='color:green'> <i class='fas fa-trash-restore'></i>Restore</a>";
+                
+    
+                  
+                
+                    $x++;
+                  $data[] = $nestedData;
+            }
+        }
+
+        $json_data = array(
+          "draw" => intval($request->input('draw')),
+          "recordsTotal" => intval($totalData),
+          "recordsFiltered" => intval($totalFiltered),
+          "data" => $data
+      );
+
+        echo json_encode($json_data);
+            
+        
+  
+}
+
 }
