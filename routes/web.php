@@ -39,6 +39,8 @@ use App\Http\Controllers\ColdRoom\ColdRoomStockTakeController;
 use App\Http\Controllers\ColdRoom\ColdRoomStockDisposalController;
 use App\Http\Controllers\ColdRoom\ColdRoomAdjustmentController;
 use App\Http\Controllers\ColdRoom\ColdRoomIssueController;
+//reports cold
+use App\Http\Controllers\ColdRoomReportController;
 
 use App\Http\Controllers\DisposalReportController;
 use App\Http\Controllers\ContractController;
@@ -67,11 +69,11 @@ Route::get('/clear-cache', function () {
     $exitCode = Artisan::call('route:clear');
     $exitCode = Artisan::call('config:clear');
     echo 'DONE'; //Return anything
-    
+
     });
 Route::get('/schedule', function () {
     $exitCode = Artisan::call('schedule:run');
-  
+
     echo "Scheduled";
     });
   Route::get('/',[LoginController::class,'LoginForm'])->name('user.login');
@@ -79,6 +81,10 @@ Route::get('/schedule', function () {
 
 //Auth::routes();
 Route::post('/login',[LoginController::class,'adminLogin'])->name('login');
+Route::get('/resetEmail',[LoginController::class,'resetPasswordEmail'])->name('password.request');
+Route::post('PasswordReset',[LoginController::class,'passwordReset'])->name('password.email');
+Route::get('/reset-password/{token}',[LoginController::class,'confirmPassword'])->name('password.reset');
+Route::post('/update-password',[LoginController::class,'updatePassword'])->name('password.update');
 Route::post('/logout',[LoginController::class,'logout'])->name('logout');
 Route::group(['prefix' => 'Admin', 'middleware'=>'admin'], function () {
 
@@ -197,7 +203,7 @@ Route::post('backup_restore',[BackupController::class,'restoreBackup'])->name('b
 Route::get('/inventory-health',[StatsController::class,'showInventoryHealth'])->name('stats.pie');
 Route::get('/lab-inventory-health',[StatsController::class,'showLabInventoryHealth'])->name('labstats.pie');
 Route::get('/inventory-top_used',[StatsController::class,'showTopUsedItems'])->name('stats.area');
-Route::get('/inventory-health-modal',[StatsController::class, 'showHealthModal']) ->name('stats.detail_modal');  
+Route::get('/inventory-health-modal',[StatsController::class, 'showHealthModal']) ->name('stats.detail_modal');
 Route::get('/inventory-health-table',[StatsController::class, 'showHealthTable'])->name('stats.table');
 Route::get('/consumption-dashboard',[StatsController::class,'loadConsumptionTable'])->name('dashboard.consumption');
 Route::get('/stock-level-dashboard',[StatsController::class,'loadStockLevel'])->name('dashboard.stock-level');
@@ -243,7 +249,7 @@ Route::post('/order_mark_received',[ForecastController::class,'markReceivedAll']
 Route::post('/order_mark_no_number',[ForecastController::class,'markReceivedWithoutPurchaseNumber'])->name('order.mark_without_number');
 
 
-          
+
  //____________________________admin Reports________________________________//
 Route::get('/reports',[ReportController::class,'show'])->name('reports.show');
 Route::get('/expired-report',[ExpiredItemController::class, 'showExpiredItemsReport'])->name('report.expired');
@@ -293,7 +299,7 @@ Route::get('/loaddisposebyrange',[DisposalReportController::class,'loadByRange']
  Route::get('/order_by-location',[ReportController::class,'loadOrderByLocation'])->name('report.supplier_order_by_location');
  Route::get('/order_by-supplier',[ReportController::class,'loadOrderBySupplier'])->name('report.supplier_order_by_supplier');
  Route::get('/load-more_supplier_orders',[ReportController::class,'getOrderDetails'])->name('report.getorderdetails');
- 
+
  //_______________stock leveL________/
  Route::get('/stock_level',[ReportController::class,'stockLevelReport'])->name('report.stock-level');
  Route::get('/stock-load-leve',[ReportController::class,'loadStockLevelReport'])->name('report.load_stock_level');
@@ -364,7 +370,7 @@ Route::get('/load-approved',[RequisitionController::class, 'loadApproved'])->nam
 Route::get('/supplier',[SupplierController::class,'addSupplier'])->name('supplier.add');
 Route::post('/create-supplier',[SupplierController::class, 'createSupplier'])->name('supplier.create');
 
-Route::get('/suppliers',[SupplierController::class,'view'])->name('supplier.view');  
+Route::get('/suppliers',[SupplierController::class,'view'])->name('supplier.view');
 Route::get('/load_suppliers',[SupplierController::class,'loadAllSuppliers'])->name('supplier.load');
 Route::post('/supplier-delete', [SupplierController::class, 'destroy'])->name('supplier.destroy');
 Route::get('/supplier_edit', [SupplierController::class, 'editSupplier'])->name('supplier.edit');
@@ -381,7 +387,7 @@ Route::post('/lab-delete',[LaboratoryController::class,'deleteLab'])->name('lab.
 Route::get('/labDetails/{id}/{slug}',[LaboratoryController::class, 'showMoreLabData'])->name('lab.more');
 Route::get('/labsections',[LaboratoryController::class,'getSections'])->name('lab.sections');
 //__________________________________USER______________________________//
-Route::get('/user',[UserController::class,'addUser'])->name('user.add'); 
+Route::get('/user',[UserController::class,'addUser'])->name('user.add');
 Route::post('/moderator',[UserController::class, 'createModerator'])->name('user.create');
 Route::get('/receiver',[UserController::class, 'getReceiver'])->name('user.receiver');
 Route::get('/check-email',[UserController::class,'checkEmailExist'])->name('checkEmailExists');
@@ -475,7 +481,7 @@ Route::post('/stocktake_cancel',[StockTakeController::class,'cancelStockTaken'])
 Route::get('/inventory_search',[InventoryController::class, 'searchItem'])->name('inventory.search');
 //____________________________REPORTS__________________________________________________________//
 
- 
+
  //__________________________logging_____________________________________________/
 Route::get('/log',[ActivityLogController::class,'logActivity'])->name('logs');
 Route::post('/delete-log',[ActivityLogController::class,'deleteLog'])->name('delete-log');
@@ -539,7 +545,7 @@ Route::get('/lab-supplier-view',[SupplierController::class,'labSupplierView'])->
 //_____________________________LabAdmin Items___________________________//
 Route::get('/lab_item_create',[LabInventoryController::class,'labcreateNewItem'])->name('lab.item_create');
 //_____________________________________lab user__________________________________________________//
-Route::get('/lab-user',[UserController::class,'addLabUser'])->name('lab-user.add'); 
+Route::get('/lab-user',[UserController::class,'addLabUser'])->name('lab-user.add');
 Route::get('/lab-view-user',[UserController::class,'showLabUsers'])->name('lab-user.view');
 Route::get('/lab_load_user',[UserController::class,'loadLabUsers'])->name('lab_user.load');
 
@@ -568,7 +574,7 @@ Route::get('/lab_load_consumption_data',[ConsumptionController::class,'loadConsu
 
  //_____________________________________LabManager Reports Dashboard_________________________________________________//
 Route::get('/lab-consumption-report',[LabManagerReportController::class,'labConsumptionReport'])->name('dashboard.lab_manager_consumption');
-Route::get('/inventory-health-modal',[LabManagerReportController::class, 'showHealthModal']) ->name('stats.detail_modal');  
+Route::get('/inventory-health-modal',[LabManagerReportController::class, 'showHealthModal']) ->name('stats.detail_modal');
 Route::get('/inventory-health-table',[LabManagerReportController::class, 'showHealthTable'])->name('stats.table');
 Route::get('/consumption-dashboard',[LabManagerReportController::class,'loadConsumptionTable'])->name('dashboard.consumption');
 Route::get('/stock-level-dashboard',[LabManagerReportController::class,'loadStockLevel'])->name('dashboard.lab_manager_stock-level');
@@ -576,7 +582,7 @@ Route::get('/requisition-dashboard',[LabManagerReportController::class,'loadRequ
 Route::get('/orders-dashboard',[LabManagerReportController::class,'loadOrders'])->name('dashboard.lab_manager_orders');
 Route::get('/lab-percentage',[LabManagerReportController::class,'labUsagePercentage'])->name('dashboard.percentage');
 Route::get('/period-report',[LabManagerReportController::class, 'reportPeriod'])->name('dashboard.lab_manager_period');
-Route::get('/compare-report',[LabManagerReportController::class,'compareReport'])->name('dashboard.lab_manager_compare'); 
+Route::get('/compare-report',[LabManagerReportController::class,'compareReport'])->name('dashboard.lab_manager_compare');
 Route::get('/item_details',[LabManagerReportController::class, 'itemDetails'])->name('dashboard.item_details');
 Route::get('/top_consumed',[LabManagerReportController::class, 'getTopConsumed'])->name('dashboard.top_consumed');
 Route::get('/latest_orders',[LabManagerReportController::class, 'getLatestOrders'])->name('dashboard.latestOrders');
@@ -628,7 +634,7 @@ Route::get('/red/{name}',[LabManagerTableReportController::class,'download'])->n
  Route::get('/order_by-location',[LabManagerTableReportController::class,'loadOrderByLocation'])->name('lab_manager_report.supplier_order_by_location');
  Route::get('/order_by-supplier',[LabManagerTableReportController::class,'loadOrderBySupplier'])->name('lab_manager_report.supplier_order_by_supplier');
  Route::get('/load-more_supplier_orders',[LabManagerTableReportController::class,'getOrderDetails'])->name('lab_manager_report.getorderdetails');
- 
+
  //_______________stock leveL________/
  Route::get('/stock_level',[LabManagerTableReportController::class,'stockLevelReport'])->name('lab_manager_report.stock-level');
  Route::get('/stock-load-level',[LabManagerTableReportController::class,'loadStockLevelReport'])->name('lab_manager_report.load_stock_level');
@@ -652,12 +658,12 @@ Route::get('/lab_settings',[UserSettingController::class,'labSetting'])->name('l
 //____________________________Section Head________________________________________________//
 Route::group(['prefix'=>'SectionHead','middleware'=>'section_head'],function(){
 Route::get('SectionHome',[SectionHeadController::class,'home'])->name('section.home');
-	
+
 });
 
 Route::group([ 'prefix'=>'LabUser','middleware'=>'user'], function () {
 
- Route::get('/user',[ClerkController::class,'index'])->name('user.home');  
+ Route::get('/user',[ClerkController::class,'index'])->name('user.home');
 Route::get('/user-bincard',[SectionInventoryController::class, 'showSectionBinCard'])->name('section.bincard_inventory');
 Route::get('/user_consumption',[SectionInventoryController::class, 'showSectionConsumption'])->name('section.showupdate-consumption');
 Route::get('/user-stocktake',[SectionInventoryController::class, 'showSectionStockTake'])->name('section.showstocktake');
@@ -708,7 +714,7 @@ Route::get('/section-requisition-dashboard',[SectionReportController::class,'loa
 Route::get('/section-orders-dashboard',[SectionReportController::class,'loadOrders'])->name('dashboard.section_orders');
 Route::get('/section-percentage',[SectionReportController::class,'labUsagePercentage'])->name('dashboard.percentage');
 Route::get('/section-period-report',[SectionReportController::class, 'reportPeriod'])->name('dashboard.section_period');
-Route::get('/section-compare-report',[SectionReportController::class,'compareReport'])->name('dashboard.section_compare'); 
+Route::get('/section-compare-report',[SectionReportController::class,'compareReport'])->name('dashboard.section_compare');
 
 
 //___________________________user REPORT TABLES ________________________________________//
@@ -754,6 +760,11 @@ Route::get('/room_item_disposed',[ColdRoomController::class,'showDisposed'])->na
 Route::get('/room_issue_report',[ColdRoomController::class,'showIssue'])->name('cold_report.show-issue');
 Route::get('/room_stock_level_lab',[ColdRoomController::class,'showLabStockLevel'])->name('cold.stock_level_selected');
 Route::get('/room_stock_variance',[ColdRoomController::class, 'showStockVariance'])->name('cold_report.variance');
+
+//_______________________________coldroom expired______________________________//
+Route::get('/expired-table',[ColdRoomReportController::class, 'loadColdRoomExpired'])->name('coldroom_report.expired_items');
+Route::get('/load_by_filtered',[ColdRoomReportController::class, 'loadExpiredFiltered'])->name('coldroom_report.expiredbyfiltered');
+Route::get('/download_expired',[ColdRoomReportController::class,'downloadExpired'])->name('coldroom_report.expired_download');
 ///_____________________schedule report______________________________//
 Route::get('/room_schedule',[ScheduleReportController::class,'Coldshow'])->name('cold_report.scheduled');
 //_______________________setting_____________________________________//

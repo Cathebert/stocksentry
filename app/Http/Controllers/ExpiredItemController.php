@@ -53,6 +53,7 @@ public function loadExpiredItemsReport(Request $request){
             8=>'cost',
             9=>'est_loss',
             10=>'status',
+            11=>'lab',
         ); 
     
    $totalData = DB::table('inventories as t') 
@@ -109,9 +110,10 @@ $cost=$term->quantity* $term->cost;
                 $nestedData['id']=$x;
                 $nestedData['item']=$term->code;
                 $nestedData['brand']= $term->brand;
-                    $nestedData['batch_number']= $term->batch_number;
+                $nestedData['batch_number']= $term->batch_number;
                  $nestedData['name']= $term->item_name;
-                    $nestedData['location']= $term->lab_name;
+                    $nestedData['location']= $term->location??"Store";
+                    $nestedData['lab']= $term->lab_name;
                  $nestedData['expire_date'] = $term->expiry_date;
               $nestedData['quantity'] = $term->quantity;
                $nestedData['cost'] = $term->cost;
@@ -322,6 +324,7 @@ protected function getMoreData($request){
             8=>'cost',
             9=>'est_loss',
             10=>'status',
+            11=>'lab',
         ); 
     
    $totalData = DB::table('inventories as t') 
@@ -347,7 +350,7 @@ protected function getMoreData($request){
             $terms = DB::table('inventories as t') 
               ->join('items AS s', 's.id', '=', 't.item_id')
                ->join('laboratories as l','l.id','=','t.lab_id')
-              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','t.storage_location','s.item_name','t.expiry_date')
       ->where('t.quantity','>',0)
      ->where('t.expiry_date', '<', $date)
       ->where('t.expiry_date','<>','0000-00-00')
@@ -381,7 +384,8 @@ $cost=$term->quantity* $term->cost;
                 $nestedData['brand']= $term->brand;
                     $nestedData['batch_number']= $term->batch_number;
                  $nestedData['name']= $term->item_name;
-                    $nestedData['location']= $term->lab_name;
+                    $nestedData['location']= $term->storage_location??"Store";
+                      $nestedData['lab']= $term->lab_name;
                  $nestedData['expire_date'] = $term->expiry_date;
               $nestedData['quantity'] = $term->quantity;
                $nestedData['cost'] = $term->cost;
@@ -431,6 +435,7 @@ protected function getData($request,$start_date, $end){
             8=>'cost',
             9=>'est_loss',
             10=>'status',
+            11=>'lab'
         ); 
  $totalData = DB::table('inventories as t') 
               ->join('items AS s', 's.id', '=', 't.item_id')
@@ -455,7 +460,7 @@ $limit = $request->input('length');
             $terms = DB::table('inventories as t') 
               ->join('items AS s', 's.id', '=', 't.item_id')
                ->join('laboratories as l','l.id','=','t.lab_id')
-              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','t.storage_location','s.item_name','t.expiry_date')
               ->where('t.quantity','>',0)
               
         //->where('t.lab_id',$lab)
@@ -490,7 +495,8 @@ $cost=$term->quantity* $term->cost;
                 $nestedData['brand']= $term->brand;
                     $nestedData['batch_number']= $term->batch_number;
                  $nestedData['name']= $term->item_name;
-                    $nestedData['location']= $term->lab_name;
+                    $nestedData['location']= $term->storage_location??"Store";
+                      $nestedData['lab']= $term->lab_name;
                  $nestedData['expire_date'] = $term->expiry_date;
               $nestedData['quantity'] = $term->quantity;
                $nestedData['cost'] = $term->cost;
@@ -542,6 +548,7 @@ protected function getDataWithLab($request,$start_date, $end,$lab){
             8=>'cost',
             9=>'est_loss',
             10=>'status',
+            11=>'lab',
         ); 
  $totalData = DB::table('inventories as t') 
               ->join('items AS s', 's.id', '=', 't.item_id')
@@ -565,7 +572,7 @@ $limit = $request->input('length');
             $terms = DB::table('inventories as t') 
               ->join('items AS s', 's.id', '=', 't.item_id')
                ->join('laboratories as l','l.id','=','t.lab_id')
-              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','t.storage_location','s.item_name','t.expiry_date')
               ->where('t.quantity','>',0)
         ->where('t.lab_id',$lab)
      ->whereBetween('t.expiry_date', [$start_date, $end])
@@ -599,7 +606,8 @@ $cost=$term->quantity* $term->cost;
                 $nestedData['brand']= $term->brand;
                     $nestedData['batch_number']= $term->batch_number;
                  $nestedData['name']= $term->item_name;
-                    $nestedData['location']= $term->lab_name;
+                    $nestedData['location']= $term->storage_location??"Store";
+                      $nestedData['lab']= $term->lab_name;
                  $nestedData['expire_date'] = $term->expiry_date;
               $nestedData['quantity'] = $term->quantity;
                $nestedData['cost'] = $term->cost;
@@ -652,6 +660,7 @@ protected function getPrevious($request,$date){
             8=>'cost',
             9=>'est_loss',
             10=>'status',
+            11=>'lab',
         ); 
     
    $totalData = DB::table('inventories as t') 
@@ -678,7 +687,7 @@ protected function getPrevious($request,$date){
             $terms = DB::table('inventories as t') 
               ->join('items AS s', 's.id', '=', 't.item_id')
                ->join('laboratories as l','l.id','=','t.lab_id')
-              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','t.storage_location','s.item_name','t.expiry_date')
               ->where('t.quantity','>',0)
        // ->where('t.lab_id',$lab)
      ->where('t.expiry_date', '=', $date)
@@ -712,7 +721,8 @@ $cost=$term->quantity* $term->cost;
                 $nestedData['brand']= $term->brand;
                     $nestedData['batch_number']= $term->batch_number;
                  $nestedData['name']= $term->item_name;
-                    $nestedData['location']= $term->lab_name;
+                    $nestedData['location']= $term->storage_location??"Store";
+                  $nestedData['lab']= $term->lab_name;
                  $nestedData['expire_date'] = $term->expiry_date;
               $nestedData['quantity'] = $term->quantity;
                $nestedData['cost'] = $term->cost;
@@ -763,6 +773,7 @@ protected function getPreviousWithLab($request,$date,$lab){
             8=>'cost',
             9=>'est_loss',
             10=>'status',
+            11=>'lab',
         ); 
     
    $totalData = DB::table('inventories as t') 
@@ -789,7 +800,7 @@ protected function getPreviousWithLab($request,$date,$lab){
             $terms = DB::table('inventories as t') 
               ->join('items AS s', 's.id', '=', 't.item_id')
                ->join('laboratories as l','l.id','=','t.lab_id')
-              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','t.storage_location','s.item_name','t.expiry_date')
               ->where('t.quantity','>',0)
         ->where('t.lab_id',$lab)
      ->where('t.expiry_date', '=', $date)
@@ -823,7 +834,8 @@ $cost=$term->quantity* $term->cost;
                 $nestedData['brand']= $term->brand;
                     $nestedData['batch_number']= $term->batch_number;
                  $nestedData['name']= $term->item_name;
-                    $nestedData['location']= $term->lab_name;
+                    $nestedData['location']= $term->storage_location??"Store";
+                      $nestedData['lab']= $term->lab_name;
                  $nestedData['expire_date'] = $term->expiry_date;
               $nestedData['quantity'] = $term->quantity;
                $nestedData['cost'] = $term->cost;
@@ -872,6 +884,7 @@ protected function getTableData($request){
             8=>'cost',
             9=>'est_loss',
             10=>'status',
+            11=>'lab',
         ); 
     
    $totalData = DB::table('inventories as t') 
@@ -897,7 +910,7 @@ protected function getTableData($request){
             $terms = DB::table('inventories as t') 
               ->join('items AS s', 's.id', '=', 't.item_id')
                ->join('laboratories as l','l.id','=','t.lab_id')
-              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','t.storage_location','s.item_name','t.expiry_date')
       ->where('t.quantity','>',0)
      ->where('t.expiry_date', '<', $date)
          
@@ -924,13 +937,14 @@ $total=0;
             foreach ($terms as $term) {
 
 
-$cost=$term->quantity* $term->cost;
+$cost=$term->quantity * $term->cost;
                 $nestedData['id']=$x;
                 $nestedData['item']=$term->code;
                 $nestedData['brand']= $term->brand;
                     $nestedData['batch_number']= $term->batch_number;
                  $nestedData['name']= $term->item_name;
-                    $nestedData['location']= $term->lab_name;
+                    $nestedData['location']= $term->storage_location??"Store";
+                      $nestedData['lab']= $term->lab_name;
                  $nestedData['expire_date'] = $term->expiry_date;
               $nestedData['quantity'] = $term->quantity;
                $nestedData['cost'] = $term->cost;
@@ -1053,6 +1067,7 @@ protected function getRangeData($request,$start_date, $end){
             8=>'cost',
             9=>'est_loss',
             10=>'status',
+            11=>'lab',
         ); 
  $totalData = DB::table('inventories as t') 
               ->join('items AS s', 's.id', '=', 't.item_id')
@@ -1075,7 +1090,7 @@ $limit = $request->input('length');
             $terms = DB::table('inventories as t') 
               ->join('items AS s', 's.id', '=', 't.item_id')
                ->join('laboratories as l','l.id','=','t.lab_id')
-              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','t.storage_location','s.item_name','t.expiry_date')
      ->where('t.quantity','>',0)
      ->whereBetween('t.expiry_date', [$start_date, $end])
  
@@ -1108,7 +1123,8 @@ $cost=$term->quantity* $term->cost;
                 $nestedData['brand']= $term->brand;
                     $nestedData['batch_number']= $term->batch_number;
                  $nestedData['name']= $term->item_name;
-                    $nestedData['location']= $term->lab_name;
+                    $nestedData['location']= $term->storage_location??"Store";
+                      $nestedData['lab']= $term->lab_name;
                  $nestedData['expire_date'] = $term->expiry_date;
               $nestedData['quantity'] = $term->quantity;
                $nestedData['cost'] = $term->cost;
@@ -1159,6 +1175,7 @@ protected function getRangePrevious($request,$date){
             8=>'cost',
             9=>'est_loss',
             10=>'status',
+            11=>'lab',
         ); 
     
    $totalData = DB::table('inventories as t') 
@@ -1184,7 +1201,7 @@ protected function getRangePrevious($request,$date){
             $terms = DB::table('inventories as t') 
               ->join('items AS s', 's.id', '=', 't.item_id')
                ->join('laboratories as l','l.id','=','t.lab_id')
-              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','t.storage_location','s.item_name','t.expiry_date')
       ->where('t.quantity','>',0)
      ->where('t.expiry_date', '=', $date)
           
@@ -1217,7 +1234,8 @@ $cost=$term->quantity* $term->cost;
                 $nestedData['brand']= $term->brand;
                     $nestedData['batch_number']= $term->batch_number;
                  $nestedData['name']= $term->item_name;
-                    $nestedData['location']= $term->lab_name;
+                    $nestedData['location']= $term->storage_location??'Store';
+                      $nestedData['lab']= $term->lab_name;
                  $nestedData['expire_date'] = $term->expiry_date;
               $nestedData['quantity'] = $term->quantity;
                $nestedData['cost'] = $term->cost;
@@ -1271,6 +1289,7 @@ protected function loadExpiredByLab($request, $lab){
             8=>'cost',
             9=>'est_loss',
             10=>'status',
+            11=>'lab',
         ); 
     
    $totalData = DB::table('inventories as t') 
@@ -1297,7 +1316,7 @@ protected function loadExpiredByLab($request, $lab){
             $terms = DB::table('inventories as t') 
               ->join('items AS s', 's.id', '=', 't.item_id')
                ->join('laboratories as l','l.id','=','t.lab_id')
-              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','t.storage_location','s.item_name','t.expiry_date')
               ->where('t.quantity','>',0)
         ->where('t.lab_id',$lab)
      ->where('t.expiry_date', '<', $date)
@@ -1331,7 +1350,8 @@ $cost=$term->quantity* $term->cost;
                 $nestedData['brand']= $term->brand;
                     $nestedData['batch_number']= $term->batch_number;
                  $nestedData['name']= $term->item_name;
-                    $nestedData['location']= $term->lab_name;
+                    $nestedData['location']= $term->storage_location??'Store';
+                      $nestedData['lab']= $term->lab_name;
                  $nestedData['expire_date'] = $term->expiry_date;
               $nestedData['quantity'] = $term->quantity;
                $nestedData['cost'] = $term->cost;
@@ -1702,7 +1722,7 @@ $end=   $expired['end'];
 $data['info'] = DB::table('inventories as t') 
               ->join('items AS s', 's.id', '=', 't.item_id')
                ->join('laboratories as l','l.id','=','t.lab_id')
-              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','s.item_name','t.expiry_date')
+              ->select('t.id as id','l.lab_name','s.code','s.brand','s.item_description','t.batch_number','t.item_id','t.quantity','t.cost','t.storage_location','s.item_name','t.expiry_date')
               ->where('t.quantity','>',0)
     ->where('t.lab_id',$lab)
      ->whereBetween('t.expiry_date', [$start, $end])
@@ -1770,10 +1790,11 @@ $spreadsheet->getActiveSheet()
     ->setCellValue('B8', 'Code')
     ->setCellValue('C8', 'Batch Number')
     ->setCellValue('D8', 'Location')
-    ->setCellValue('E8', 'Expiration')
-    ->setCellValue('F8', 'Quantity')
-    ->setCellValue('G8', 'Cost')
-    ->setCellValue('H8', 'Loss');
+     ->setCellValue('E8', 'Lab')
+    ->setCellValue('F8', 'Expiration')
+    ->setCellValue('G8', 'Quantity')
+    ->setCellValue('H8', 'Cost')
+    ->setCellValue('I8', 'Loss');
 
 $num=9;
 $total=0;
@@ -1789,6 +1810,7 @@ $overall_total=$overall_total+$total;
     $data['info'][$x]->code, 
     $data['info'][$x]->batch_number,
     $data['info'][$x]->lab_name,
+     $data['info'][$x]->storage_location,
     $data['info'][$x]->expiry_date,
     $data['info'][$x]->quantity,
     $data['info'][$x]->cost,
@@ -1807,14 +1829,14 @@ $spreadsheet->getActiveSheet()
     ->setCellValue('A'.$step, 'Total');
   $spreadsheet->getActiveSheet()->getStyle('A'.$step)->getFont()->setBold(true);
     $spreadsheet->getActiveSheet()
-    ->setCellValue('H'.$step, $overall_total);
-    $spreadsheet->getActiveSheet()->getStyle('H'.$step)->getNumberFormat()
+    ->setCellValue('I'.$step, $overall_total);
+    $spreadsheet->getActiveSheet()->getStyle('I'.$step)->getNumberFormat()
     ->setFormatCode('#,##0.00');
-    $spreadsheet->getActiveSheet()->getStyle('H'.$step)->getFont()->setBold(true);
+    $spreadsheet->getActiveSheet()->getStyle('I'.$step)->getFont()->setBold(true);
 
 // Create Table
 
-$table = new Table('A8:H'.$num, 'Expired_Data');
+$table = new Table('A8:I'.$num, 'Expired_Data');
 
 // Create Columns
 

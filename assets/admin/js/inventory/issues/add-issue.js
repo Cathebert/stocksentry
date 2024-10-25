@@ -5,7 +5,7 @@ var idList = [];
 var changed = [];
 var check_quantity = $("#check_quantity").val();
 function getReceiver(id) {
-   
+
     var get_receiver = $("#get_receiver").val();
     $.ajax({
         method: "GET",
@@ -32,19 +32,19 @@ function getReceiver(id) {
                         "</option>"
                 );
             }
-            
+
         },
     });
 }
 $("#add_new_issue").on("click", function () {
-  
+
      $('#my_save').removeClass('fa-save');
                 $('#my_save').addClass('fa-spin fa-spinner');
                 $("button[name='save_issue']").attr("disabled", "disabled").button('refresh');
-    var p = "";
+    let li = "";
     var dat_url = $("#data_url").val();
 
-    p = $("#issue_items").DataTable({
+    li = $("#issue_items").DataTable({
         processing: true,
         serverSide: true,
         destroy: true,
@@ -99,16 +99,16 @@ function getText(id, name) {
       var check_quantity = $("#check_quantity").val();
      var quantity=name+'_';
       var startsWithBan = obj.find((item) =>item.startsWith(quantity));
-             
+
          if (!w) {
              document.getElementById(name).checked = false;
              if (startsWithBan) {
                  obj = arrayRemove(obj, startsWithBan);
-             } 
+             }
          } else {
-           
+
              document.getElementById(name).checked = true;
-            
+
  document.getElementById('l_'+name).hidden=false;
              if (startsWithBan) {
                  obj = arrayRemove(obj, startsWithBan);
@@ -139,7 +139,7 @@ function getText(id, name) {
                             content: data.message,
                         });
                          $("#q_"+name).val('');
-                         
+
                          document.getElementById(name).checked = false
                     }
                 },
@@ -149,7 +149,7 @@ function getText(id, name) {
                 },
             });
              }
-          
+
          }
 }
 $("#save_issue").on("click", function () {
@@ -188,11 +188,11 @@ $("#save_issue").on("click", function () {
         return;
     }
      if (changed.length > 0) {
-         
+
          obj = changed;
      }
      console.log(obj);
-  
+
 
     $.ajaxSetup({
         headers: {
@@ -350,7 +350,7 @@ $("#test").on("click", function () {
                 html += "<td>" + data.data[i]["item_name"] + "</td>";
                 html += "<td>" + data.data[i]["code"] + "</td>";
                 html += "<td>" + data.data[i]["batch_number"] + "</td>";
-              
+
                 html += "<td>" + data.data[i]["unit_issue"] + "</td>";
                 html += "<td>" + data.data[i]["expiry_date"] + "</td>";
                   html +=
@@ -362,7 +362,7 @@ $("#test").on("click", function () {
                 html +="<td id=cost_"+data.data[i]["id"]+">"+data.data[i]["cost"]+"</td>";
                 html += "<td id=total_"+data.data[i]["id"]+">" + cost + "</td>";
                 html +="<td><button type='button' onclick='editRow("+data.data[i]["id"]+")'><i class='fa fa-edit'></i></button> || <button type='button' id="+data.data[i]["id"]+" onclick='removeRow(this,this.id)' ><i class='fa fa-trash' style='color:red'></i></button</td></tr>";
-            
+
                 num++;
             }
             html += " </tbody></table></div>";
@@ -382,21 +382,21 @@ function AddIdToArray(id) {
      if (document.getElementById(id).checked == true) {
            $("#q_"+id).focus();
          document.getElementById("q_" + id).hidden = false;
-     
-         
+
+
      } else {
-         $("#q_" + id).val('') 
+         $("#q_" + id).val('')
  let startsWithBan = obj.find((item) =>
                  item.startsWith(id+"_")
-                 
+
              );
 
              if (startsWithBan) {
                  obj = arrayRemove(obj, startsWithBan);
-             } 
-         
+             }
+
      }
-  
+
  }
 
 function ViewItem(id) {
@@ -469,7 +469,7 @@ function ApproveItem(id) {
                             toastr["success"](data.message);
                             var approved=$("#approved_badge").text();
                              var request = $("#requests-badge").text();
-                           
+
                              var add_one = parseInt(request);
                              var added = add_one - 1;
                              var sub_one=parseInt(approved)
@@ -519,7 +519,7 @@ function VoidItem(id) {
     });
 }
 function removeRow(button, id) {
-   
+
     $.confirm({
         title: "Confirm!",
         content: "Do you really  want to delete this entry!",
@@ -536,12 +536,12 @@ function removeRow(button, id) {
                         if (startsWithword) {
                             obj = arrayRemove(obj, startsWithword);
                             if(changed.length>0){
-                              changed=arrayRemove(changed,startsWithword);  
+                              changed=arrayRemove(changed,startsWithword);
                             }
-                           
+
                         } else {
                         }
-                       
+
                     } else {
                     }
                     // Find the parent row and remove it
@@ -604,7 +604,7 @@ function arrayRemove(arr, value) {
  checkQuantity(id, newQuantityInt,costInt);
 
 
- 
+
 }
 function checkQuantity(id,quantity,cost){
      $.ajax({
@@ -637,7 +637,7 @@ changed.length = 0;
                    ).innerText;
                    let tot_cost = parseInt(d);
                    totalCost += tot_cost;
-    
+
                    changed.push(item_id + "_" + item_quantity);
                   console.log("Edit change"+changed)
                }
@@ -650,7 +650,7 @@ changed.length = 0;
                        type: "red",
                        content: data.message,
                    });
-                 
+
              }
          },
          error: function (jqXHR, textStatus, errorThrown) {
@@ -660,7 +660,8 @@ changed.length = 0;
      });
 }
 function reloadTable(){
-    t = $("#issue_approvals_items").DataTable({
+    let c=''
+    c = $("#issue_approvals_items").DataTable({
     processing: true,
     serverSide: true,
     paging: true,

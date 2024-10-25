@@ -2685,6 +2685,7 @@ public function loadByLocation(Request $request){
             7=>'store_temp',
             8=>'total',
             9=>'status',
+
           
         ); 
 
@@ -4547,6 +4548,7 @@ $x=1;
             7=>'store_temp',
             8=>'total',
             9=>'status',
+            10=>'lab'
           
         );
     $totalData =DB::table('items as t')
@@ -5149,9 +5151,9 @@ return view('provider.reports.list.expired',$data);
 
      $date=Carbon::now();
   $columns = array(
-            0 =>'id',
+            0=>'id',
             1=>'item',
-            2=> 'brand',
+            2=>'brand',
             3=>'batch_number',
             4=>'Name',
             5=>'location',
@@ -5160,6 +5162,7 @@ return view('provider.reports.list.expired',$data);
             8=>'cost',
             9=>'est_loss',
             10=>'status',
+            11=>'lab'
         ); 
     
    $totalData = DB::table('inventories as t') 
@@ -5220,7 +5223,8 @@ $cost=$term->quantity* $term->cost;
                 $nestedData['brand']= $term->brand;
                     $nestedData['batch_number']= $term->batch_number;
                  $nestedData['name']= $term->item_name;
-                    $nestedData['location']= $term->lab_name;
+                    $nestedData['location']= $term->location??'';
+                    $nestedData['lab']= $term->lab_name;
                  $nestedData['expire_date'] = $term->expiry_date;
               $nestedData['quantity'] = $term->quantity;
                $nestedData['cost'] = $term->cost;
@@ -5354,6 +5358,7 @@ protected function getRangePrevious($request,$date){
             8=>'cost',
             9=>'est_loss',
             10=>'status',
+            11=>'lab'
         ); 
     
    $totalData = DB::table('inventories as t') 
@@ -5412,7 +5417,8 @@ $cost=$term->quantity* $term->cost;
                 $nestedData['brand']= $term->brand;
                     $nestedData['batch_number']= $term->batch_number;
                  $nestedData['name']= $term->item_name;
-                    $nestedData['location']= $term->lab_name;
+                    $nestedData['location']= $term->location??'';
+                    $nestedData['lab']= $term->lab_name;
                  $nestedData['expire_date'] = $term->expiry_date;
               $nestedData['quantity'] = $term->quantity;
                $nestedData['cost'] = $term->cost;
@@ -5520,7 +5526,8 @@ $cost=$term->quantity* $term->cost;
                 $nestedData['brand']= $term->brand;
                     $nestedData['batch_number']= $term->batch_number;
                  $nestedData['name']= $term->item_name;
-                    $nestedData['location']= $term->lab_name;
+                    $nestedData['location']= $term->location??'Store';
+                    $nestedData['lab']= $term->lab_name;
                  $nestedData['expire_date'] = $term->expiry_date;
               $nestedData['quantity'] = $term->quantity;
                $nestedData['cost'] = $term->cost;
@@ -7437,6 +7444,7 @@ protected function getDefaultData($request ){
             8=>'cost',
             9=>'est_loss',
             10=>'status',
+            11=>'lab',
         ); 
     
    $totalData = DB::table('inventories as t') 
@@ -7495,7 +7503,8 @@ $cost=$term->quantity* $term->cost;
                 $nestedData['brand']= $term->brand;
                     $nestedData['batch_number']= $term->batch_number;
                  $nestedData['name']= $term->item_name;
-                    $nestedData['location']= $term->lab_name;
+                    $nestedData['location']= $term->location??'Store';
+                    $nestedData['lab']= $term->lab_name;
                  $nestedData['expire_date'] = $term->expiry_date;
               $nestedData['quantity'] = $term->quantity;
                $nestedData['cost'] = $term->cost;

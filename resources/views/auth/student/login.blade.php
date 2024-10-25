@@ -58,33 +58,33 @@
                                     {{ __('Login') }}
                                 </button>
 
-                                @if (Route::has('password.request'))
-                                    <a class="btn btn-link" href="{{ route('password.request') }}">
+
+                                    <a class="btn btn-link  float-right" href="{{ route('password.request') }}">
                                         {{ __('Forgot Your Password?') }}
                                     </a>
-                                @endif
+
                             </div>
                         </div>
                     </form>
                 </div>
-               
+
             </div>
         </div>
     </div>
      <p class="text-danger" style="text-align:center">NB: To log into a different section use username with lab code for example, user.st .Here are the codes for labs</p>
 
-   
+
 <div class="row">
   <div class="col-12">
-     
+
           @foreach ( $laboratories as $lab)
            <span >{{$lab->lab_name}}</span>
             <span class="badge badge-primary badge-pill" style="text-align:right">{{ strtolower($lab->lab_code) }}</span>
         ||
-          
+
      @endforeach
- 
-  
+
+
 
 </div>
 </div>

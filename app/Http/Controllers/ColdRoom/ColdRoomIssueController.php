@@ -45,7 +45,6 @@ $data['lab_name']='Logged Into: '.$lab->lab_name;
     }
 
 
-
     public function showColdRoomReceived(){
       $data['laboratories']=Laboratory::get();
         $data['sections']=LaboratorySection::get();

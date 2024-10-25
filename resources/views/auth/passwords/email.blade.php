@@ -8,7 +8,8 @@
                 <div class="card-header">{{ __('Reset Password') }}</div>
 
                 <div class="card-body">
-                    @if (session('status'))
+
+                    @if (Session::has('status'))
                         <div class="alert alert-success" role="alert">
                             {{ session('status') }}
                         </div>
@@ -18,7 +19,14 @@
                         @csrf
 
                         <div class="row mb-3">
-                            <label for="email" class="col-md-4 col-form-label text-md-end">{{ __('Email Address') }}</label>
+
+
+                            @if (Session::has('status'))
+                        <div class="alert alert-success" role="alert">
+                            {{ session('status') }}
+                        </div>
+                   @else
+                    <label for="email" class="col-md-4 col-form-label text-md-end">{{ __('Email Address') }}</label>
 
                             <div class="col-md-6">
                                 <input id="email" type="email" class="form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" required autocomplete="email" autofocus>
@@ -29,6 +37,7 @@
                                     </span>
                                 @enderror
                             </div>
+                            @endif
                         </div>
 
                         <div class="row mb-0">

@@ -6,25 +6,25 @@
       </div>
       <div class="modal-body">
     <div class="row" >
-  
+
   <div class="col-sm-12">
-    
+
     <div class="card">
- 
+
       <div class="card-body">
-        
+
         <h5 class="card-title"> <strong>Item</strong></h5>
-       
+
 <form method="post"  enctype="multipart/form-data" action="{{route('item.add_temp')}}" id="add_form_Modal">
           @csrf
-   
+
        <input type="hidden" class="form-control" id="add_data" value="{{route('item.add_temp')}}">
-  
- 
+
+
           <input type="hidden" class="form-control" id="table_data" value="{{route('inventory.getItems')}}">
             <input type="hidden" class="form-control" id="item_edit" value="{{route('item.item_delete')}}">
                <input type="hidden" class="form-control" id="item_id" value="{{$item->id}}">
-  
+
   <div class="row">
 
   <div class="col-md-4 col-sm-12 col-xs-12 form-group">
@@ -51,27 +51,27 @@
     <div class="col-md-4 col-sm-12 col-xs-12 form-group">
     <label for="exampleInputPassword1">Hazardous</label>
     <select class="form-control" id="is_hazardous" name="is_hazardous" style="width: 75%" disabled readonly>
-   
+
     <option value="No" {{(!empty($item->is_hazardous) && $item->is_hazardous =='no') ? "Selected" : "" }}>No</option>
     <option value="Yes"{{(!empty($item->is_hazardous) && $item->is_hazardous =='yes') ? "Selected" : "" }}>Yes</option>
- 
+
   </select>
   </div>
   <div class="col-md-4 col-sm-12 col-xs-12 form-group">
     <label for="exampleInputPassword1">Storage Condition Temp</label>
     <select class="form-control" id="inputGroupSelect02" name="store_temp" style="width: 75%"   readonly>
-   
+
     <option value="cold chain" {{(!empty($item->store_temp) && $item->store_temp =='cold chain') ? "Selected" : "" }}>Cold Chain</option>
     <option value="room temp" {{(!empty($item->store_temp) && $item->store_temp =='room temp') ? "Selected" : "" }}>Room temp</option>
- 
+
   </select>
   </div>
   <div class="col-md-4 col-sm-12 col-xs-12 form-group">
     <label for="exampleInputPassword1">Unit Of Issue</label>
     <select class="form-control" id="unit_issue" name="unit_issue" style="width: 75%" disabled readonly>
-   
+
     <option value="Bottle" {{(!empty($item->unit_issue) && $item->unit_issue =='Bottle') ? "Selected" : "" }}>Bottle</option>
-     
+
     <option value="Each" {{(!empty($item->unit_issue) && $item->unit_issue =='Each') ? "Selected" : "" }}>Each</option>
     <option value="Pack" {{(!empty($item->unit_issue) && $item->unit_issue =='Pack') ? "Selected" : "" }}>Pack</option>
     <option value="Box" {{(!empty($item->unit_issue) && $item->unit_issue =='Box') ? "Selected" : "" }}>Box</option>
@@ -94,10 +94,10 @@
   <div class="col-md-4 col-sm-12 col-xs-12 form-group">
     <label for="exampleInputPassword1">Has Expiry Date ?</label>
     <select class="form-control" id="has_expiry" name="has_expiry" style="width: 75%" onchange="showExpiry(this.value)">
-   
+
     <option value="yes" selected>Yes</option>
     <option value="no" >No</option>
- 
+
   </select>
   </div>
     <div class="col-md-4 col-sm-12 col-xs-12 form-group" id="any_expired" >
@@ -105,8 +105,8 @@
     <select class="form-control" id="any_expired" name="any_expired" style="width: 75%">
    <option value="no" selected>No</option>
     <option value="yes">Yes</option>
-    
- 
+
+
   </select>
   </div>
   <div class="col-md-4 col-sm-12 col-xs-12 form-group" id="any_expired" >
@@ -115,8 +115,8 @@
     <select class="form-control" id="any_damaged" name="any_damaged" style="width: 75%">
    <option value="no" selected>No</option>
     <option value="yes">Yes</option>
-    
- 
+
+
   </select>
   </div>
 @if($item->store_temp =='cold chain')
@@ -125,8 +125,8 @@
     <select class="form-control" id="correct_temp" name="correct_temp" style="width: 75%">
    <option value="no" selected>No</option>
     <option value="yes">Yes</option>
-    
- 
+
+
   </select>
   </div>
   @endif
@@ -134,10 +134,10 @@
     <div class="col-md-4 col-sm-12 col-xs-12 form-group">
     <label for="exampleInputPassword1">Are Items Suitable for Use ?</label>
     <select class="form-control" id="suitable_for_use" name="suitable_for_use" style="width: 75%">
-   
+
     <option value="yes" selected>Yes</option>
     <option value="no" >No</option>
- 
+
   </select>
   </div>
 <div class="col-md-4 col-sm-12 col-xs-12 form-group">
@@ -145,11 +145,11 @@
 <div class="input-group ">
   <select class="custom-select" id="store_location" name="store_location">
 
-      <option value="1">Store</option>
-      <option value="2">Cold Room</option>
-      
+      <option value="Store">Store</option>
+      <option value="Cold Room">Cold Room</option>
+
   </select>
-  
+
 </div>
 </div>
 
@@ -166,7 +166,7 @@
      <hr>
                             <div data-repeater-list="additional">
                                 <div data-repeater-item>
-                                    
+
                                     <div class="row">
         <div class="col-md-2 col-sm-12 col-xs-12 form-group">
        <label for="exampleInputPassword1">Quantity</label>
@@ -175,7 +175,7 @@
 <div class="col-md-2 col-sm-12 col-xs-12 form-group">
     <label for="exampleInputPassword1">Cost</label>
     <input type="number" class="form-control" id="item_cost" name="item_cost" min="1">
-  </div>      
+  </div>
       <div class="col-md-2 col-sm-12 col-xs-12 form-group">
     <label for="exampleInputPassword1">Batch #</label>
     <input type="text" class="form-control" id="item_batch" name="item_batch">
@@ -183,8 +183,8 @@
       <div class="col-md-2 col-sm-12 col-xs-12 form-group" id="show_expiry">
     <label for="exampleInputPassword1">Expiry Date</label>
     <input type="date" class="form-control" id="item_expiry" name="item_expiry">
-  </div>  
-                             
+  </div>
+
 
                                         <div class="col-md-1">
 
@@ -202,7 +202,7 @@
 
                                     </div>
 
-                                 
+
                                 </div>
                             </div>
 
@@ -215,41 +215,41 @@
                      </div>
 
   <!--repeater-->
-  
+
 
 </div>
 </div>
 </div>
 
-  
-   
+
+
 
 
 
 
       <div class="modal-footer">
-        
+
   <button type="button" class="btn btn-primary "  id="edit" onclick="submitItemDetails()">Add</button>
 
       </div>
         </form>
-  
+
 </div>
-  
+
 
 <script type="text/javascript">
-   
+
 function submitItemDetails(){
-    
+
   var id=$('#item_id').val();
   var table=$('#add_form_Modal').serialize();
   var add_url="{{route('item.add_temp')}}";
-  
+
   console.log(table);
   let cat_number=$('#cat_number').val()
   let unit_issue=$('#unit_issue').val()
   let cost=$('#item_cost').val()
-   
+
 $.confirm({
        title: "Confirm!",
        content: "Are you sure Quantity,Cost and Batch Number  are correct?",
@@ -280,7 +280,7 @@ $.confirm({
                   console.log("ADEDEDE")
                           $('#close_item_modal').click();
                  t.destroy();
-         
+
                   LoadTable();
 
                 },
@@ -291,23 +291,23 @@ console.log("Something went wrong"+error);
             });
                },
            },
-          
+
 
            cancel: function () {},
        },
    });
-  
-  
-  
 
-  
-  
+
+
+
+
+
   //end
-      
+
           }
 
-   
+
 
   </script>
-  
+
 </div>

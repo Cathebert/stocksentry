@@ -23,6 +23,9 @@ t = $("#expiry_table").DataTable({
         url: expiry_report,
         dataType: "json",
         type: "GET",
+        data:{
+            location:"Cold Room"
+        }
     },
     initComplete: function (settings, json) {
         var total = parseFloat(json.total).toFixed(2);
@@ -40,7 +43,6 @@ t = $("#expiry_table").DataTable({
         { data: "id", width: "3%" },
         { data: "name" },
         { data: "batch_number" },
-        { data: "lab" },
         { data: "location" },
         { data: "expire_date" },
         { data: "quantity" },
@@ -118,7 +120,7 @@ function getTableData() {
             url: filtered_report,
             dataType: "json",
             type: "GET",
-            data: { expiry_form, selected: "selected" },
+            data: { expiry_form, location: "Cold Room" },
         },
         initComplete: function (settings, json) {
             var total = parseFloat(json.total).toFixed(2);
@@ -135,7 +137,6 @@ function getTableData() {
             { data: "id", width: "3%" },
             { data: "name" },
             { data: "batch_number" },
-            { data: "lab" },
             { data: "location" },
             { data: "expire_date" },
             { data: "quantity" },
@@ -296,22 +297,47 @@ $("#download_expired").on("click", function (e) {
     var expiry_form = $("#expiry_form").serialize();
     console.log(expiry_form);
     $.ajax({
-        method: "GET",
+      method: 'GET',
 
-        url: download_url,
-        data: {
-            expiry_form,
-            type: "download",
-        },
-
-        success: function (data) {
-            window.location = data.url;
-            // show bootstrap modal
-        },
-        error: function (jqXHR, textStatus, errorThrown) {
-            // console.log(get_case_next_modal)
-            alert("Error " + errorThrown);
-        },
+      url: download_url,
+      data: {
+        expiry_form,
+        type: 'download',
+        location: 'Cold Room',
+      },
+      beforeSend: function () {
+        ajaxindicatorstart('downloading... please wait...');
+      },
+      success: function (data) {
+           ajaxindicatorstop();
+        if (data.error == true) {
+            toastr.options = {
+              closeButton: true,
+              debug: false,
+              newestOnTop: false,
+              progressBar: false,
+              positionClass: 'toast-top-right',
+              preventDuplicates: false,
+              onclick: null,
+              showDuration: '300',
+              hideDuration: '1000',
+              timeOut: '5000',
+              extendedTimeOut: '1000',
+              showEasing: 'swing',
+              hideEasing: 'linear',
+              showMethod: 'fadeIn',
+              hideMethod: 'fadeOut',
+            };
+            toastr['error'](data.message);
+        } else {
+          window.location = data.url;
+        }
+        // show bootstrap modal
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+        // console.log(get_case_next_modal)
+        alert('Error ' + errorThrown);
+      },
     });
 });
 
@@ -321,21 +347,47 @@ $("#download_expired_excel").on("click", function (e) {
     var expiry_form = $("#expiry_form").serialize();
     console.log(expiry_form);
     $.ajax({
-        method: "GET",
+      method: 'GET',
 
-        url: download_url,
-        data: {
-            expiry_form,
-            type: "excel",
-        },
-
-        success: function (data) {
-            window.location = data.url;
-            // show bootstrap modal
-        },
-        error: function (jqXHR, textStatus, errorThrown) {
-            // console.log(get_case_next_modal)
-            alert("Error " + errorThrown);
-        },
+      url: download_url,
+      data: {
+        expiry_form,
+        type: 'excel',
+        location: 'Cold Room',
+      },
+      beforeSend: function () {
+        ajaxindicatorstart('downloading... please wait...');
+      },
+      success: function (data) {
+           ajaxindicatorstop();
+        if (data.error == true) {
+              toastr.options = {
+                closeButton: true,
+                debug: false,
+                newestOnTop: false,
+                progressBar: false,
+                positionClass: 'toast-top-right',
+                preventDuplicates: false,
+                onclick: null,
+                showDuration: '300',
+                hideDuration: '1000',
+                timeOut: '5000',
+                extendedTimeOut: '1000',
+                showEasing: 'swing',
+                hideEasing: 'linear',
+                showMethod: 'fadeIn',
+                hideMethod: 'fadeOut',
+              };
+              toastr['error'](data.message);
+        } else {
+          window.location = data.url;
+        }
+        // show bootstrap modal
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+            ajaxindicatorstop();
+        // console.log(get_case_next_modal)
+        alert('Error ' + errorThrown);
+      },
     });
 });
