@@ -26,15 +26,12 @@ let t="";
      AutoWidth: false,
      columns: [
          {
-             className: "dt-control",
-             orderable: false,
-             data: null,
-             defaultContent: "",
+        data:"id"
          },
 
-        { data: "item_name",width:"30%" },
+         { data: "item_name",width:"30%" },
          { data: "catalog_number" },
-         { data: "place_of_purchase" },
+     { data: "place_of_purchase" },
          { data: "unit_issue" },
          { data: "minimum_level" },
          { data: "maximum_level" },
@@ -116,8 +113,8 @@ let t="";
  }
 
  function getLab(id){
- if(!id){
-
+ if(id==0){
+    getAll();
  return
  }
 
@@ -135,7 +132,7 @@ let t="";
      paging: true,
      select: true,
      info: true,
-     lengthMenu: [10, 20, 50],
+     lengthMenu: [5, 10, 100],
      responsive: true,
 
      order: [[0, "desc"]],
@@ -161,7 +158,7 @@ let t="";
 
          { data: "item_name",width:"30%" },
          { data: "catalog_number" },
-         { data: "place_of_purchase" },
+     { data: "place_of_purchase" },
          { data: "unit_issue" },
          { data: "minimum_level" },
          { data: "maximum_level" },
@@ -186,80 +183,56 @@ let t="";
  });
 
  }
-
  function getAll(){
+ t = $('#stock_level_table').DataTable({
+   processing: true,
+   serverSide: true,
+   destroy: true,
+   paging: true,
+   select: true,
+   info: true,
+   lengthMenu: [10, 20, 50],
+   responsive: true,
 
-  let requests_url = $("#stock_level").val();
- t = $("#stock_level_table").DataTable({
-     processing: true,
-     serverSide: true,
-     destroy: true,
-     paging: true,
-     select: true,
-     info: true,
-     lengthMenu: [5, 20, 50],
-     responsive: true,
+   order: [[0, 'desc']],
+   oLanguage: {
+     sProcessing: "<div class='loader-container'><div id='loader'></div></div>",
+   },
+   ajax: {
+     url: requests_url,
+     dataType: 'json',
+     type: 'GET',
+   },
 
-     order: [[0, "desc"]],
-     oLanguage: {
-         sProcessing:
-             "<div class='loader-container'><div id='loader'></div></div>",
+   AutoWidth: false,
+   columns: [
+     {
+       data: 'id',
      },
-     ajax: {
-         url: requests_url,
-         dataType: "json",
-         type: "GET",
 
+     { data: 'item_name', width: '30%' },
+     { data: 'catalog_number' },
+     { data: 'place_of_purchase' },
+     { data: 'unit_issue' },
+     { data: 'minimum_level' },
+     { data: 'maximum_level' },
+     { data: 'stock_on_hand' },
+     { data: 'status' },
+   ],
+   //Set column definition initialisation properties.
+   columnDefs: [
+     {
+       targets: [-1], //last column
+       orderable: false, //set not orderable
      },
-
-     AutoWidth: false,
-     columns: [
-         {
-             className: "dt-control",
-             orderable: false,
-             data: null,
-             defaultContent: "",
-         },
-
-       { data: "item_name",width:"30%" },
-         { data: "catalog_number" },
-         { data: "place_of_purchase" },
-         { data: "unit_issue" },
-         { data: "minimum_level" },
-         { data: "maximum_level" },
-         { data: "stock_on_hand" },
-         { data: "status" },
-     ],
-     //Set column definition initialisation properties.
-     columnDefs: [
-         {
-             targets: [-1], //last column
-             orderable: false, //set not orderable
-         },
-         {
-             targets: [-2], //last column
-             orderable: false, //set not orderable
-         },
-         {
-             targets: [-3], //last column
-             orderable: false, //set not orderable
-         },
-     ],
- });
- t.on("click", "tbody tr", function () {
-     let data = t.row(this).data();
-     console.log(data);
-     var tr = $(this).closest("tr");
-     var row = t.row(tr);
-
-     if (row.child.isShown()) {
-         row.child.hide();
-         tr.removeClass("shown");
-     } else {
-         row.child(format(row.data())).show();
-         tr.addClass("shown");
-     }
-
-     // alert("You clicked on " + data["available"] + "'s row");
+     {
+       targets: [-2], //last column
+       orderable: false, //set not orderable
+     },
+     {
+       targets: [-3], //last column
+       orderable: false, //set not orderable
+     },
+   ],
  });
  }

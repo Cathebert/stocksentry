@@ -401,7 +401,7 @@ DB::commit();
           ->where([['inv.lab_id','=',auth()->user()->laboratory_id]])
 ->where('inv.quantity','>',0)
                 ->where(function ($query) use ($search){
-                  return  $query->where('inv.batch_number', 'LIKE', "%{$search}%")
+                  return  $query->where('i.item_name', 'LIKE', "%{$search}%")
                   ->orWhere('i.code','LIKE',"%{$search}%");
 
 
@@ -474,7 +474,8 @@ public function selectedForAdjustment(Request $request){
             5=>'reason',
             6=>'batch',
              7=>'catalog',
-             8=>'available'
+             8=>'available',
+            9=>'type'
 
 
         );
@@ -546,7 +547,13 @@ $nestedData['quantity'] = "<div class='input-group'>
   <input type='number' class='form-control' id='adjusted_$item_id' min=0  value=1 size='1'  style='width: 30px;' oninput='getAdjustedValue(this.id)'>
    <span class='input-group-text btn btn-primary'    id='$item_id'  onclick='incrementValue(this.id)'>+</span>
 </div>";
-
+      
+    $nestedData['type']="<div class='form-group'>
+    <select class='form-control' id='type_$item_id' name='type' onchange='getType(this.id,this.value)' required>
+      <option value='add'>Addition</option>
+      <option value='sub'>Subtraction</option>
+    </select>
+  </div>";
                   //
     $nestedData['reason'] ="<textarea class='form-control form-control-sm' placeholder='Leave a note here' id='q_$item_id' name='$item_id' oninput='getNote(this.id,this.name)'>
 </textarea>" ;
@@ -906,8 +913,33 @@ $bincard->updateItemAdjustment($adjst->item_id,$adjst->quantity,$adjst->type);
     'is_approved'=>'yes',
     'updated_at'=>now(),
  ]);
+ $adjusted_id=$adjst->adjust_id;
+ //adjusted
+$adjusted_count=AdjustmentDetail::where([['adjust_id','=',$adjusted_id],['is_approved','=','yes']])->count();
+//not adjusted;
+$all_adjustments=AdjustmentDetail::where('adjust_id',$adjusted_id)->count();
 
- //$user=User::where('id',$adjst->adjusted_by)->first();
+if($all_adjustments==$adjusted_count){
+ Adjustment::where('id',$adjusted_id)->update([
+    'approved_by'=>auth()->user()->id,
+    'is_approved'=>'yes',
+    'updated_at'=>now(),
+]);
+$adjusted=Adjustment::where('id',$adjusted_id)->first();
+$user=User::where('id',$adjusted->adjusted_by)->first();
+//$user->notify(new AdjustmentApprovedNotification());
+
+ 
+}
+else{
+   Adjustment::where('id',$adjusted_id)->update([
+    'approved_by'=>auth()->user()->id,
+    'is_approved'=>'partial',
+    'updated_at'=>now(),
+    ]); 
+}
+
+//$user=User::where('id',$adjst->adjusted_by)->first();
 //$user->notify(new AdjustmentApprovedNotification());
 DB::commit();
  return response()->json([
@@ -946,22 +978,31 @@ public function cancelBulkAdjusted(Request $request){
 
 
 }
-//cancel adjustment
+//cancel adjustment single
 public function cancelAdjusted(Request $request){
-
-
+$adjst=AdjustmentDetail::where('id',$request->id)->first();
+$adjusted_id=$adjst->adjust_id;
  AdjustmentDetail::where('id',$request->id)->update([
     'approved_by'=>auth()->user()->id,
     'is_approved'=>'cancel',
     'updated_at'=>now(),
  ]);
+$not_adjusted_count=AdjustmentDetail::where([['adjust_id','=',$adjusted_id],['is_approved','=','cancel']])->count();
+$all_adjustments=AdjustmentDetail::where('adjust_id',$adjusted_id)->count();
 
+if($all_adjustments==$not_adjusted_count){
+ Adjustment::where('id',$adjusted_id)->update([
+    'approved_by'=>auth()->user()->id,
+    'is_approved'=>'cancel',
+    'updated_at'=>now(),
+]);
  return response()->json([
 'message'=>'Adjustment has been cancelled ',
 'error'=>false,
       ]);
 
 
+}
 }
  public function viewAdjustments(){
     return view('inventory.modal.adjust');
@@ -1056,6 +1097,10 @@ if(auth()->user()->authority==1 || auth()->user()->authority==2){
                      if($term->is_approved=="yes"){
                          $nestedData['action']='<i class="fa fa-check" aria-hidden="true"> </i> Approved || <button type="button" id='.$term->id.' class="btn btn-info" onclick="ViewAdjusted(this.id)"><i class="fa fa-eye" aria-hidden="true"> </i> View</button>';
                      }
+
+          if($term->is_approved=="partial"){
+                         $nestedData['action']='<i class="fa fa-hourglass-half" aria-hidden="true"> </i> Partially Approved || <button type="button" id='.$term->id.' class="btn btn-warning" onclick="ViewAdjusted(this.id)"><i class="fa fa-eye" aria-hidden="true"> </i> View/Approve</button>';
+                     }
                      
                      if($term->is_approved=="cancel"){
                          $nestedData['action']='<i class="fa fa-trash" aria-hidden="true"> </i> Cancelled || <button type="button" id='.$term->id.' class="btn btn-info" onclick="ViewAdjusted(this.id)"><i class="fa fa-eye" aria-hidden="true"> </i> View</button>';
@@ -1069,10 +1114,12 @@ if(auth()->user()->authority==1 || auth()->user()->authority==2){
                     | <button type="button" id='.$term->id.' class="btn btn-info" onclick="ViewAdjusted(this.id)"><i class="fa fa-eye" aria-hidden="true"> </i> View</button>';
                 
                      }
-                              if($term->is_approved=="yes"){
+                 if($term->is_approved=="yes"){
                          $nestedData['action']='<i class="fa fa-check" aria-hidden="true"> </i> Approved || <button type="button" id='.$term->id.' class="btn btn-info" onclick="ViewAdjusted(this.id)"><i class="fa fa-eye" aria-hidden="true"> </i> View</button>';
                      }
-                     
+                     if($term->is_approved=="partial"){
+                         $nestedData['action']='<i class="fa fa-hourglass-half" aria-hidden="true"> </i> Partially Approved || <button type="button" id='.$term->id.' class="btn btn-info" onclick="ViewAdjusted(this.id)"><i class="fa fa-eye" aria-hidden="true"> </i> View</button>';
+                     } 
                      if($term->is_approved=="cancel"){
                          $nestedData['action']='<i class="fa fa-trash" aria-hidden="true"> </i> Cancelled || <button type="button" id='.$term->id.' class="btn btn-info" onclick="ViewAdjusted(this.id)"><i class="fa fa-eye" aria-hidden="true"> </i> View</button>';
                      }
@@ -1086,7 +1133,9 @@ if(auth()->user()->authority==1 || auth()->user()->authority==2){
                  if($term->is_approved=="yes"){
                          $nestedData['action']='<i class="fa fa-check" aria-hidden="true"> </i> Approved || <button type="button" id='.$term->id.' class="btn btn-info" onclick="ViewAdjusted(this.id)"><i class="fa fa-eye" aria-hidden="true"> </i> View</button>';
                      }
-                     
+             if($term->is_approved=="partial"){
+                         $nestedData['action']='<i class="fa fa-hourglass-half" aria-hidden="true"> </i> Partially Approved || <button type="button" id='.$term->id.' class="btn btn-info" onclick="ViewAdjusted(this.id)"><i class="fa fa-eye" aria-hidden="true"> </i> View</button>';
+                     }
                      if($term->is_approved=="cancel"){
                          $nestedData['action']='<i class="fa fa-trash" aria-hidden="true"> </i> Cancelled || <button type="button" id='.$term->id.' class="btn btn-info" onclick="ViewAdjusted(this.id)"><i class="fa fa-eye" aria-hidden="true"> </i> View</button>';
                      }
@@ -1114,8 +1163,8 @@ if(auth()->user()->authority==1 || auth()->user()->authority==2){
      **/
 
     public function adjustSelected(Request $request){
-
-      //dd($request);
+//dd($request);
+     
 
 try{
 
@@ -1123,19 +1172,21 @@ try{
 if(!empty($request->quantity) && count($request->quantity)>0){
         $ids=array();
         $quantity=array();
+        $type=array();
         $notes=array();
         $items_data=array();
         for($j=0; $j<count($request->quantity);$j++){
  $f=explode("_",$request->quantity[$j]);
- $ids[]=$f[0];
+$ids[]=$f[0];
 $quantity[]=$f[1];
-$notes[]=$f[2];
+$type[]=$f[2];
+$notes[]=$f[3];
 
 }
-//dd($notes);
+
 
   $approved='no';
-   $approved_by=NULL;
+$approved_by=NULL;
    $message="Your adjustment is pending approval";   
 
 DB::beginTransaction();
@@ -1159,14 +1210,9 @@ for($x=0;$x<count($ids);$x++){
     $item=$this->getType($ids[$x],$quantity[$x]);
   
     $available_quantity=$item->quantity;
-    if($available_quantity>$quantity[$x]){
-        $type="sub";
-    }
-    else{
-        $type="add";
-    }
+   
 
-     $adjust_details->type=$type;
+     $adjust_details->type=$type[$x];
      $adjust_details->item_id=$ids[$x];
      $adjust_details->quantity=$quantity[$x];
      $adjust_details->notes=$notes[$x];

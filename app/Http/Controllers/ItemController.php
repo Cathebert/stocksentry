@@ -857,6 +857,7 @@ bincard->save();
 
   }*/
   public function printTest(Request $request){
+
  $value = $request->id;
 $data['value']=$value;
 
@@ -876,7 +877,7 @@ $data['po_ref']=$infor->po_reference;
 $data['date_received']=date('d, M Y',strtotime($infor->receiving_date));
 $data['print_data'] = DB::table('items as t') 
               ->join('inventories AS i', 'i.item_id', '=', 't.id')
-              ->select('i.id as id','i.lab_id','t.item_name','t.unit_issue','i.quantity','i.batch_number','i.cost')
+              ->select('i.id as id','i.lab_id','t.item_name','t.unit_issue','i.quantity','i.expiry_date','i.batch_number','i.cost')
               ->where([['i.grn_number','=',$value],['i.lab_id','=',auth()->user()->laboratory_id]])
               ->get();
 
@@ -1141,7 +1142,7 @@ $data['grn_number']=$value;
 $data['value']=$value;
 
 $infor=ReceivedItem::where('grn_number',$value)->select('lab_id','section_id','receiving_date','received_by','supplier_id','receiver_id','po_reference')->first();
-//dd($infor);
+
 if($infor->receiver_id!=NULL){
 $data['signature']=User::find($infor->receiver_id)->signature;
 }
@@ -1242,7 +1243,7 @@ $data['po_ref']=$infor->po_reference;
 $data['date_received']=date('d, M Y',strtotime($infor->receiving_date));
 $data['print_data']= DB::table('items as t') 
               ->join('inventories AS i', 'i.item_id', '=', 't.id')
-              ->select('i.id as id','i.lab_id','t.item_name','t.unit_issue','i.quantity','i.batch_number','i.cost')
+              ->select('i.id as id','i.lab_id','t.item_name','t.unit_issue','i.quantity','i.batch_number','i.expiry_date','i.cost')
               ->where([['i.grn_number','=',$value],['i.lab_id','=',auth()->user()->laboratory_id]])
               ->get();
 

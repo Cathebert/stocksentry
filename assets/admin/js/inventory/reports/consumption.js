@@ -4,56 +4,59 @@ var p=""
 var y="";
 var consumption_report=$("#consumption_report").val();
 
-p = $("#consumption_table").DataTable({
-    processing: true,
-    serverSide: true,
-    paging: true,
-    scrollCollapse: true,
-    destroy: true,
-    info: true,
+p = $('#consumption_table').DataTable({
+  processing: true,
+  serverSide: true,
+  paging: true,
+  scrollCollapse: true,
+  destroy: true,
+  info: true,
 
-    lengthMenu: [10, 20, 50],
-    responsive: true,
-    order: [[0, "desc"]],
-    oLanguage: {
-        sProcessing:
-            "<div class='loader-container'><div id='loader'></div></div>",
-    },
-    ajax: {
-        url: consumption_report,
-        dataType: "json",
-        type: "GET",
-    },
+  lengthMenu: [10, 20, 50],
+  responsive: true,
+  order: [[0, 'desc']],
+  oLanguage: {
+    sProcessing: "<div class='loader-container'><div id='loader'></div></div>",
+  },
+  language: {
+    emptyTable: 'No data available in table', // Custom message for empty data
+  },
+  ajax: {
+    url: consumption_report,
+    dataType: 'json',
+    type: 'GET',
+  },
 
-    AutoWidth: false,
-    columns: [
-        {
-            className: "dt-control",
-            orderable: false,
-            data: null,
-            defaultContent: "",
-        },
-        { data: "item_name" },
-        
-        { data: "catalog_number" },
-        { data: "unit_issue" },
-        { data: "consumed" },
-    ],
-    //Set column definition initialisation properties.
-    columnDefs: [
-        {
-            targets: [-1], //last column
-            orderable: false, //set not orderable
-        },
-        {
-            targets: [-2], //last column
-            orderable: false, //set not orderable
-        },
-        {
-            targets: [-3], //last column
-            orderable: false, //set not orderable
-        },
-    ],
+  AutoWidth: false,
+  columns: [
+    {
+      className: 'dt-control',
+      orderable: false,
+      data: null,
+      defaultContent: '',
+    },
+    { data: 'item_name' },
+
+    { data: 'catalog_number' },
+    { data: 'unit_issue' },
+    { data: 'updated_at' },
+    { data: 'consumed' },
+  ],
+  //Set column definition initialisation properties.
+  columnDefs: [
+    {
+      targets: [-1], //last column
+      orderable: false, //set not orderable
+    },
+    {
+      targets: [-2], //last column
+      orderable: false, //set not orderable
+    },
+    {
+      targets: [-3], //last column
+      orderable: false, //set not orderable
+    },
+  ],
 });
  p.on("click", "tbody tr", function () {
      let data = p.row(this).data();
@@ -132,11 +135,13 @@ p = $("#consumption_table").DataTable({
     getData();
  }
  function getSelected(value){
-   
+   if(value==-1){
+    getDefaultData();
+   }
     if(value==10){
         document.getElementById('custom').hidden=false;
         $('#start').focus();
-       
+
     }
     else{
          document.getElementById("custom").hidden = true;
@@ -148,7 +153,7 @@ getData()
     let start=$('#start').val();
     let end=$('#end').val();
     if(!start){
-       $("#start").focus(); 
+       $("#start").focus();
        return;
     }
 getData();
@@ -156,118 +161,123 @@ getData();
 function getData(){
     var filter = $("#filter").val();
     let form_data = $("#expiry_form").serialize();
-p = $("#consumption_table").DataTable({
-     processing: true,
-     serverSide: true,
-     paging: true,
-     scrollCollapse: true,
-     destroy:true,
-     info: true,
+p = $('#consumption_table').DataTable({
+  processing: true,
+  serverSide: true,
+  paging: true,
+  scrollCollapse: true,
+  destroy: true,
+  info: true,
 
-     lengthMenu: [10, 20, 50],
-     responsive: true,
-     order: [[0, "desc"]],
-     oLanguage: {
-         sProcessing:
-             "<div class='loader-container'><div id='loader'></div></div>",
-     },
-     ajax: {
-         url: filter,
-         dataType: "json",
-         type: "GET",
-         data: {
-             form_data
-         },
-     },
+  lengthMenu: [10, 20, 50],
+  responsive: true,
+  order: [[0, 'desc']],
+  oLanguage: {
+    sProcessing: "<div class='loader-container'><div id='loader'></div></div>",
+  },
+  language: {
+    emptyTable: 'No data available in table', // Custom message for empty data
+  },
+  ajax: {
+    url: filter,
+    dataType: 'json',
+    type: 'GET',
+    data: {
+      form_data,
+    },
+  },
 
-     AutoWidth: false,
-     columns: [
-         {
-             className: "dt-control",
-             orderable: false,
-             data: null,
-             defaultContent: "",
-         },
-         { data: "item_name" },
-         { data: "catalog_number" },
-         { data: "unit_issue" },
-         { data: "consumed" },
-     ],
-     //Set column definition initialisation properties.
-     columnDefs: [
-         {
-             targets: [-1], //last column
-             orderable: false, //set not orderable
-         },
-         {
-             targets: [-2], //last column
-             orderable: false, //set not orderable
-         },
-         {
-             targets: [-3], //last column
-             orderable: false, //set not orderable
-         },
-     ],
- });
+  AutoWidth: false,
+  columns: [
+    {
+      className: 'dt-control',
+      orderable: false,
+      data: null,
+      defaultContent: '',
+    },
+    { data: 'item_name' },
+    { data: 'catalog_number' },
+    { data: 'unit_issue' },
+    { data: 'consumed' },
+  ],
+  //Set column definition initialisation properties.
+  columnDefs: [
+    {
+      targets: [-1], //last column
+      orderable: false, //set not orderable
+    },
+    {
+      targets: [-2], //last column
+      orderable: false, //set not orderable
+    },
+    {
+      targets: [-3], //last column
+      orderable: false, //set not orderable
+    },
+  ],
+});
 }
 
 function getCustom(period,start,end){
     var filtered = $("#filter").val();
 
-    p= $("#consumption_table").DataTable({
-        processing: true,
-        serverSide: true,
-        paging: true,
-        scrollCollapse: true,
-        destroy: true,
-        info: true,
+    p = $('#consumption_table').DataTable({
+      processing: true,
+      serverSide: true,
+      paging: true,
+      scrollCollapse: true,
+      destroy: true,
+      info: true,
 
-        lengthMenu: [10, 15, 20],
-        responsive: true,
-        order: [[0, "desc"]],
-        oLanguage: {
-            sProcessing:
-                "<div class='loader-container'><div id='loader'></div></div>",
+      lengthMenu: [10, 15, 20],
+      responsive: true,
+      order: [[0, 'desc']],
+      oLanguage: {
+        sProcessing:
+          "<div class='loader-container'><div id='loader'></div></div>",
+      },
+      language: {
+        emptyTable: 'No data available in table', // Custom message for empty data
+      },
+      ajax: {
+        url: filtered,
+        dataType: 'json',
+        type: 'GET',
+        data: {
+          value: period,
+          start_date: start,
+          end_date: end,
         },
-        ajax: {
-            url: filtered,
-            dataType: "json",
-            type: "GET",
-            data: {
-                value:period,
-                start_date:start,
-                end_date:end
-            },
-        },
+      },
 
-        AutoWidth: false,
-        columns: [
-            {
-                className: "dt-control",
-                orderable: false,
-                data: null,
-                defaultContent: "",
-            },
-            { data: "item_name" },
-            { data: "catalog_number" },
-            { data: "unit_issue" },
-            { data: "consumed" },
-        ],
-        //Set column definition initialisation properties.
-        columnDefs: [
-            {
-                targets: [-1], //last column
-                orderable: false, //set not orderable
-            },
-            {
-                targets: [-2], //last column
-                orderable: false, //set not orderable
-            },
-            {
-                targets: [-3], //last column
-                orderable: false, //set not orderable
-            },
-        ],
+      AutoWidth: false,
+      columns: [
+        {
+          className: 'dt-control',
+          orderable: false,
+          data: null,
+          defaultContent: '',
+        },
+        { data: 'item_name' },
+        { data: 'catalog_number' },
+        { data: 'unit_issue' },
+        { data: 'consumed' },
+      ],
+      //Set column definition initialisation properties.
+      columnDefs: [
+        {
+          targets: [-1], //last column
+          orderable: false, //set not orderable
+        },
+        {
+          targets: [-2], //last column
+          orderable: false, //set not orderable
+        },
+        {
+          targets: [-3], //last column
+          orderable: false, //set not orderable
+        },
+      ],
     });
 }
 function changeFrequency(value){
@@ -296,7 +306,7 @@ function changeFrequency(value){
         e.preventDefault();
         let pe=$('#period').val();
       runReport('download')
-        
+
     })
    ;
       $("#report_download_excel").on("click", function (e) {
@@ -330,7 +340,7 @@ function runReport(type){
         dataType:"JSON",
          url: download,
          data: {
-           
+
              type: type,
             form_data
          },
@@ -343,56 +353,58 @@ function runReport(type){
              alert("Error " + errorThrown);
          },
      });
-       
+
 }
 function getDefaultData(){
 
- p = $("#consumption_table").DataTable({
-     processing: true,
-     serverSide: true,
-     paging: true,
-     scrollCollapse: true,
-     destroy: true,
-     info: true,
+ p = $('#consumption_table').DataTable({
+   processing: true,
+   serverSide: true,
+   paging: true,
+   scrollCollapse: true,
+   destroy: true,
+   info: true,
 
-     lengthMenu: [10, 15, 20],
-     responsive: true,
-     order: [[0, "desc"]],
-     oLanguage: {
-         sProcessing:
-             "<div class='loader-container'><div id='loader'></div></div>",
+   lengthMenu: [10, 15, 20],
+   responsive: true,
+   order: [[0, 'desc']],
+   oLanguage: {
+     sProcessing: "<div class='loader-container'><div id='loader'></div></div>",
+   },
+   language: {
+     emptyTable: 'No data available in table', // Custom message for empty data
+   },
+   ajax: {
+     url: consumption_report,
+     dataType: 'json',
+     type: 'GET',
+   },
+
+   AutoWidth: false,
+   columns: [
+     { data: 'id' },
+     { data: 'item_name' },
+
+     { data: 'catalog_number' },
+     { data: 'unit_issue' },
+     { data: 'consumed' },
+   ],
+   //Set column definition initialisation properties.
+   columnDefs: [
+     {
+       targets: [-1], //last column
+       orderable: false, //set not orderable
      },
-     ajax: {
-         url: consumption_report,
-         dataType: "json",
-         type: "GET",
+     {
+       targets: [-2], //last column
+       orderable: false, //set not orderable
      },
-
-     AutoWidth: false,
-     columns: [
-         { data: "id" },
-         { data: "item_name" },
-
-         { data: "catalog_number" },
-         { data: "unit_issue" },
-         { data: "consumed" },
-     ],
-     //Set column definition initialisation properties.
-     columnDefs: [
-         {
-             targets: [-1], //last column
-             orderable: false, //set not orderable
-         },
-         {
-             targets: [-2], //last column
-             orderable: false, //set not orderable
-         },
-         {
-             targets: [-3], //last column
-             orderable: false, //set not orderable
-         },
-     ],
- });   
+     {
+       targets: [-3], //last column
+       orderable: false, //set not orderable
+     },
+   ],
+ });
 }
 function getLabConsumed(id){
 if(id==-1){
@@ -451,4 +463,77 @@ p = $("#consumption_table").DataTable({
          },
      ],
  });
+}
+
+function getDefaultData(){
+    var consumption_report = $('#consumption_report').val();
+
+    p = $('#consumption_table').DataTable({
+      processing: true,
+      serverSide: true,
+      paging: true,
+      scrollCollapse: true,
+      destroy: true,
+      info: true,
+
+      lengthMenu: [10, 20, 50],
+      responsive: true,
+      order: [[0, 'desc']],
+      oLanguage: {
+        sProcessing:
+          "<div class='loader-container'><div id='loader'></div></div>",
+      },
+      ajax: {
+        url: consumption_report,
+        dataType: 'json',
+        type: 'GET',
+      },
+
+      AutoWidth: false,
+      columns: [
+        {
+          className: 'dt-control',
+          orderable: false,
+          data: null,
+          defaultContent: '',
+        },
+        { data: 'item_name' },
+
+        { data: 'catalog_number' },
+        { data: 'unit_issue' },
+        { data: 'consumed' },
+      ],
+      //Set column definition initialisation properties.
+      columnDefs: [
+        {
+          targets: [-1], //last column
+          orderable: false, //set not orderable
+        },
+        {
+          targets: [-2], //last column
+          orderable: false, //set not orderable
+        },
+        {
+          targets: [-3], //last column
+          orderable: false, //set not orderable
+        },
+      ],
+    });
+    p.on('click', 'tbody tr', function () {
+      let data = p.row(this).data();
+      console.log(data);
+      var tr = $(this).closest('tr');
+      var row = p.row(tr);
+
+      if (row.child.isShown()) {
+        row.child.hide();
+        tr.removeClass('shown');
+      } else {
+        row.child(format(row.data())).show();
+        tr.addClass('shown');
+      }
+
+      // alert("You clicked on " + data["available"] + "'s row");
+    });
+
 }

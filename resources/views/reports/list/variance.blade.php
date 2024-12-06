@@ -11,11 +11,11 @@
   </ol>
 </nav>
    <!-- Page Heading -->
-   
+
                     <div class="d-sm-flex align-items-center justify-content-between mb-4">
                         <h1 class="h3 mb-0 text-gray-800">Variance Report</h1>
                          <div class="dropdow" style="text-align:right" >
- 
+
 
 </div>
 
@@ -26,7 +26,7 @@
 </button>
 
   <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-  
+
     <a class="dropdown-item" href="{{route('report.download',['action'=>'download'])}}" id="download"><i class="fa fa-download"></i> PDF File</a>
     <a class="dropdown-item" href="{{route('report.download',['action'=>'excel'])}}" id="excel"><i class="fa fa-share"></i>  Excel file</a>
     <hr>
@@ -36,23 +36,23 @@
 </div>
                    <div class="row" >
       <div class="col-sm-12">
-    
+
     <div class="card">
- 
+
       <div class="card-body">
-        
+
         <h5 class="card-title"> <strong>Filters </strong></h5>
 <form method="post" id="expiry_form">
           @csrf
-          
+
                <input type="hidden" class="form-control" id="variance_report" value="{{route('report.variance_table')}}">
-            
+
                  <input type="hidden" class="form-control" id="stock_take_details" value="{{route('report.variance_details')}}">
-  <input type="hidden" class="form-control" id="download_url" value="{{route('report.download',['action'=>'download'])}}"/>
+  <input type="hidden" class="form-control" id="download_url" value="{{route('report.variance_download')}}"/>
   <input type="hidden" id="variance_lab" name="variance_lab" value="{{route('report.variance_lab')}}"/>
 
- 
-            
+
+
             <div class="row">
     <div class="col-md-4 col-sm-12 col-xs-12 form-group"  >
 <div class="input-group mb-3">
@@ -63,24 +63,29 @@
   <select class="custom-select" id="period" name="lab" onchange="getSelectedLab(this.value)">
     <option value="-1" selected> All</option>
       @foreach ($laboratories as $lab)
+      @if($lab->id==0 || $lab->id==99)
+
+@else
        <option value="{{$lab->id}}">{{$lab->lab_name}}</option>
+ @endif
+
    @endforeach
 </select>
 
 </div>
   </div>
-  
+
      <div class="col-md-6 col-sm-12 col-xs-12 form-group" hidden>
   <div class="input-group">
-  <span class="input-group-text">Expiry Days Range:</span> 
+  <span class="input-group-text">Expiry Days Range:</span>
    <span class="input-group-text"><i class="fa fa-sort-numeric-asc" aria-hidden="true"></i></span>
   <select class="custom-select" id="days_range" name="period" onchange="getSelectedRange()">
    <option value="-1" selected>All</option>
-   
+
     <option value="2"> >1 to < 30 days</option>
       <option value="3" > > 30  to < 60 days </option>
         <option value="4"> > 60  to < 90 days</option>
-     
+
 </select>
 </div>
 
@@ -113,7 +118,7 @@
                                     </div>
                                 </div>
                             </div>
-                            
+
                         </div>
 
 
@@ -141,15 +146,15 @@
         <table class="table table-sm" id="variance_table" width="100%">
 <thead class="thead-light">
     <tr>
-   
-      
+
+
        <th scope="col"></th>
      <th scope="col">Stock Date</th>
        <th scope="col">Lab Name</th>
         <th scope="col">Supervised By</th>
         <th scope="col">Approved By</th>
-          
-      
+         <th scope="col">Action</th>
+
     </tr>
   </thead>
   <tbody>
@@ -166,11 +171,11 @@
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="exampleModalLabel">Schedule Report</h5>
-   
+
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button><br>
-         
+
       </div>
           <span >Report Name: <i>Inventory About to Expire_{{date('Y-m-d')}}</i></span>
       <div class="modal-body">
@@ -198,9 +203,9 @@
     <label for="staticEmail" class="col-sm-3 col-form-label text-danger">Emails *</label>
     <div class="col-sm-9">
      <select class="form-control" id="email_list" style="width: 50%" name="employee_involved[]" multiple  required>
-                                   
+
                                     @foreach($users as $user)
-                                
+
                                         <option value="{{$user->id}}">{{$user->email}}</option>
                                     @endforeach
                                 </select>
@@ -212,9 +217,9 @@
  placeholder: 'Select  ',
       allowClear: true,
   dropdownParent: $('#exampleModal .modal-content')
-   
+
     });
-     
+
 });
 </script>
     <div class="form-group row">
@@ -261,5 +266,5 @@
 
  @push('js')
        <script src="{{asset('assets/admin/js/inventory/reports/variance.js')}}"> </script>
-  
+
 @endpush

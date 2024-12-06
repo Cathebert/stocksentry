@@ -5,7 +5,7 @@
             <a class="sidebar-brand d-flex align-items-center justify-content-center" href="{{route('admin.home')}}">
                  <img class="img-profile rounded-circle"
                                    src="{{ (!empty(auth()->user()->profile_img)) ? url('/public/upload/profile/' . auth()->user()->profile_img) : asset('assets/img/undraw_profile.svg') }}" height="50px" width="50px">
-              
+
                 <div class="sidebar-brand-text mx-3">{{auth()->user()->name??"User"}} </div>
             </a>
 
@@ -39,12 +39,12 @@
                         <h6 class="collapse-header">Stock Management</h6>
                         <a class="collapse-item" href="{{ route('admin.receive_stock') }}">Receive Stock</a>
                         <a class="collapse-item" href="{{route('issue.requisition')}}">Issue Stock</a>
-                          
+
                            <hr>
                         <a class="collapse-item" href="{{route('inventory.bincard')}}" >Inventory</a>
-                         
-                           
-                     
+
+
+
                     </div>
                 </div>
             </li>
@@ -59,10 +59,10 @@
                     data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
                         <h6 class="collapse-header">Items</h6>
-                        
+
                            <a class="collapse-item" href="{{route('admin.create')}}">Create Item</a>
                         <a class="collapse-item" href="{{route('item.show')}}">Items List</a>
-                    
+
                     </div>
                 </div>
             </li>
@@ -81,8 +81,8 @@
                         <a class="collapse-item" href="#">New Adjustment</a>
                         <a class="collapse-item" href="#">All Adjustments</a>
                          <a class="collapse-item" href="#"> Stock Disposal</a>
-                       
-                    
+
+
                     </div>
                 </div>
             </li>
@@ -100,7 +100,7 @@
                         <h6 class="collapse-header"> Lab Management</h6>
                         <a class="collapse-item" href="{{route('lab.add')}}" >Add Lab</a>
                       <a class="collapse-item" href="{{route('lab.list')}}">View  Lab</a>
-                       
+
                     </div>
                 </div>
             </li>
@@ -122,7 +122,7 @@
                         <h6 class="collapse-header">Manage Users</h6>
                         <a class="collapse-item" href="{{route('user.add')}}">Add User</a>
                       <a class="collapse-item" href="{{route('user.view')}}">View Users</a>
-                       
+
                     </div>
                 </div>
             </li>
@@ -138,10 +138,10 @@
                     <div class="bg-white py-2 collapse-inner rounded">
                         <h6 class="collapse-header">Contracts</h6>
                         <a class="collapse-item" href="{{route('contract.add')}}">Show Contract</a>
-                      
-                       
-                       
-                    
+
+
+
+
                     </div>
                 </div>
             </li>
@@ -157,9 +157,9 @@
                         <h6 class="collapse-header">Suppliers</h6>
                         <a class="collapse-item" href="{{route('supplier.add')}}">Add Supplier</a>
                         <a class="collapse-item" href="{{route('supplier.view')}}">All Suppliers</a>
-                       
-                       
-                    
+
+
+
                     </div>
                 </div>
             </li>
@@ -184,12 +184,54 @@
             </li>
             <!-- Divider -->
             <hr class="sidebar-divider d-none d-md-block">
-
+<li class="nav-item" >
+                <a class="nav-link" type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
+                    <i class="fas fa-fw fa-info"></i>
+                    <span>Support</span></a>
+            </li>
             <!-- Sidebar Toggler (Sidebar) -->
             <div class="text-center d-none d-md-inline">
                 <button class="rounded-circle border-0" id="sidebarToggle"></button>
             </div>
 
-         
+
 
         </ul>
+        <!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Contact Us</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+       <h1>Need help with anything ? Contact Us</h1>
+
+  <form method="post" action="{{route('contact_us') }}" enctype="multipart/form-data">
+    @csrf
+          <div class="form-group" hidden>
+            <label for="recipient-name" class="col-form-label">Recipient:</label>
+            <input type="text" class="form-control" id="recipient-name">
+          </div>
+          <div class="form-group">
+            <label for="message-text" class="col-form-label">Type Message:</label>
+            <textarea class="form-control" id="message-text" name="message"  rows="9" cols="50" required></textarea>
+          </div>
+            <div class="form-group">
+            <label for="message-text" class="col-form-label">Attach Screenshot(Optional):</label>
+            <input type='file' class="form-control" id="attach" name="attachment"  accept="image/png,image/jpg,image/jpeg"></textarea>
+          </div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="submit" class="btn btn-primary">Send Message</button>
+      </div>
+      </form>
+
+    </div>
+  </div>
+</div>

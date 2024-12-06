@@ -337,6 +337,7 @@ if ($row->stock_on_hand <$row->maximum_level) {
   
   public function showStockVariance(Request $request){
    $lab=Laboratory::where('id',auth()->user()->laboratory_id)->select('lab_name')->first();
+   $data['laboratories']=Laboratory::get();
    
    $section=LaboratorySection::where('id',auth()->user()->section_id)->select('section_name')->first();
    if($section){

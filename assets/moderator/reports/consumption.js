@@ -4,51 +4,52 @@ var t="";
 var y="";
 var consumption_report=$("#consumption_report").val();
 
-p = $("#consumption_table").DataTable({
-    processing: true,
-    serverSide: true,
-    paging: true,
-    scrollCollapse: true,
-    destroy: true,
-    info: true,
+p = $('#consumption_table').DataTable({
+  processing: true,
+  serverSide: true,
+  paging: true,
+  scrollCollapse: true,
+  destroy: true,
+  info: true,
 
-    lengthMenu: [10, 15, 20],
-    responsive: true,
-    order: [[0, "desc"]],
-    oLanguage: {
-        sProcessing:
-            "<div class='loader-container'><div id='loader'></div></div>",
+  lengthMenu: [10, 15, 20],
+  responsive: true,
+  order: [[0, 'desc']],
+  oLanguage: {
+    sProcessing: "<div class='loader-container'><div id='loader'></div></div>",
+  },
+  ajax: {
+    url: consumption_report,
+    dataType: 'json',
+    type: 'GET',
+  },
+
+  AutoWidth: false,
+  columns: [
+    { data: 'id' },
+    { data: 'item_name' },
+
+    { data: 'catalog_number' },
+    { data: 'unit_issue' },
+    { data: 'updated_at' },
+    { data: 'consumed' },
+  ],
+
+  //Set column definition initialisation properties.
+  columnDefs: [
+    {
+      targets: [-1], //last column
+      orderable: false, //set not orderable
     },
-    ajax: {
-        url: consumption_report,
-        dataType: "json",
-        type: "GET",
+    {
+      targets: [-2], //last column
+      orderable: false, //set not orderable
     },
-
-    AutoWidth: false,
-    columns: [
-        { data: "id" },
-        { data: "item_name" },
-
-        { data: "catalog_number" },
-        { data: "unit_issue" },
-        { data: "consumed" },
-    ],
-    //Set column definition initialisation properties.
-    columnDefs: [
-        {
-            targets: [-1], //last column
-            orderable: false, //set not orderable
-        },
-        {
-            targets: [-2], //last column
-            orderable: false, //set not orderable
-        },
-        {
-            targets: [-3], //last column
-            orderable: false, //set not orderable
-        },
-    ],
+    {
+      targets: [-3], //last column
+      orderable: false, //set not orderable
+    },
+  ],
 });
  /*p.on("click", "tbody tr", function () {
      let data = p.row(this).data();
@@ -124,13 +125,14 @@ p = $("#consumption_table").DataTable({
      return div;
  }
  function getSelected(value){
-    if(value==99){
+    if(value==-1){
+        getDefaultData();
 return;
     }
     if(value==10){
         document.getElementById('custom').hidden=false;
         $('#start').focus();
-       
+
     }
     else{
          document.getElementById("custom").hidden = true;
@@ -142,116 +144,117 @@ getData(value)
     let start=$('#start').val();
     let end=$('#end').val();
     if(!start){
-       $("#start").focus(); 
+       $("#start").focus();
        return;
     }
 getCustom(period,start,end);
  }
 function getData(id){
     var filter = $("#filter").val();
-    
-p = $("#consumption_table").DataTable({
-    processing: true,
-    serverSide: true,
-    paging: true,
-    scrollCollapse: true,
-    destroy: true,
-    info: true,
 
-    lengthMenu: [10, 15, 20],
-    responsive: true,
-    order: [[0, "desc"]],
-    oLanguage: {
-        sProcessing:
-            "<div class='loader-container'><div id='loader'></div></div>",
-    },
-    ajax: {
-        url: filter,
-        dataType: "json",
-        type: "GET",
-        data: {
-            value: id,
-        },
-    },
+p = $('#consumption_table').DataTable({
+  processing: true,
+  serverSide: true,
+  paging: true,
+  scrollCollapse: true,
+  destroy: true,
+  info: true,
 
-    AutoWidth: false,
-    columns: [
-        { data: "id" },
-        { data: "item_name" },
-        { data: "catalog_number" },
-        { data: "unit_issue" },
-        { data: "consumed" },
-    ],
-    //Set column definition initialisation properties.
-    columnDefs: [
-        {
-            targets: [-1], //last column
-            orderable: false, //set not orderable
-        },
-        {
-            targets: [-2], //last column
-            orderable: false, //set not orderable
-        },
-        {
-            targets: [-3], //last column
-            orderable: false, //set not orderable
-        },
-    ],
+  lengthMenu: [10, 15, 20],
+  responsive: true,
+  order: [[0, 'desc']],
+  oLanguage: {
+    sProcessing: "<div class='loader-container'><div id='loader'></div></div>",
+  },
+  ajax: {
+    url: filter,
+    dataType: 'json',
+    type: 'GET',
+    data: {
+      value: id,
+    },
+  },
+
+  AutoWidth: false,
+  columns: [
+    { data: 'id' },
+    { data: 'item_name' },
+    { data: 'catalog_number' },
+    { data: 'unit_issue' },
+    { data: 'updated_at' },
+    { data: 'consumed' },
+  ],
+  //Set column definition initialisation properties.
+  columnDefs: [
+    {
+      targets: [-1], //last column
+      orderable: false, //set not orderable
+    },
+    {
+      targets: [-2], //last column
+      orderable: false, //set not orderable
+    },
+    {
+      targets: [-3], //last column
+      orderable: false, //set not orderable
+    },
+  ],
 });
 }
 
 function getCustom(period,start,end){
     var filtered = $("#filter").val();
 
-    p = $("#consumption_table").DataTable({
-        processing: true,
-        serverSide: true,
-        paging: true,
-        scrollCollapse: true,
-        destroy: true,
-        info: true,
+    p = $('#consumption_table').DataTable({
+      processing: true,
+      serverSide: true,
+      paging: true,
+      scrollCollapse: true,
+      destroy: true,
+      info: true,
 
-        lengthMenu: [10, 15, 20],
-        responsive: true,
-        order: [[0, "desc"]],
-        oLanguage: {
-            sProcessing:
-                "<div class='loader-container'><div id='loader'></div></div>",
+      lengthMenu: [10, 15, 20],
+      responsive: true,
+      order: [[0, 'desc']],
+      oLanguage: {
+        sProcessing:
+          "<div class='loader-container'><div id='loader'></div></div>",
+      },
+      ajax: {
+        url: filtered,
+        dataType: 'json',
+        type: 'GET',
+        data: {
+          value: period,
+          start_date: start,
+          end_date: end,
         },
-        ajax: {
-            url: filtered,
-            dataType: "json",
-            type: "GET",
-            data: {
-                value: period,
-                start_date: start,
-                end_date: end,
-            },
-        },
+      },
 
-        AutoWidth: false,
-        columns: [
-            { data: "id" },
-            { data: "item_name" },
-            { data: "catalog_number" },
-            { data: "unit_issue" },
-            { data: "consumed" },
-        ],
-        //Set column definition initialisation properties.
-        columnDefs: [
-            {
-                targets: [-1], //last column
-                orderable: false, //set not orderable
-            },
-            {
-                targets: [-2], //last column
-                orderable: false, //set not orderable
-            },
-            {
-                targets: [-3], //last column
-                orderable: false, //set not orderable
-            },
-        ],
+      AutoWidth: false,
+      columns: [
+        { data: 'id' },
+        { data: 'item_name' },
+        { data: 'catalog_number' },
+        { data: 'unit_issue' },
+        { data: 'updated_at' },
+        { data: 'consumed' },
+      ],
+      //Set column definition initialisation properties.
+      columnDefs: [
+        {
+          targets: [-1], //last column
+          orderable: false, //set not orderable
+        },
+        {
+          targets: [-2], //last column
+          orderable: false, //set not orderable
+        },
+        {
+          targets: [-3], //last column
+          orderable: false, //set not orderable
+        },
+      ],
     });
 }
 function changeFrequency(value){
@@ -280,7 +283,7 @@ function changeFrequency(value){
         e.preventDefault();
         let pe=$('#period').val();
       runReport('download',pe)
-        
+
     })
 function runReport(type,period){
       let download = $("#generate_report").val();
@@ -289,7 +292,7 @@ function runReport(type,period){
         dataType:"JSON",
          url: download,
          data: {
-           
+
              type: type,
              period:period
          },
@@ -302,55 +305,55 @@ function runReport(type,period){
              alert("Error " + errorThrown);
          },
      });
-       
+
 }
 
 function getDefaultData(){
 
- p = $("#consumption_table").DataTable({
-     processing: true,
-     serverSide: true,
-     paging: true,
-     scrollCollapse: true,
-     destroy: true,
-     info: true,
+ p = $('#consumption_table').DataTable({
+   processing: true,
+   serverSide: true,
+   paging: true,
+   scrollCollapse: true,
+   destroy: true,
+   info: true,
 
-     lengthMenu: [10, 15, 20],
-     responsive: true,
-     order: [[0, "desc"]],
-     oLanguage: {
-         sProcessing:
-             "<div class='loader-container'><div id='loader'></div></div>",
+   lengthMenu: [10, 15, 20],
+   responsive: true,
+   order: [[0, 'desc']],
+   oLanguage: {
+     sProcessing: "<div class='loader-container'><div id='loader'></div></div>",
+   },
+   ajax: {
+     url: consumption_report,
+     dataType: 'json',
+     type: 'GET',
+   },
+
+   AutoWidth: false,
+   columns: [
+     { data: 'id' },
+     { data: 'item_name' },
+
+     { data: 'catalog_number' },
+     { data: 'unit_issue' },
+     { data: 'updated_at' },
+     { data: 'consumed' },
+   ],
+   //Set column definition initialisation properties.
+   columnDefs: [
+     {
+       targets: [-1], //last column
+       orderable: false, //set not orderable
      },
-     ajax: {
-         url: consumption_report,
-         dataType: "json",
-         type: "GET",
+     {
+       targets: [-2], //last column
+       orderable: false, //set not orderable
      },
-
-     AutoWidth: false,
-     columns: [
-         { data: "id" },
-         { data: "item_name" },
-
-         { data: "catalog_number" },
-         { data: "unit_issue" },
-         { data: "consumed" },
-     ],
-     //Set column definition initialisation properties.
-     columnDefs: [
-         {
-             targets: [-1], //last column
-             orderable: false, //set not orderable
-         },
-         {
-             targets: [-2], //last column
-             orderable: false, //set not orderable
-         },
-         {
-             targets: [-3], //last column
-             orderable: false, //set not orderable
-         },
-     ],
- });   
+     {
+       targets: [-3], //last column
+       orderable: false, //set not orderable
+     },
+   ],
+ });
 }

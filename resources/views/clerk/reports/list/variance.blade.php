@@ -45,10 +45,10 @@
 <form method="post" id="expiry_form">
           @csrf
 
-               <input type="hidden" class="form-control" id="variance_report" value="{{route('report.load_variance_lab')}}">
+               <input type="hidden" class="form-control" id="variance_report" value="{{route('report.lab_variance')}}">
 
                  <input type="hidden" class="form-control" id="stock_take_details" value="{{route('report.variance_details')}}">
-  <input type="hidden" class="form-control" id="download_url" value="{{route('report.download',['action'=>'download'])}}"/>
+  <input type="hidden" class="form-control" id="download_url" value="{{route('report.variance_download')}}"/>
   <input type="hidden" id="variance_lab" name="variance_lab" value="{{route('report.variance_lab')}}"/>
 
 
@@ -142,11 +142,11 @@
 
 
        <th scope="col"></th>
-     <th scope="col">Stock Date</th>
+        <th scope="col">Stock Date</th>
        <th scope="col">Lab Name</th>
         <th scope="col">Supervised By</th>
         <th scope="col">Approved By</th>
-
+        <th scope="col">Action</th>
 
     </tr>
   </thead>

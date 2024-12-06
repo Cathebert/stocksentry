@@ -797,7 +797,7 @@ $data['lab_name']='Logged Into: '.$lab->lab_name;
 
 public  function loadConsumptionTable(Request $request){
    
-         $columns = array(
+         /*$columns = array(
             0 =>'id',
             1=>'item_name',
             2=>'catalog_number',
@@ -810,7 +810,8 @@ public  function loadConsumptionTable(Request $request){
           $totalData = DB::table('items as t') 
               ->join('inventories AS l', 'l.item_id', '=', 't.id')
               ->leftjoin('consumption_details as c','c.item_id','=','l.id') 
-              ->where('c.lab_id',auth()->user()->laboratory_id)     
+              ->where('c.lab_id',auth()->user()->laboratory_id)
+
               ->count();
 
 
@@ -886,6 +887,41 @@ $x=1;
     );
 
       echo json_encode($json_data);
+      */
+
+    if ($request->ajax()) {
+            $terms =DB::table('items as t') 
+              ->join('inventories AS l', 'l.item_id', '=', 't.id')
+              ->leftjoin('consumption_details as c','c.item_id','=','l.id')
+              ->select(
+                 't.id as item_id',
+                'l.id as id',
+                't.item_name',
+                'l.batch_number',
+                't.catalog_number',
+                'l.expiry_date',
+                'c.updated_at',
+
+                'unit_issue',
+                DB::raw('SUM(c.consumed_quantity) as consumed_quantity'))
+          //->where('t.expiry_date', '<', $date )
+              ->where('c.lab_id',auth()->user()->laboratory_id)
+              ->groupBy('t.item_name','l.batch_number')
+            ->orderBy('t.item_name','asc')
+            ->get();
+
+            //dd($terms);
+     return Datatables::of($terms)
+       ->addColumn('consumed', function($row) {
+           return $row->consumed_quantity;
+                })
+				
+                
+                   ->rawColumns(['consumed'])
+       ->make(true);
+
+        }
+
 }
 public function consumptionMoreDetails(Request $request){
    
@@ -1151,7 +1187,7 @@ $x++;
 }
 
 public function filterConsumption(Request $request){
-    //dd($request->value);
+    
       $columns = array(
             0 =>'id',
             1=>'item_name',
@@ -1169,24 +1205,8 @@ case 0:
 $date=Carbon::now()->format('Y-m-d');
  
 
-          $totalData = DB::table('items as t') 
-              ->join('inventories AS l', 'l.item_id', '=', 't.id')
-              ->join('consumption_details as c','c.item_id','=','l.id') 
-               ->where('c.created_at', '=', $date )  
-               ->where('c.lab_id',auth()->user()->laboratory_id)   
-              ->count();
 
-
-
-            $totalRec = $totalData;
-          // $totalData = DB::table('appointments')->count();
-
-          $limit = $request->input('length');
-          $start = $request->input('start');
-          $order = $columns[$request->input('order.0.column')];
-          $dir = $request->input('order.0.dir');
-
-           $search = $request->input('search.value');
+    if ($request->ajax()) {
             $terms =DB::table('items as t') 
               ->join('inventories AS l', 'l.item_id', '=', 't.id')
               ->leftjoin('consumption_details as c','c.item_id','=','l.id')
@@ -1194,78 +1214,58 @@ $date=Carbon::now()->format('Y-m-d');
                  't.id as item_id',
                 'l.id as id',
                 't.item_name',
+                'c.updated_at',
                 'l.batch_number',
                 't.catalog_number',
-                'unit_issue',
-                'c.created_at',
+                't.unit_issue',
+
                 DB::raw('SUM(c.consumed_quantity) as consumed_quantity'))
-          ->where('c.created_at', '=', $date )
-          ->where('c.lab_id',auth()->user()->laboratory_id)
-                ->where(function ($query) use ($search){
-                  return  $query->where('t.item_name', 'LIKE', "%{$search}%")
-                  ->orWhere('l.batch_number','LIKE',"%{$search}%");
-                      
-                     
-            })
-            ->offset($start)
-            ->limit($limit)
+         ->where('c.updated_at', '=', $date )
+              ->where('c.lab_id',auth()->user()->laboratory_id)
+              ->where('consumed_quantity', '>', 0 )
+            ->groupBy('t.item_name','l.batch_number')
             ->orderBy('t.item_name','asc')
             ->get();
-
-          $totalFiltered =  $totalRec ;
-
+     return Datatables::of($terms)
+       ->addColumn('consumed', function($row) {
+           return $row->consumed_quantity;
+                })
+                
+                   ->rawColumns(['consumed'])
+       ->make(true);
+}
     break;
 //yesterday consumption
 case 1:
 $date=date('Y-m-d', strtotime("-1 days"));
 
-//dd($date);
- 
-
-          $totalData = DB::table('items as t') 
-              ->join('inventories AS l', 'l.item_id', '=', 't.id')
-              ->leftjoin('consumption_details as c','c.item_id','=','l.id') 
-               ->where('c.created_at', '=', date('Y-m-d', strtotime("-1 days")))   
-               ->where('c.lab_id',auth()->user()->laboratory_id) 
-              ->count();
-
-
-
-            $totalRec = $totalData;
-          // $totalData = DB::table('appointments')->count();
-
-          $limit = $request->input('length');
-          $start = $request->input('start');
-          $order = $columns[$request->input('order.0.column')];
-          $dir = $request->input('order.0.dir');
-
-           $search = $request->input('search.value');
+    if ($request->ajax()) {
             $terms =DB::table('items as t') 
               ->join('inventories AS l', 'l.item_id', '=', 't.id')
               ->leftjoin('consumption_details as c','c.item_id','=','l.id')
               ->select(
-                 't.id as item_id',
+                  't.id as item_id',
                 'l.id as id',
                 't.item_name',
+                'c.updated_at',
                 'l.batch_number',
                 't.catalog_number',
-                'unit_issue',
-                'c.created_at',
+                't.unit_issue',
                 DB::raw('SUM(c.consumed_quantity) as consumed_quantity'))
-          ->where('c.created_at', '=', date('Y-m-d', strtotime("-1 days")))
-           ->where('c.lab_id',auth()->user()->laboratory_id) 
-                ->where(function ($query) use ($search){
-                  return  $query->where('t.item_name', 'LIKE', "%{$search}%")
-                  ->orWhere('l.batch_number','LIKE',"%{$search}%");
-                      
-                     
-            })
-            ->offset($start)
-            ->limit($limit)
+        ->where('c.updated_at', '=', date('Y-m-d', strtotime("-1 days")))
+            ->where('c.lab_id',auth()->user()->laboratory_id)
+            ->where('consumed_quantity', '>', 0 )
+            ->groupBy('t.item_name','l.batch_number')
             ->orderBy('t.item_name','asc')
             ->get();
-
-  $totalFiltered =  $totalRec ;
+     return Datatables::of($terms)
+       ->addColumn('consumed', function($row) {
+           return $row->consumed_quantity;
+                })
+                
+                   ->rawColumns(['consumed'])
+       ->make(true);
+}
 break;
 
 // this week
@@ -1274,51 +1274,34 @@ case 2:
 $start = Carbon::now()->subWeek()->endOfWeek();
 $end = Carbon::now()->addWeek()->startOfWeek();
 
-  $totalData = DB::table('items as t') 
-              ->join('inventories AS l', 'l.item_id', '=', 't.id')
-              ->leftjoin('consumption_details as c','c.item_id','=','l.id') 
-               ->where('c.lab_id',auth()->user()->laboratory_id) 
-               ->whereBetween('c.created_at', [$start, $end])
 
-              ->count();
-
-
-
-            $totalRec = $totalData;
-          // $totalData = DB::table('appointments')->count();
-
-          $limit = $request->input('length');
-          $start = $request->input('start');
-          $order = $columns[$request->input('order.0.column')];
-          $dir = $request->input('order.0.dir');
-
-           $search = $request->input('search.value');
+   if ($request->ajax()) {
             $terms =DB::table('items as t') 
               ->join('inventories AS l', 'l.item_id', '=', 't.id')
               ->leftjoin('consumption_details as c','c.item_id','=','l.id')
               ->select(
-                 't.id as item_id',
+                   't.id as item_id',
                 'l.id as id',
                 't.item_name',
+                'c.updated_at',
                 'l.batch_number',
                 't.catalog_number',
-                'unit_issue',
+                't.unit_issue',
                 DB::raw('SUM(c.consumed_quantity) as consumed_quantity'))
-                  ->whereBetween('c.created_at', [$start, $end])
-              ->where('c.lab_id',auth()->user()->laboratory_id) 
-                ->where(function ($query) use ($search){
-                  return  $query->where('t.item_name', 'LIKE', "%{$search}%")
-                  ->orWhere('l.batch_number','LIKE',"%{$search}%");
-                      
-                     
-            })
-            ->offset($start)
-            ->limit($limit)
+        ->whereBetween('c.updated_at', [$start, $end])
+              ->where('c.lab_id',auth()->user()->laboratory_id)
+                ->where('consumed_quantity', '>', 0 )
+            ->groupBy('t.item_name','l.batch_number')
             ->orderBy('t.item_name','asc')
             ->get();
-
-  $totalFiltered =  $totalRec ;
-
+     return Datatables::of($terms)
+       ->addColumn('consumed', function($row) {
+           return $row->consumed_quantity;
+                })
+                
+                   ->rawColumns(['consumed'])
+       ->make(true);
+}
 break;
 
 //this month
@@ -1333,49 +1316,34 @@ $end = Carbon::createFromFormat('Y-m-d', $myDate)
                         ->lastOfMonth()
                         ->format('Y-m-d');
 
-  $totalData = DB::table('items as t') 
-              ->join('inventories AS l', 'l.item_id', '=', 't.id')
-              ->leftjoin('consumption_details as c','c.item_id','=','l.id') 
-               ->whereBetween('c.created_at', [$start, $end])
-                ->where('c.lab_id',auth()->user()->laboratory_id) 
-              ->count();
 
-
-
-            $totalRec = $totalData;
-          // $totalData = DB::table('appointments')->count();
-
-          $limit = $request->input('length');
-          $start = $request->input('start');
-          $order = $columns[$request->input('order.0.column')];
-          $dir = $request->input('order.0.dir');
-
-           $search = $request->input('search.value');
+  if ($request->ajax()) {
             $terms =DB::table('items as t') 
               ->join('inventories AS l', 'l.item_id', '=', 't.id')
               ->leftjoin('consumption_details as c','c.item_id','=','l.id')
               ->select(
-                 't.id as item_id',
+                   't.id as item_id',
                 'l.id as id',
                 't.item_name',
+                'c.updated_at',
                 'l.batch_number',
                 't.catalog_number',
-                'unit_issue',
+                't.unit_issue',
                 DB::raw('SUM(c.consumed_quantity) as consumed_quantity'))
-                  ->whereBetween('c.created_at', [$start, $end])
- ->where('c.lab_id',auth()->user()->laboratory_id) 
-                ->where(function ($query) use ($search){
-                  return  $query->where('t.item_name', 'LIKE', "%{$search}%")
-                  ->orWhere('l.batch_number','LIKE',"%{$search}%");
-                      
-                     
-            })
-            ->offset($start)
-            ->limit($limit)
+        ->whereBetween('c.updated_at', [$start, $end])
+              ->where('c.lab_id',auth()->user()->laboratory_id)
+              ->where('consumed_quantity', '>', 0 )
+         ->groupBy('t.item_name','l.batch_number')
             ->orderBy('t.item_name','asc')
             ->get();
-
-  $totalFiltered =  $totalRec ;
+     return Datatables::of($terms)
+       ->addColumn('consumed', function($row) {
+           return $row->consumed_quantity;
+                })
+                
+                   ->rawColumns(['consumed'])
+       ->make(true);
+}
 
 
 break;
@@ -1385,73 +1353,40 @@ case 4:
 $start = Carbon::now()->firstOfQuarter()->format('Y-m-d');
 $end = Carbon::now()->endOfQuarter()->format('Y-m-d');
 
-  $totalData = DB::table('items as t') 
-              ->join('inventories AS l', 'l.item_id', '=', 't.id')
-              ->leftjoin('consumption_details as c','c.item_id','=','l.id') 
-               ->whereBetween('c.created_at', [$start, $end])
-                ->where('c.lab_id',auth()->user()->laboratory_id) 
-              ->count();
-
-
-
-            $totalRec = $totalData;
-          // $totalData = DB::table('appointments')->count();
-
-          $limit = $request->input('length');
-          $start = $request->input('start');
-          $order = $columns[$request->input('order.0.column')];
-          $dir = $request->input('order.0.dir');
-
-           $search = $request->input('search.value');
+    if ($request->ajax()) {
             $terms =DB::table('items as t') 
               ->join('inventories AS l', 'l.item_id', '=', 't.id')
               ->leftjoin('consumption_details as c','c.item_id','=','l.id')
               ->select(
-                 't.id as item_id',
+                   't.id as item_id',
                 'l.id as id',
                 't.item_name',
+                'c.updated_at',
                 'l.batch_number',
                 't.catalog_number',
-                'unit_issue',
+                't.unit_issue',
                 DB::raw('SUM(c.consumed_quantity) as consumed_quantity'))
-                  ->whereBetween('c.created_at', [$start, $end])
- ->where('c.lab_id',auth()->user()->laboratory_id) 
-                ->where(function ($query) use ($search){
-                  return  $query->where('t.item_name', 'LIKE', "%{$search}%")
-                  ->orWhere('l.batch_number','LIKE',"%{$search}%");
-                      
-                     
-            })
-            ->offset($start)
-            ->limit($limit)
+        ->whereBetween('c.updated_at', [$start, $end])
+              ->where('c.lab_id',auth()->user()->laboratory_id)
+                ->where('consumed_quantity', '>', 0 )
+             ->groupBy('t.item_name','l.batch_number')
             ->orderBy('t.item_name','asc')
             ->get();
-
-  $totalFiltered =  $totalRec ;
+     return Datatables::of($terms)
+       ->addColumn('consumed', function($row) {
+           return $row->consumed_quantity;
+                })
+                
+                   ->rawColumns(['consumed'])
+       ->make(true);
+}
   break;
 //this year
   case 5:
 $start = Carbon::now()->startOfYear()->format('Y-m-d');
 $end = Carbon::now()->endOfYear()->format('Y-m-d');
 
-  $totalData = DB::table('items as t') 
-              ->join('inventories AS l', 'l.item_id', '=', 't.id')
-              ->leftjoin('consumption_details as c','c.item_id','=','l.id') 
-               ->whereBetween('c.created_at', [$start, $end])
-                ->where('c.lab_id',auth()->user()->laboratory_id) 
-              ->count();
-
-
-
-            $totalRec = $totalData;
-          // $totalData = DB::table('appointments')->count();
-
-          $limit = $request->input('length');
-          $start = $request->input('start');
-          $order = $columns[$request->input('order.0.column')];
-          $dir = $request->input('order.0.dir');
-
-           $search = $request->input('search.value');
+    if ($request->ajax()) {
             $terms =DB::table('items as t') 
               ->join('inventories AS l', 'l.item_id', '=', 't.id')
               ->leftjoin('consumption_details as c','c.item_id','=','l.id')
@@ -1459,25 +1394,25 @@ $end = Carbon::now()->endOfYear()->format('Y-m-d');
                  't.id as item_id',
                 'l.id as id',
                 't.item_name',
+                'c.updated_at',
                 'l.batch_number',
                 't.catalog_number',
-                'unit_issue',
+                't.unit_issue',
                 DB::raw('SUM(c.consumed_quantity) as consumed_quantity'))
-                  ->whereBetween('c.created_at', [$start, $end])
- ->where('c.lab_id',auth()->user()->laboratory_id) 
-                ->where(function ($query) use ($search){
-                  return  $query->where('t.item_name', 'LIKE', "%{$search}%")
-                  ->orWhere('l.batch_number','LIKE',"%{$search}%");
-                      
-                     
-            })
-            ->offset($start)
-            ->limit($limit)
+        ->whereBetween('c.updated_at', [$start, $end])
+              ->where('c.lab_id',auth()->user()->laboratory_id)
+              ->where('consumed_quantity', '>', 0 )
+            ->groupBy('t.item_name','l.batch_number') 
             ->orderBy('t.item_name','asc')
             ->get();
-
-  $totalFiltered =  $totalRec ;
-
+     return Datatables::of($terms)
+       ->addColumn('consumed', function($row) {
+           return $row->consumed_quantity;
+                })
+                
+                   ->rawColumns(['consumed'])
+       ->make(true);
+}
   break;
 
 
@@ -1487,51 +1422,34 @@ $end = Carbon::now()->endOfYear()->format('Y-m-d');
  $start = Carbon::now()->subWeek()->startOfWeek();
 $end = Carbon::now()->subWeek()->endOfWeek();
 
-$totalData = DB::table('items as t') 
-              ->join('inventories AS l', 'l.item_id', '=', 't.id')
-              ->leftjoin('consumption_details as c','c.item_id','=','l.id') 
-               ->whereBetween('c.created_at', [$start, $end])
-                ->where('c.lab_id',auth()->user()->laboratory_id) 
-              ->count();
-
-
-
-            $totalRec = $totalData;
-          // $totalData = DB::table('appointments')->count();
-
-          $limit = $request->input('length');
-          $start = $request->input('start');
-          $order = $columns[$request->input('order.0.column')];
-          $dir = $request->input('order.0.dir');
-
-           $search = $request->input('search.value');
+  if ($request->ajax()) {
             $terms =DB::table('items as t') 
               ->join('inventories AS l', 'l.item_id', '=', 't.id')
               ->leftjoin('consumption_details as c','c.item_id','=','l.id')
               ->select(
-                 't.id as item_id',
+                  't.id as item_id',
                 'l.id as id',
                 't.item_name',
+                'c.updated_at',
                 'l.batch_number',
                 't.catalog_number',
-                'unit_issue',
+
+                't.unit_issue',
                 DB::raw('SUM(c.consumed_quantity) as consumed_quantity'))
-                  ->whereBetween('c.created_at', [$start, $end])
-                ->where('c.lab_id',auth()->user()->laboratory_id) 
-                ->where(function ($query) use ($search){
-                  return  $query->where('t.item_name', 'LIKE', "%{$search}%")
-                  ->orWhere('l.batch_number','LIKE',"%{$search}%");
-                      
-                     
-            })
-            ->offset($start)
-            ->limit($limit)
+        ->whereBetween('c.updated_at', [$start, $end])
+              ->where('c.lab_id',auth()->user()->laboratory_id)
+            ->where('consumed_quantity', '>', 0 )
+            ->groupBy('t.item_name','l.batch_number')    
             ->orderBy('t.item_name','asc')
             ->get();
-
-  $totalFiltered =  $totalRec ;
-
-  break;
+     return Datatables::of($terms)
+       ->addColumn('consumed', function($row) {
+           return $row->consumed_quantity;
+                })
+                
+                   ->rawColumns(['consumed'])
+       ->make(true);
+}  break;
 
   //previous month
   case 7:
@@ -1540,24 +1458,7 @@ $totalData = DB::table('items as t')
 
 $end = Carbon::now()->subMonthsNoOverflow()->endOfMonth()->toDateString();
 
-$totalData = DB::table('items as t') 
-              ->join('inventories AS l', 'l.item_id', '=', 't.id')
-              ->leftjoin('consumption_details as c','c.item_id','=','l.id') 
-               ->where('c.lab_id',auth()->user()->laboratory_id) 
-               ->whereBetween('c.created_at', [$start, $end])
-              ->count();
-
-
-
-            $totalRec = $totalData;
-          // $totalData = DB::table('appointments')->count();
-
-          $limit = $request->input('length');
-          $start = $request->input('start');
-          $order = $columns[$request->input('order.0.column')];
-          $dir = $request->input('order.0.dir');
-
-           $search = $request->input('search.value');
+  if ($request->ajax()) {
             $terms =DB::table('items as t') 
               ->join('inventories AS l', 'l.item_id', '=', 't.id')
               ->leftjoin('consumption_details as c','c.item_id','=','l.id')
@@ -1567,104 +1468,64 @@ $totalData = DB::table('items as t')
                 't.item_name',
                 'l.batch_number',
                 't.catalog_number',
+                'c.updated_at',
                 'unit_issue',
                 DB::raw('SUM(c.consumed_quantity) as consumed_quantity'))
-               ->where('c.lab_id',auth()->user()->laboratory_id) 
-                  ->whereBetween('c.created_at', [$start, $end])
-
-                ->where(function ($query) use ($search){
-                  return  $query->where('t.item_name', 'LIKE', "%{$search}%")
-                  ->orWhere('l.batch_number','LIKE',"%{$search}%");
-                      
-                     
-            })
-            ->offset($start)
-            ->limit($limit)
+        ->whereBetween('c.updated_at', [$start, $end])
+              ->where('c.lab_id',auth()->user()->laboratory_id)
+                ->where('consumed_quantity', '>', 0 )
+                ->groupBy('t.item_name','l.batch_number')  
             ->orderBy('t.item_name','asc')
             ->get();
-
-  $totalFiltered =  $totalRec ;
-
-
-  break;
+     return Datatables::of($terms)
+       ->addColumn('consumed', function($row) {
+           return $row->consumed_quantity;
+                })
+                
+                   ->rawColumns(['consumed'])
+       ->make(true);
+}  break;
 
   //previous quarter
   case 8:
-
 $start = Carbon::now()->subMonths(3)->firstOfQuarter()->format('Y-m-d');
 $end = Carbon::now()->subMonths(3)->endOfQuarter()->format('Y-m-d');
-     
-     $totalData = DB::table('items as t') 
-              ->join('inventories AS l', 'l.item_id', '=', 't.id')
-              ->leftjoin('consumption_details as c','c.item_id','=','l.id') 
-               ->where('c.lab_id',auth()->user()->laboratory_id) 
-               ->whereBetween('c.created_at', [$start, $end])
-              ->count();
-
-
-
-            $totalRec = $totalData;
-          // $totalData = DB::table('appointments')->count();
-
-          $limit = $request->input('length');
-          $start = $request->input('start');
-          $order = $columns[$request->input('order.0.column')];
-          $dir = $request->input('order.0.dir');
-
-           $search = $request->input('search.value');
+  if ($request->ajax()) {
             $terms =DB::table('items as t') 
               ->join('inventories AS l', 'l.item_id', '=', 't.id')
-              ->leftjoin('consumption_details as c','c.item_id','=','l.id')
+              ->join('consumption_details as c','c.item_id','=','l.id')
               ->select(
                  't.id as item_id',
                 'l.id as id',
                 't.item_name',
                 'l.batch_number',
                 't.catalog_number',
+                'c.updated_at',
                 'unit_issue',
                 DB::raw('SUM(c.consumed_quantity) as consumed_quantity'))
-               ->where('c.lab_id',auth()->user()->laboratory_id) 
-                  ->whereBetween('c.created_at', [$start, $end])
-
-                ->where(function ($query) use ($search){
-                  return  $query->where('t.item_name', 'LIKE', "%{$search}%")
-                  ->orWhere('l.batch_number','LIKE',"%{$search}%");
-                      
-                     
-            })
-            ->offset($start)
-            ->limit($limit)
+              ->where('c.lab_id',auth()->user()->laboratory_id)
+                ->where('consumed_quantity', '>', 0 )
+        ->whereBetween('c.updated_at', [$start, $end])
+              
+            ->groupBy('t.item_name')
             ->orderBy('t.item_name','asc')
             ->get();
-
-  $totalFiltered =  $totalRec ;
-
-  break;
+            
+     return Datatables::of($terms)
+       ->addColumn('consumed', function($row) {
+           return $row->consumed_quantity;
+                })
+                
+                   ->rawColumns(['consumed'])
+       ->make(true);
+}  break;
 
   //previous year
 
   case 9:
- $start = Carbon::now()->subYear()->startOfYear()->format('Y-m-d');
+   $start = Carbon::now()->subYear()->startOfYear()->format('Y-m-d');
  $end = Carbon::now()->subYear()->endOfYear()->format('Y-m-d');
-
-$totalData = DB::table('items as t') 
-              ->join('inventories AS l', 'l.item_id', '=', 't.id')
-              ->leftjoin('consumption_details as c','c.item_id','=','l.id') 
-               ->where('c.lab_id',auth()->user()->laboratory_id) 
-               ->whereBetween('c.created_at', [$start, $end])
-              ->count();
-
-
-
-            $totalRec = $totalData;
-          // $totalData = DB::table('appointments')->count();
-
-          $limit = $request->input('length');
-          $start = $request->input('start');
-          $order = $columns[$request->input('order.0.column')];
-          $dir = $request->input('order.0.dir');
-
-           $search = $request->input('search.value');
+   if ($request->ajax()) {
             $terms =DB::table('items as t') 
               ->join('inventories AS l', 'l.item_id', '=', 't.id')
               ->leftjoin('consumption_details as c','c.item_id','=','l.id')
@@ -1674,47 +1535,30 @@ $totalData = DB::table('items as t')
                 't.item_name',
                 'l.batch_number',
                 't.catalog_number',
+                'c.updated_at',
                 'unit_issue',
                 DB::raw('SUM(c.consumed_quantity) as consumed_quantity'))
-               ->where('c.lab_id',auth()->user()->laboratory_id) 
-                  ->whereBetween('c.created_at', [$start, $end])
-
-                ->where(function ($query) use ($search){
-                  return  $query->where('t.item_name', 'LIKE', "%{$search}%")
-                  ->orWhere('l.batch_number','LIKE',"%{$search}%");
-                      
-                     
-            })
-            ->offset($start)
-            ->limit($limit)
+        ->whereBetween('c.updated_at', [$start, $end])
+              ->where('c.lab_id',auth()->user()->laboratory_id)
+                ->where('consumed_quantity', '>', 0 )
+                 ->groupBy('t.item_name','l.batch_number') 
             ->orderBy('t.item_name','asc')
             ->get();
-
-  $totalFiltered =  $totalRec ;
+     return Datatables::of($terms)
+       ->addColumn('consumed', function($row) {
+           return $row->consumed_quantity;
+                })
+                
+                   ->rawColumns(['consumed'])
+       ->make(true);
+}
   break;
 // custom range
   case 10:
 $start=Carbon::createFromFormat('Y-m-d', $request->start_date);
 $end=Carbon::createFromFormat('Y-m-d',$request->end_date);
 //dd($end);
-$totalData = DB::table('items as t') 
-              ->join('inventories AS l', 'l.item_id', '=', 't.id')
-              ->leftjoin('consumption_details as c','c.item_id','=','l.id')
-               ->where('c.lab_id',auth()->user()->laboratory_id)  
-               ->whereBetween('c.created_at', [$start, $end])
-              ->count();
-
-
-
-            $totalRec = $totalData;
-          // $totalData = DB::table('appointments')->count();
-
-          $limit = $request->input('length');
-          $start = $request->input('start');
-          $order = $columns[$request->input('order.0.column')];
-          $dir = $request->input('order.0.dir');
-
-           $search = $request->input('search.value');
+  if ($request->ajax()) {
             $terms =DB::table('items as t') 
               ->join('inventories AS l', 'l.item_id', '=', 't.id')
               ->leftjoin('consumption_details as c','c.item_id','=','l.id')
@@ -1724,66 +1568,31 @@ $totalData = DB::table('items as t')
                 't.item_name',
                 'l.batch_number',
                 't.catalog_number',
+                'c.updated_at',
                 'unit_issue',
                 DB::raw('SUM(c.consumed_quantity) as consumed_quantity'))
-               ->where('c.lab_id',auth()->user()->laboratory_id) 
-                  ->whereBetween('c.created_at', [$start, $end])
-
-                ->where(function ($query) use ($search){
-                  return  $query->where('t.item_name', 'LIKE', "%{$search}%")
-                  ->orWhere('l.batch_number','LIKE',"%{$search}%");
-                      
-                     
-            })
-            ->offset($start)
-            ->limit($limit)
+        ->whereBetween('c.updated_at', [$start, $end])
+            ->where('c.lab_id',auth()->user()->laboratory_id)
+            ->where('consumed_quantity', '>', 0 )
+            ->groupBy('t.item_name','l.batch_number') 
             ->orderBy('t.item_name','asc')
             ->get();
+     return Datatables::of($terms)
+       ->addColumn('consumed', function($row) {
+           return $row->consumed_quantity;
+                })
+                
+                   ->rawColumns(['consumed'])
+       ->make(true);
+}  
 
-  $totalFiltered =  $totalRec ;
-  break;
+break;
    }
  
         
 
           
-//  0 => 'id',
-    
-          $data = array();
-          if (!empty($terms)) {
-$x=1;
- 
-
-
-            foreach ($terms as $term) {
-
-
-
-$nestedData['item_id']= $term->item_id;
-                $nestedData['id']=$x;
-                $nestedData['item_name']=$term->item_name;
-               
-                $nestedData['catalog_number']= $term->catalog_number;
-                $nestedData['unit_issue']= $term->unit_issue;
-                $nestedData['consumed']= $term->consumed_quantity;
-                
-             
-               
-                   $x++;
-                $data[] = $nestedData;
-              
-           }
-      }
-
-      $json_data = array(
-        "draw" => intval($request->input('draw')),
-        "recordsTotal" => intval($totalData),
-        "recordsFiltered" => intval($totalFiltered),
-        "data" => $data,
-        
-    );
-
-      echo json_encode($json_data);  
+  
 }
 
 

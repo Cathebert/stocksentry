@@ -7,9 +7,11 @@
  <div class="form-check form-check-inline">
       <input type="checkbox" class="form-check-input" id="select_all"  onclick="SelectAll()" />&nbsp;
 
+
   <label class="form-check-label" for="select_all"> &nbsp; Select All </label>
 </div>
 </div>
+<input type="hidden" class="form-check-input" id="adjustid"  value="{{$id }}"/>
 <div class="table-responsive">
         <table class="table table-bordered table-striped table-sm table-hover" id="item_adjust" width="100%">
     <thead class="thead-light">
@@ -44,10 +46,10 @@
 
 </div>
 <script type="text/javascript">
-  var p;
+  var k;
   var load_forecast = "{{route('inventory.load_adjusted')}}"
-
-  p = $("#item_adjust").DataTable({
+var adjustid=$('#adjustid').val();
+  k = $("#item_adjust").DataTable({
     processing: true,
     serverSide: true,
     destroy: true,
@@ -67,7 +69,7 @@
         dataType: "json",
         type: "GET",
         data:{
-id:{{ $id }}
+id:adjustid
         },
     },
 

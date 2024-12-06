@@ -11,7 +11,7 @@
   </ol>
 </nav>
    <!-- Page Heading -->
-   
+
                     <div class="d-sm-flex align-items-center justify-content-between mb-4">
                         <h1 class="h3 mb-0 text-gray-800">About To Expire Report</h1>
                          <div class="dropdow" style="text-align:right" >
@@ -26,32 +26,32 @@
 </button>
 
   <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-  
+
      <a class="dropdown-item" href="{{route('report.download',['action'=>'download'])}}" id="download"><i class="fa fa-download"></i> PDF File</a>
      <a class="dropdown-item" href="{{route('report.download',['action'=>'excel'])}}" id="excel"><i class="fa fa-share"></i>  Excel file</a>
     <hr>
-   
+
   </div>
 </div>
                    <div class="row" >
       <div class="col-sm-12">
-    
+
     <div class="card">
- 
+
       <div class="card-body">
-        
+
         <h5 class="card-title"> <strong>Filters </strong></h5>
 <form method="post" id="expiry_form">
           @csrf
-          
-               <input type="hidden" class="form-control" id="expiry_report" value="{{route('lab_manager_report.expiry_table')}}">
+
+   <input type="hidden" class="form-control" id="expiry_report" value="{{route('cold_report.cold_expiry_table')}}">
    <input type="hidden" class="form-control" id="download_url" value="{{route('lab_manager_report.about_expiry_download',['action'=>'download'])}}"/>
 
 
- 
-            
+
+
             <div class="row">
-    <div class="col-md-4 col-sm-12 col-xs-12 form-group" hidden >
+    <div class="col-md-4 col-sm-12 col-xs-12 form-group">
 <div class="input-group mb-3">
   <div class="input-group-prepend">
     <label class="input-group-text" for="period">Location</label>
@@ -60,25 +60,28 @@
   <select class="custom-select" id="period" name="lab" onchange="getSelected()">
     <option value="99" selected> All</option>
       @foreach ($laboratories as $lab)
-   
+@if($lab->id==0 || $lab->id==99)
+
+@else
        <option value="{{$lab->id}}">{{$lab->lab_name}}</option>
+ @endif
    @endforeach
 </select>
 
 </div>
   </div>
-  
+
      <div class="col-md-6 col-sm-12 col-xs-12 form-group" >
   <div class="input-group">
-  <span class="input-group-text">Expiry Days Range:</span> 
-   <span class="input-group-text"><i class="fa fa-sort-numeric-asc" aria-hidden="true"></i></span>
+  <span class="input-group-text">Expiry Days Range:</span>
+   <span class="input-group-text"><i class="fa fa-sort-alpha-desc" aria-hidden="true"></i></span>
   <select class="custom-select" id="days_range" name="period" onchange="getSelectedRange()">
    <option value="99" selected>All</option>
-   
+
     <option value="2"> >1 to < 30 days</option>
       <option value="3" > > 30  to < 60 days </option>
         <option value="2"> > 60  to < 90 days</option>
-     
+
 </select>
 </div>
 
@@ -111,7 +114,7 @@
                                     </div>
                                 </div>
                             </div>
-                            
+
                         </div>
 
 
@@ -141,13 +144,14 @@
     <tr>
        <th scope="col"></th>
      <th scope="col">Item</th>
+      <th scope="col">Laboratory</th>
         <th scope="col">Batch Number</th>
         <th scope="col">Expiration </th>
         <th scope="col">Quantity</th>
         <th scope="col">Cost</th>
          <th scope="col">Estimated Loss</th>
            <th scope="col">Status</th>
-      
+
     </tr>
   </thead>
   <tbody>
@@ -164,11 +168,11 @@
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="exampleModalLabel">Schedule Report</h5>
-   
+
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button><br>
-         
+
       </div>
           <span >Report Name: <i>Inventory About to Expire_{{date('Y-m-d')}}</i></span>
       <div class="modal-body">
@@ -196,9 +200,9 @@
     <label for="staticEmail" class="col-sm-3 col-form-label text-danger">Emails *</label>
     <div class="col-sm-9">
      <select class="form-control" id="email_list" style="width: 50%" name="employee_involved[]" multiple  required>
-                                   
+
                                     @foreach($users as $user)
-                                
+
                                         <option value="{{$user->id}}">{{$user->email}}</option>
                                     @endforeach
                                 </select>
@@ -210,9 +214,9 @@
  placeholder: 'Select  ',
       allowClear: true,
   dropdownParent: $('#exampleModal .modal-content')
-   
+
     });
-     
+
 });
 </script>
     <div class="form-group row">
@@ -258,6 +262,6 @@
             @endsection
 
  @push('js')
-       <script src="{{asset('assets/moderator/reports/expiry.js')}}"> </script>
-  
+
+    <script src="{{asset('assets/admin/js/inventory/reports/cold/expiry.js')}}"> </script>
 @endpush

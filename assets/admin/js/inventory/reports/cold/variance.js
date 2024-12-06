@@ -1,54 +1,56 @@
 var t;
 let variance_report=$('#variance_report').val()
 
-t = $('#variance_table').DataTable({
-  processing: true,
-  serverSide: true,
-  paging: true,
-  scrollCollapse: true,
-  destroy: true,
-  info: true,
+t = $("#variance_table").DataTable({
+    processing: true,
+    serverSide: true,
+    paging: true,
+    scrollCollapse: true,
+destroy:true,
+    info: true,
 
-  lengthMenu: [10, 15, 20],
-  responsive: true,
-  order: [[0, 'desc']],
-  oLanguage: {
-    sProcessing: "<div class='loader-container'><div id='loader'></div></div>",
-  },
-  ajax: {
-    url: variance_report,
-    dataType: 'json',
-    type: 'GET',
-  },
-  AutoWidth: false,
-  columns: [
-    {
-      className: 'dt-control',
-      orderable: false,
-      data: null,
-      defaultContent: '',
+    lengthMenu: [10, 15, 20],
+    responsive: true,
+    order: [[0, "desc"]],
+    oLanguage: {
+        sProcessing:
+            "<div class='loader-container'><div id='loader'></div></div>",
     },
-    { data: 'stock_date', width: '30%' },
-    { data: 'lab_name' },
-    { data: 'supervised_by' },
-    { data: 'approved_by' },
-    { data: 'action' },
-  ],
-  //Set column definition initialisation properties.
-  columnDefs: [
-    {
-      targets: [-1], //last column
-      orderable: false, //set not orderable
+    ajax: {
+        url: variance_report,
+        dataType: "json",
+        type: "GET",
     },
-    {
-      targets: [-2], //last column
-      orderable: false, //set not orderable
-    },
-    {
-      targets: [-3], //last column
-      orderable: false, //set not orderable
-    },
-  ],
+    AutoWidth: false,
+    columns: [
+        {
+             className: "dt-control",
+             orderable: false,
+             data: null,
+             defaultContent: "",
+         },
+        { data: "stock_date", width: "30%" },
+        { data: "lab_name" },
+        { data: "supervised_by"},
+        { data: "approved_by"},
+        {data:'action'}
+
+    ],
+    //Set column definition initialisation properties.
+    columnDefs: [
+        {
+            targets: [-1], //last column
+            orderable: false, //set not orderable
+        },
+        {
+            targets: [-2], //last column
+            orderable: false, //set not orderable
+        },
+        {
+            targets: [-3], //last column
+            orderable: false, //set not orderable
+        },
+    ],
 });
 
 
@@ -238,25 +240,27 @@ t.on("click", "tbody tr", function () {
 
 
  }
- function downloadVariance(id) {
-   let downloadVariance = $('#download_url').val();
+function downloadVariance(id){
+    let downloadVariance = $('#download_url').val();
 
-   $.ajax({
-     method: 'GET',
-     dataType: 'JSON',
-     url: downloadVariance,
-     data: {
-       id: id,
-     },
-     beforeSend: function () {
-       ajaxindicatorstart('downloading data... please wait...');
-     },
-     success: function (data) {
-       ajaxindicatorstop();
-       window.location = data.path;
-     },
-     error: function (error) {
-       ajaxindicatorstop();
-     },
-   });
- }
+
+     $.ajax({
+       method: 'GET',
+       dataType: 'JSON',
+       url: downloadVariance,
+       data: {
+        id:id,
+       },
+       beforeSend: function () {
+         ajaxindicatorstart('downloading data... please wait...');
+       },
+       success: function (data) {
+         ajaxindicatorstop();
+         window.location=data.path;
+
+       },
+       error:function(error){
+ajaxindicatorstop();
+       }
+     });
+}

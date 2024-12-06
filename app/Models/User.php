@@ -81,4 +81,8 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Laboratory::class);
     }
+     public function routeNotificationForMail()
+    {
+        return $this->email_address;
+    }
 }

@@ -48,12 +48,12 @@
                <input type="hidden" class="form-control" id="variance_report" value="{{route('report.load_variance_lab')}}">
 
                  <input type="hidden" class="form-control" id="stock_take_details" value="{{route('report.variance_details')}}">
-  <input type="hidden" class="form-control" id="download_url" value="{{route('report.download',['action'=>'download'])}}"/>
+  <input type="hidden" class="form-control" id="download_url" value="{{route('report.variance_download')}}"/>
   <input type="hidden" id="variance_lab" name="variance_lab" value="{{route('report.variance_lab')}}"/>
 
 
 
-            <div class="row" hidden>
+            <div class="row">
     <div class="col-md-4 col-sm-12 col-xs-12 form-group"  >
 <div class="input-group mb-3">
   <div class="input-group-prepend">
@@ -62,7 +62,13 @@
   </div>
   <select class="custom-select" id="period" name="lab" onchange="getSelectedLab(this.value)">
     <option value="-1" selected> All</option>
+      @foreach ($laboratories as $lab)
+@if($lab->id==0 || $lab->id==99)
 
+@else
+       <option value="{{$lab->id}}">{{$lab->lab_name}}</option>
+ @endif
+   @endforeach
 </select>
 
 </div>
@@ -146,6 +152,8 @@
        <th scope="col">Lab Name</th>
         <th scope="col">Supervised By</th>
         <th scope="col">Approved By</th>
+        <th scope="col">Action</th>
+
 
 
     </tr>
@@ -166,6 +174,6 @@
             @endsection
 
  @push('js')
-       <script src="{{asset('assets/admin/js/inventory/reports/variance.js')}}"> </script>
+       <script src="{{asset('assets/admin/js/inventory/reports/cold/variance.js')}}"> </script>
 
 @endpush

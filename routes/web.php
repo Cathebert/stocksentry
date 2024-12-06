@@ -41,6 +41,8 @@ use App\Http\Controllers\ColdRoom\ColdRoomAdjustmentController;
 use App\Http\Controllers\ColdRoom\ColdRoomIssueController;
 //reports cold
 use App\Http\Controllers\ColdRoomReportController;
+use App\Http\Controllers\ColdRoom\AboutToExpireColdRoomController;
+use App\Http\Controllers\ColdRoom\ColdStockLevelController;
 
 use App\Http\Controllers\DisposalReportController;
 use App\Http\Controllers\ContractController;
@@ -315,6 +317,8 @@ Route::get('/loaddisposebyrange',[DisposalReportController::class,'loadByRange']
  Route::get('/showVarianceDetails',[ReportController::class,'VarianceDetails'])->name('report.variance_details');
  Route::get('/showVarianceByLab',[ReportController::class,'VarianceByLab'])->name('report.variance_lab');
  Route::get('/loadVarianceByLab',[ReportController::class,'loadVarianceByLab'])->name('report.load_variance_lab');
+ Route::get('/download_variance',[ReportController::class,'downloadVariance'])->name('report.variance_download');
+ Route::get('/labVariance',[ReportController::class,'labVariance'])->name('report.lab_variance');
 
 
  //-------------------Items --------------------------------------//
@@ -492,6 +496,9 @@ Route::get('/help',[HelpController::class,'help'])->name('help');
 Route::get('/lab_help',[HelpController::class,'labHelp'])->name('lab_help');
 Route::get('/user_help',[HelpController::class,'userHelp'])->name('user_help');
 Route::get('/cold_help',[HelpController::class,'coldHelp'])->name('cold_help');
+Route::post('/contact_us',[HelpController::class, 'contactUs'])->name('contact_us');
+Route::get('/message_log',[HelpController::class,'messageLog'])->name('message_logs');
+Route::post('/update-error_log',[HelpController::class,'updateErrorLog'])->name('mark-resolved-log');
 
 //_____________________________________________Notifications___________________________//
 Route::get('/notifications', [NotificationController::class, 'show'])->name('notifications.show');
@@ -765,6 +772,17 @@ Route::get('/room_stock_variance',[ColdRoomController::class, 'showStockVariance
 Route::get('/expired-table',[ColdRoomReportController::class, 'loadColdRoomExpired'])->name('coldroom_report.expired_items');
 Route::get('/load_by_filtered',[ColdRoomReportController::class, 'loadExpiredFiltered'])->name('coldroom_report.expiredbyfiltered');
 Route::get('/download_expired',[ColdRoomReportController::class,'downloadExpired'])->name('coldroom_report.expired_download');
+//______________________________About to expire_____________________________//
+Route::get('/cold_expiry-table',[AboutToExpireColdRoomController::class, 'loadExpiryTable'])->name('cold_report.cold_expiry_table');
+//__________________cold Stock level_______________________________________________________//
+Route::get('/cold_stock-load-level',[ColdStockLevelController::class,'loadStockLevelReport'])->name('cold_report.load_stock_level');
+Route::get('/cold_stock-level-details',[ColdStockLevelController::class,'loadStockLevelDetails'])->name('coldroom_report.stock_level_details');
+Route::get('/cold_stock_level_lab',[ColdStockLevelController::class,'selectedLabStockLevel'])->name('coldroom.stock_level_lab_selected');
+
+//_______________________________________Coldroom disposal________________//
+Route::get('/lab_load_disposal',[ColdRoomStockDisposalController::class,'loadDisposal'])->name('cold_room.disposed_table');
+Route::get('/colddisposebylab',[ColdRoomStockDisposalController::class,'loadByLab'])->name('cold_report.disposedbylab');
+Route::get('/colddisposebyperiod',[ColdRoomStockDisposalController::class,'filterByPeriod'])->name('cold_report.disposedbyrange');
 ///_____________________schedule report______________________________//
 Route::get('/room_schedule',[ScheduleReportController::class,'Coldshow'])->name('cold_report.scheduled');
 //_______________________setting_____________________________________//

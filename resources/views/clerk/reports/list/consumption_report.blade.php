@@ -11,11 +11,11 @@
   </ol>
 </nav>
    <!-- Page Heading -->
-   
+
                     <div class="d-sm-flex align-items-center justify-content-between mb-4">
                         <h1 class="h3 mb-0 text-gray-800">Consumption Report</h1>
                          <div class="dropdow" style="text-align:right" >
- 
+
 
 </div>
 
@@ -26,30 +26,30 @@
 </button>
 
   <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-  
+
     <a class="dropdown-item" href=""  id="report_download"  ><i class="fa fa-download"></i> PDF File</a>
     <a class="dropdown-item" href="" id="report_download_excel"><i class="fa fa-share"></i>  Excel file</a>
     <hr>
-   
-    
+
+
   </div>
 </div>
                    <div class="row" >
       <div class="col-sm-12">
-    
+
     <div class="card">
- 
+
       <div class="card-body">
-        
+
         <h5 class="card-title"> <strong>Filters </strong></h5>
 <form method="post" id="expiry_form">
           @csrf
-          
+
   <input type="hidden" class="form-control" id="consumption_report" value="{{route('lab_manager_report.consumption_table')}}">
   <input type="hidden" class="form-control" id="get_details" value="{{route('lab_manager_report.loadmore')}}"/>
   <input type="hidden" class="form-control" id="filter" value="{{route('lab_manager_report.consumption-filter')}}"/>
   <input type="hidden" class="form-control" id="frequency_change" value="{{route('change_frequency')}}"/>
-  <input type="hidden" class="form-control" id="generate_report" value="{{route('lab_manager_report.consumptiondownload')}}"/>        
+  <input type="hidden" class="form-control" id="generate_report" value="{{route('lab_manager_report.consumptiondownload')}}"/>
             <div class="row">
     <div class="col-md-4 col-sm-12 col-xs-12 form-group"  >
 <div class="input-group mb-3">
@@ -71,20 +71,14 @@
     <option value="9">Previous Year</option>
     <option value="10">Custom</option>
 </select>
-
 </div>
-<script type="text/javascript">
- $('#period').select2({
- placeholder: 'Select Period ',
-      allowClear: true,
 
-   
-    });
-     
 
-</script>
+
+
+
   </div>
-  
+
 
   <!----custom field---->
  <div class="col-md-4 col-sm-12 col-xs-12 form-group" id="custom" hidden>
@@ -144,7 +138,7 @@
                                     </div>
                                 </div>
                             </div>
-                            
+
                         </div>
 
 
@@ -172,15 +166,16 @@
         <table class="table table-bordered table-striped" id="consumption_table" width="100%">
 <thead class="thead-light">
     <tr>
-      
+
        <th scope="col"></th>
      <th scope="col">Item Name</th>
         <th scope="col">Catalog #</th>
         <th scope="col">Unit Issue</th>
+          <th scope="col">Consumed Date</th>
           <th scope="col">Consumed</th>
-        
-        
-      
+
+
+
     </tr>
   </thead>
   <tbody>
@@ -197,11 +192,11 @@
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="exampleModalLabel">Schedule Report</h5>
-   
+
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button><br>
-         
+
       </div>
           <span >Report Name: <i>Consumption_{{date('Y-m-d')}}</i></span>
       <div class="modal-body">
@@ -237,9 +232,9 @@
     <label for="staticEmail" class="col-sm-3 col-form-label text-danger">Emails *</label>
     <div class="col-sm-9">
      <select class="form-control" id="email_list" style="width: 50%" name="employee_involved[]" multiple  required>
-                                   
+
                                     @foreach($users as $user)
-                                
+
                                         <option value="{{$user->id}}">{{$user->email}}</option>
                                     @endforeach
                                 </select>
@@ -251,9 +246,9 @@
  placeholder: 'Select  ',
       allowClear: true,
   dropdownParent: $('#exampleModal .modal-content')
-   
+
     });
-     
+
 });
 </script>
     <div class="form-group row">
@@ -300,5 +295,5 @@
 
  @push('js')
        <script src="{{asset('assets/moderator/reports/consumption.js')}}"> </script>
-  
+
 @endpush

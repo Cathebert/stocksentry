@@ -39,61 +39,62 @@ function RunAdjustment(){
 
    let adjust_selected = $("#adjust_selected").val();
 
-    disposals = $("#update_disposals").DataTable({
-        processing: true,
-        serverSide: true,
-        destroy: true,
-        paging: false,
-        select: true,
-        info: false,
-        sDom: "lrtip",
-        lengthMenu: [10, 20, 50],
-        responsive: true,
+    disposals = $('#update_disposals').DataTable({
+      processing: true,
+      serverSide: true,
+      destroy: true,
+      paging: false,
+      select: true,
+      info: false,
+      sDom: 'lrtip',
+      lengthMenu: [10, 20, 50],
+      responsive: true,
 
-        order: [[0, "desc"]],
-        oLanguage: {
-            sProcessing:
-                "<div class='loader-container'><div id='loader'></div></div>",
+      order: [[0, 'desc']],
+      oLanguage: {
+        sProcessing:
+          "<div class='loader-container'><div id='loader'></div></div>",
+      },
+      ajax: {
+        url: adjust_selected,
+        dataType: 'json',
+        type: 'GET',
+        data: {
+          selected: selected,
         },
-        ajax: {
-            url: adjust_selected,
-            dataType: "json",
-            type: "GET",
-            data: {
-                selected: selected,
-            },
-        },
-        initComplete: function (settings, json) {
-            document.getElementById("dispose").hidden = false;
-        },
-        AutoWidth: false,
+      },
+      initComplete: function (settings, json) {
+        document.getElementById('dispose').hidden = false;
+      },
+      AutoWidth: false,
 
-        columns: [
-            { data: "id" },
-            { data: "item" },
-            { data: "code" },
-            { data: "batch" },
-            { data: "catalog" },
-            { data: "unit" },
-            { data: "available" },
-            { data: "quantity" },
-            { data: "reason" },
-        ],
-        //Set column definition initialisation properties.
-        columnDefs: [
-            {
-                targets: [-1], //last column
-                orderable: false, //set not orderable
-            },
-            {
-                targets: [-2], //last column
-                orderable: false, //set not orderable
-            },
-            {
-                targets: [-3], //last column
-                orderable: false, //set not orderable
-            },
-        ],
+      columns: [
+        { data: 'id' },
+        { data: 'item' },
+        { data: 'code' },
+        { data: 'batch' },
+        { data: 'catalog' },
+        { data: 'unit' },
+        { data: 'available' },
+        { data: 'quantity' },
+        { data: 'type' },
+        { data: 'reason' },
+      ],
+      //Set column definition initialisation properties.
+      columnDefs: [
+        {
+          targets: [-1], //last column
+          orderable: false, //set not orderable
+        },
+        {
+          targets: [-2], //last column
+          orderable: false, //set not orderable
+        },
+        {
+          targets: [-3], //last column
+          orderable: false, //set not orderable
+        },
+      ],
     });
 }
 
@@ -105,8 +106,9 @@ function incrementValue(id){
 
 $('#adjusted_'+id).val(adjusted)
  let note = $("#q_" + id).val();
+ let type=$('#type_'+id).val();
    console.log(adjusted);
-   addQuantityToAdjustment(id, adjusted, note);
+   addQuantityToAdjustment(id, adjusted,type, note);
 }
 function decrementValue(id) {
     var my_value= $("#adjusted_"+id).val();
@@ -118,9 +120,10 @@ function decrementValue(id) {
    else{
      var adjusted = converted - 1;
       let note= $("#q_" + id).val();
+       let type = $('#type_' + id).val();
      $("#adjusted_"+id).val(adjusted);
      console.log(adjusted);
-     addQuantityToAdjustment(id,adjusted,note)
+     addQuantityToAdjustment(id,adjusted,type, note)
    }
 }
 function getNumber(id, name) {
@@ -315,7 +318,7 @@ $("#view_adjustment").on("click", function (e) {
                url: adjustments,
                success: function (data) {
                    // $('#boot').click();
-                   $("#view_item_datails").html(data);
+                   $('#view_item_datails').html(data);
                    $("#inforg").modal("show"); // show bootstrap modal
 
                    $(".modal-title").text("Adjustments");
@@ -327,6 +330,8 @@ $("#view_adjustment").on("click", function (e) {
            });
         })
 function ApproveAdjustment(id) {
+
+
   let approve_selected= $('#approve_selected').val();
  $.ajaxSetup({
      headers: {
@@ -470,8 +475,7 @@ function cancelAdjustment(id) {
 
         }
  function reloadTable() {
-     var k;
-     var load_forecast = $('#reload').val();
+
      k = $("#item_adjust").DataTable({
          processing: true,
          serverSide: true,
@@ -491,6 +495,9 @@ function cancelAdjustment(id) {
              url: load_forecast,
              dataType: "json",
              type: "GET",
+              data:{
+id:adjustid
+        },
          },
 
          AutoWidth: false,
@@ -529,13 +536,14 @@ function getNote(id, name){
     let note=$('#q_'+name).val()
 
     var adjusted= $("#adjusted_" + name).val();
-   addQuantityToAdjustment(name, adjusted, note);
+let type = $('#type_'+name).val();
+   addQuantityToAdjustment(name, adjusted, type,note);
   console.log(adjusted);
 
 }
 
-function addQuantityToAdjustment(id,adjusted,note){
-    var id_value_note=id+"_"+adjusted+'_'+note;
+function addQuantityToAdjustment(id,adjusted,type,note){
+    var id_value_note=id+"_"+adjusted+'_'+type+'_'+note;
             let startsWithBan = quantities.find((item) =>
                 item.startsWith(id + "_")
             );
@@ -551,12 +559,20 @@ function addQuantityToAdjustment(id,adjusted,note){
 function getAdjustedValue(id){
     var ad=id.split('_');
     var splited_id=ad[1];
-    var my_value = $("#" + id).val();
+    var my_value = $("#"+id).val();
     var note=$('#q_'+splited_id).val();
-   addQuantityToAdjustment(splited_id,my_value,note)
+     let type = $('#type_'+splited_id).val();
+   addQuantityToAdjustment(splited_id,my_value,type,note)
 
 }
-
+function getType(id,value) {
+     var ad = id.split('_');
+     var splited_id = ad[1];
+     var my_value = $('#' + splited_id).val();
+     var note = $('#q_' + splited_id).val();
+   let type=value;
+   addQuantityToAdjustment(splited_id, my_value, type, note);
+}
 function arrayRemove(arr, value) {
     return arr.filter(function (item) {
         return item != value;
@@ -743,9 +759,10 @@ function ViewAdjusted(id){
      },
 
      success: function (data) {
-         $("#adjusted-items").html(data);
-         $("#infor").modal("show"); // show bootstrap modal
-         $(".modal-title").text(" Adjusted Items");
+       $('#view_item_datails').html(data);
+       $('#inforg').modal('show'); // show bootstrap modal
+
+       $('.modal-title').text(' Adjusted Items test');
      },
      error: function (jqXHR, textStatus, errorThrown) {
          // console.log(get_case_next_modal)

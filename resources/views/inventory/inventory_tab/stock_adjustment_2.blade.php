@@ -82,7 +82,7 @@
 
 </div>
     <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal" id="add_new"><i class="fa fa-plus" aria-hidden="true"></i> Select Items to Adjust</button>
+        <button type="button" class="btn btn-secondary" id="add_new"><i class="fa fa-plus" aria-hidden="true"></i> Select Items to Adjust</button>
            <button type="button" class="btn btn-success"  id="view_adjustment"><i class="fa fa-edit" aria-hidden="true"></i> Adjusted Items</button>
       </div>
 </div>
@@ -106,8 +106,9 @@
         <th scope="col">Catalog #</th>
         <th scope="col">UOM </th>
         <th scope="col">Quantity Available</th>
-          <th scope="col">Quantity To Adjust</th>
-          <th scope="col">Notes</th>
+        <th scope="col">Quantity To Adjust</th>
+        <th scope="col">Type</th>
+        <th scope="col">Notes</th>
 
 
 
@@ -126,7 +127,7 @@
 
       </div>
 
-<div class="modal" tabindex="-1" id="inforg" role="dialog" >
+<div class="modal"  id="inforg" role="dialog" >
   <div class="modal-dialog modal-xl" role="document" >
     <div class="modal-content" id="view_item_datails">
 
@@ -135,9 +136,19 @@
     </div>
 
 
-    <div class="modal" tabindex="-1" id="infor" role="dialog" >
+    <div class="modal"  id="infor" role="dialog" >
   <div class="modal-dialog modal-xl" role="document" >
     <div class="modal-content" id="adjusted-items">
+
+</div>
+</div>
+    </div>
+
+
+
+     <div class="modal"  id="infor_i" role="dialog" >
+  <div class="modal-dialog modal-xl" role="document" >
+    <div class="modal-content" id="adjusted-items_i">
 
 </div>
 </div>

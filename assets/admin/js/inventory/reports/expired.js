@@ -4,65 +4,64 @@ let filtered_report= $('#filterbyperiod').val();
 
 var t;
 
-t = $("#expiry_table").DataTable({
-    processing: true,
-    serverSide: true,
-    paging: true,
-    scrollCollapse: true,
-    destroy: true,
-    info: true,
+t = $('#expiry_table').DataTable({
+  processing: true,
+  serverSide: true,
+  paging: true,
+  scrollCollapse: true,
+  destroy: true,
+  info: true,
 
-    lengthMenu: [10, 20, 50],
-    responsive: true,
-    order: [[0, "desc"]],
-    oLanguage: {
-        sProcessing:
-            "<div class='loader-container'><div id='loader'></div></div>",
-    },
-    ajax: {
-        url: expiry_report,
-        dataType: "json",
-        type: "GET",
-    },
-    initComplete: function (settings, json) {
-        var total = parseFloat(json.total).toFixed(2);
-        var formated = new Intl.NumberFormat("en-US", {
-            style: "currency",
-            currency: "MKW",
-        }).format(total);
+  lengthMenu: [10, 20, 50],
+  responsive: true,
+  order: [[0, 'desc']],
+  oLanguage: {
+    sProcessing: "<div class='loader-container'><div id='loader'></div></div>",
+  },
+  ajax: {
+    url: expiry_report,
+    dataType: 'json',
+    type: 'GET',
+  },
+  initComplete: function (settings, json) {
+    var total = parseFloat(json.total).toFixed(2);
+    var formated = new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'MKW',
+    }).format(total);
 
-        $("#value").html(formated);
+    $('#value').html(formated);
 
-        $("#quantity").html(json.quantity);
+    $('#quantity').html(json.quantity);
+  },
+  AutoWidth: false,
+  columns: [
+    { data: 'id', width: '3%' },
+    { data: 'name' },
+    { data: 'batch_number' },
+    { data: 'lab' },
+    { data: 'location' },
+    { data: 'expire_date' },
+    { data: 'quantity' },
+    { data: 'cost' },
+    { data: 'est_loss' },
+    { data: 'status' },
+  ],
+  //Set column definition initialisation properties.
+  columnDefs: [
+    {
+      targets: [-1], //last column
+      orderable: false, //set not orderable
     },
-    AutoWidth: false,
-    columns: [
-        { data: "id", width: "3%" },
-        { data: "name" },
-        { data: "batch_number" },
-        { data: "lab" },
-        { data: "location" },
-        { data: "expire_date" },
-        { data: "quantity" },
-        { data: "cost" },
-        { data: "est_loss" },
-        { data: "status" },
-    ],
-    //Set column definition initialisation properties.
-    columnDefs: [
-        {
-            targets: [-1], //last column
-            orderable: false, //set not orderable
-        },
-        {
-            targets: [-2], //last column
-            orderable: false, //set not orderable
-        },
-        {
-            targets: [-3], //last column
-            orderable: false, //set not orderable
-        },
-    ],
+    {
+      targets: [-2], //last column
+      orderable: false, //set not orderable
+    },
+    {
+      targets: [-3], //last column
+      orderable: false, //set not orderable
+    },
+  ],
 });
 function getSelected(value) {
     t.destroy();

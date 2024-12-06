@@ -1,4 +1,4 @@
-   
+
 <div class="modal-header">
         <h5 class="modal-title">Goods Received Note</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="Close_Button"></button>
@@ -15,7 +15,7 @@
     background-clip: border-box;
     border: 0 solid rgba(0,0,0,.125);
     border-radius: 1rem;">
-   
+
 
    <script type="text/javascript">
 
@@ -27,13 +27,13 @@
     </script>
 <hr>
                 <div class="card-body">
-                    
+
                     <div class="invoice-title">
                         <h4 class="float-end font-size-15">GRN #: <strong>{{ $value }}</strong> <span class="badge bg-success font-size-12 ms-2"></span></h4>
                         <div class="mb-4">
                              <img src="{{ asset('assets/icon/logo_black.png') }}" style="margin-bottom: 0px;" height=70px >
                         </div>
-                        
+
                     </div>
 
                     <hr class="my-4">
@@ -51,14 +51,14 @@
                         <!-- end col -->
                         <div class="col-sm-6">
                             <div class="text-muted text-sm-end">
-                                
+
                                                                 <h5 class="font-size-16 mb-3"><strong>Supplied To:</strong></h5>
                                 <h5 class="font-size-15 mb-2">{{$lab}}</h5>
                                 <p class="mb-1">GRN #: {{$value}}</p>
                                 <p class="mb-1">PO REF #: {{$po_ref??''}}</p>
                                 <p>Date Received: {{$date_received??''}}</p>
-                                
-                                
+
+
                             </div>
                         </div>
                         <!-- end col -->
@@ -76,6 +76,7 @@
                                         <th style="width: 70px;">No.</th>
                                         <th>Item Name</th>
                                          <th>Batch Number</th>
+                                          <th>Expiry Date</th>
                                           <th>UOM</th>
                                         <th>Price</th>
                                         <th>Quantity</th>
@@ -90,7 +91,7 @@
   $i=1;
 @endphp
                                       @foreach ($print_data  as $data )
-                                        
+
                                        <th scope="row">{{$i}}</th>
                                         <td>
                                             <div>
@@ -99,8 +100,9 @@
                                             </div>
                                         </td>
                                          <td>{{$data->batch_number}}</td>
+                                            <td>{{$data->expiry_date}}</td>
                                           <td>{{$data->unit_issue}}</td>
-                                        
+
                                         <td>{{$data->cost}}</td>
                                         <td>{{$data->quantity}}</td>
                                         @php
@@ -110,12 +112,12 @@
                                         @endphp
                                         <td class="text-end">{{ $data->cost*$data->quantity }}</td>
                                     </tr>
-                                   
+
                                       @endforeach
-                                       
+
                                     <!-- end tr -->
-                                 
-                                 
+
+
                                     <tr>
                                         <th scope="row" colspan="4" class="text-end">Total</th>
                                          <td class="text-end"></td>
@@ -123,7 +125,7 @@
                                         <td class="text-end"><strong>{{number_format($Total,2)  }}</strong></td>
                                     </tr>
                                     <!-- end tr -->
-                                  
+
                                     <!-- end tr -->
                                 </tbody><!-- end tbody -->
                             </table><!-- end table -->
@@ -131,17 +133,17 @@
                         <div class="d-print-none mt-4">
                             <div class="float-start">
                                <span><strong>Received By:</strong> {{auth()->user()->name.' '.auth()->user()->last_name}}</span><br>
-                            
-                              
+
+
                             </div>
                             <div class="float-end">
-                              
+
                              @if ($signature=="")
-                                 <span><strong>Signature:</strong><img src="{{ asset('assets/icon/sign.png') }}" width="70px" height="70px"/></span> 
+                                 <span><strong>Signature:</strong><img src="{{ asset('assets/icon/sign.png') }}" width="70px" height="70px"/></span>
                             @else
-                              <span><strong>Signature:</strong><img src="{{ url('/').'/public/upload/signatures/'.$signature }}" width="70px" height="50px"/></span> 
+                              <span><strong>Signature:</strong><img src="{{ url('/').'/public/upload/signatures/'.$signature }}" width="70px" height="50px"/></span>
                              @endif
-                              
+
                             </div>
                         </div>
                     </div>
@@ -149,8 +151,8 @@
             </div>
         </div><!-- end col -->
   </div>
-  
+
 </div>
-</div>  
-  
+</div>
+
 </div>

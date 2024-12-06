@@ -45,27 +45,22 @@
 <form method="post" id="expiry_form">
           @csrf
 
-               <input type="hidden" class="form-control" id="variance_report" value="{{route('report.variance_table')}}">
+               <input type="hidden" class="form-control" id="variance_report" value="{{route('report.lab_variance')}}">
 
                  <input type="hidden" class="form-control" id="stock_take_details" value="{{route('report.variance_details')}}">
-  <input type="hidden" class="form-control" id="download_url" value="{{route('report.download',['action'=>'download'])}}"/>
+  <input type="hidden" class="form-control" id="download_url" value="{{route('report.variance_download')}}"/>
   <input type="hidden" id="variance_lab" name="variance_lab" value="{{route('report.variance_lab')}}"/>
 
 
 
-            <div class="row">
+            <div class="row" hidden>
     <div class="col-md-4 col-sm-12 col-xs-12 form-group"  >
 <div class="input-group mb-3">
   <div class="input-group-prepend">
     <label class="input-group-text" for="period">Location</label>
     <span class="input-group-text"><i class="fa fa-home" aria-hidden="true"></i></span>
   </div>
-  <select class="custom-select" id="period" name="lab" onchange="getSelectedLab(this.value)">
-    <option value="-1" selected> All</option>
-      @foreach ($laboratories as $lab)
-       <option value="{{$lab->id}}">{{$lab->lab_name}}</option>
-   @endforeach
-</select>
+
 
 </div>
   </div>
@@ -144,11 +139,11 @@
 
 
        <th scope="col"></th>
-     <th scope="col">Stock Date</th>
+        <th scope="col">Stock Date</th>
        <th scope="col">Lab Name</th>
         <th scope="col">Supervised By</th>
         <th scope="col">Approved By</th>
-
+         <th scope="col">Action</th>
 
     </tr>
   </thead>
@@ -199,10 +194,7 @@
     <div class="col-sm-9">
      <select class="form-control" id="email_list" style="width: 50%" name="employee_involved[]" multiple  required>
 
-                                    @foreach($users as $user)
 
-                                        <option value="{{$user->id}}">{{$user->email}}</option>
-                                    @endforeach
                                 </select>
     </div>
   </div>

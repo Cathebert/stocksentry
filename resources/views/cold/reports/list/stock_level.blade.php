@@ -11,7 +11,7 @@
   </ol>
 </nav>
    <!-- Page Heading -->
-   
+
 <div class="d-sm-flex align-items-center justify-content-between mb-4" hidden>
 <h1 class="h3 mb-0 text-gray-800">Stock Level Report</h1>
 <div class="dropdow" style="text-align:right" >
@@ -25,48 +25,48 @@
 </button>
 
   <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-  
+
     <a class="dropdown-item" href="{{route('lab_manager_report.stock_level_download',['name'=>'pdf'])}}" ><i class="fa fa-download"></i> PDF File</a>
     <a class="dropdown-item" href="{{route('lab_manager_report.stock_level_download',['name'=>'excel'])}}" id="download_excel"><i class="fa fa-share"></i>  Excel file</a>
     <hr>
-   
-   
+
+
   </div>
 </div>
 <div class="row" >
 <div class="col-sm-12">
-    
+
     <div class="card">
- 
+
       <div class="card-body">
-        
+
 
 <form method="post" id="expiry_form">
           @csrf
-          
-<input type="hidden" class="form-control"  id="issue_report" value="{{route('lab_manager_report.issue_table')}}">
- <input type="hidden" class="form-control" id="frequency_change"value="{{route('change_frequency')}}"/>
- <input type="hidden" class="form-control" id="generate_report"value="{{route('lab_manager_report.download')}}"/> 
- <input type="hidden" class="form-control" id="stock_level" value="{{route('lab_manager_report.load_stock_level')}}"/>
- <input type="hidden" class="form-control" id="stock_level_details" value="{{route('lab_manager_report.stock_level_details')}}"/>
- <input type="hidden" class="form-control" id="lab_selected" value="{{route('cold.stock_level_selected')}}"/>
- 
-            
-         
-  
+
+
+ <input type="hidden" class="form-control" id="generate_report"value="{{route('lab_manager_report.download')}}"/>
+ <input type="hidden" class="form-control" id="stock_level" value="{{route('cold_report.load_stock_level')}}"/>
+ <input type="hidden" class="form-control" id="stock_level_details" value="{{route('coldroom_report.stock_level_details')}}"/>
+ <input type="hidden" class="form-control" id="lab_selected" value="{{route('coldroom.stock_level_lab_selected')}}"/>
+
+
+
+
     <div class="col-md-4 col-sm-12 col-xs-12 form-group">
   <div class="input-group">
-  <span class="input-group-text">Location:</span> 
+  <span class="input-group-text">Location:</span>
    <span class="input-group-text"><i class="fa fa-home" aria-hidden="true"></i></span>
   <select class="custom-select" id="days_range" name="period" onchange="getLab(this.value)">
-   <option value="" selected></option>
+   <option value="0" selected>All</option>
 
-     @foreach ($laboratories as $lab)
-   @if($lab->id!=0)
+      @foreach ($laboratories as $lab)
+@if($lab->id==0 || $lab->id==99)
+
+@else
        <option value="{{$lab->id}}">{{$lab->lab_name}}</option>
-   @endif
+ @endif
    @endforeach
-     
 </select>
 </div>
 
@@ -99,7 +99,7 @@
                                     </div>
                                 </div>
                             </div>
-                            
+
                         </div>
 
 
@@ -127,7 +127,7 @@
         <table class="table table-bordered table-striped" id="stock_level_table" width="100%">
 <thead class="thead-light">
     <tr>
-      
+
        <th scope="col"></th>
      <th scope="col">Item Name</th>
        <th scope="col">Catalog Number</th>
@@ -137,8 +137,8 @@
         <th scope="col">Maximum Level</th>
         <th scope="col">Available </th>
         <th scope="col">Remark</th>
-        
-      
+
+
     </tr>
   </thead>
   <tbody>
@@ -155,11 +155,11 @@
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="exampleModalLabel">Schedule Report</h5>
-   
+
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button><br>
-         
+
       </div>
           <span >Report Name: <i>Inventory About to Expire_{{date('Y-m-d')}}</i></span>
       <div class="modal-body">
@@ -194,8 +194,8 @@
     <label for="staticEmail" class="col-sm-3 col-form-label text-danger">Emails *</label>
     <div class="col-sm-9">
      <select class="form-control" id="email_list" style="width: 50%" name="employee_involved[]" multiple  required>
-                                   
-                                   
+
+
                                 </select>
     </div>
   </div>
@@ -205,9 +205,9 @@
  placeholder: 'Select  ',
       allowClear: true,
   dropdownParent: $('#exampleModal .modal-content')
-   
+
     });
-     
+
 });
 </script>
     <div class="form-group row">
@@ -253,6 +253,6 @@
             @endsection
 
  @push('js')
-       <script src="{{asset('assets/moderator/reports/stock-level.js')}}"> </script>
-  
+       <script src="{{asset('assets/admin/js/inventory/reports/cold/stock-level.js')}}"> </script>
+
 @endpush

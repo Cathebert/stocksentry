@@ -2919,7 +2919,7 @@ return response()->download($path,$name, $headers);
 }
 public function download($name){
     $path=public_path('reports').'/'.$name;
-$name='consumption_report.pdf';
+$name=$name;
 
 $headers = [
   'Content-type' => 'application/pdf', 
@@ -5723,6 +5723,7 @@ public function loadVariance(Request $request){
             2=>'lab_name',
             4=>'supervised_by',
             5=>'approved_by',
+            6=>'action'
            
           
         );
@@ -5799,7 +5800,7 @@ $x=1;
              
                
                 $nestedData['status']="";
-      
+      $nestedData['action']=" <a class='btn btn-primary btn-sm' id='$term->id' onclick='downloadVariance(this.id)'><i class='fa fa-download' aria-hidden='true'></i></a>";
                 
                
                    $x++;
@@ -5856,6 +5857,7 @@ $lab_id=$request->lab_id;
             2=>'lab_name',
             4=>'supervised_by',
             5=>'approved_by',
+            6=>'action'
            
           
         );
@@ -5933,7 +5935,7 @@ $x=1;
              
                
                 $nestedData['status']="";
-      
+      $nestedData['action']=" <a class='btn btn-primary btn-sm' id='$term->id' onclick='downloadVariance(this.id)'><i class='fa fa-download' aria-hidden='true'></i></a>";
                 
                
                    $x++;
@@ -6048,6 +6050,7 @@ $x=1;
       echo json_encode($json_data);
 }
 public function loadVarianceByLab(Request $request){
+
 $lab=auth()->user()->laboratory_id;
           $columns = array(
             0 =>'id',
@@ -6055,6 +6058,7 @@ $lab=auth()->user()->laboratory_id;
             2=>'lab_name',
             4=>'supervised_by',
             5=>'approved_by',
+            6=>'action'
 
 
         );
@@ -6062,8 +6066,8 @@ $lab=auth()->user()->laboratory_id;
                   ->join('laboratories as i','i.id','=','t.lab_id')
                   ->join('users as u','u.id','=','t.supervisor_id')
                    ->where([['t.is_approved','=','yes']])
-                   ->where('t.lab_id',$lab)
-
+                  ->where('t.lab_id','<>',$lab)
+                   ->where('t.lab_id','<>',0)
                    ->count();
 
            // ->where('t.expiry_date', '>', date('Y-m-d') )
@@ -6083,7 +6087,8 @@ $lab=auth()->user()->laboratory_id;
             ->join('laboratories as i','i.id','=','t.lab_id')
                   ->join('users as u','u.id','=','t.supervisor_id')
                    ->where([['t.is_approved','=','yes']])
-                   ->where('t.lab_id',$lab)
+                   ->where('t.lab_id','<>',$lab)
+                   ->where('t.lab_id','<>',0)
                   ->select(
                     't.id as id',
                       't.approved_by',
@@ -6103,7 +6108,7 @@ $lab=auth()->user()->laboratory_id;
             })
             ->offset($start)
             ->limit($limit)
-
+            ->orderBy('t.stock_date','desc')
             ->get();
 
           $totalFiltered =  $totalRec ;
@@ -6133,6 +6138,7 @@ $x=1;
 
 
                 $nestedData['status']="";
+                $nestedData['action']=" <a class='btn btn-primary btn-sm' id='$term->id' onclick='downloadVariance(this.id)'><i class='fa fa-download' aria-hidden='true'></i></a>";
 
 
 
@@ -6151,5 +6157,143 @@ $x=1;
 
       echo json_encode($json_data);
 }
+public function downloadVariance(Request $request){
+    
+     $data['user'] =DB::table('stock_takes as t')
+                  ->join('laboratories as i','i.id','=','t.lab_id')
+                  ->join('users as u','u.id','=','t.supervisor_id')
+            
+                   ->where('t.id',$request->id)
+                   ->first();
+    if($data['user']->approved_by !=NULL){
+                    $user=User::where('id',$data['user']->approved_by)->select('name','last_name')->first();
+                     $data['approved_by']=$user->name.' '.$user->last_name;
+                }
 
+    else{
+                 $data['approved_by']= "N/A";
+             }
+    $data['variance']=DB::table('stock_take_details as s')->join('inventories as i','i.id','=','s.item_id')->join('items as k','k.id','=','i.item_id')
+    ->where('stock_take_id',$request->id)->get();
+
+
+
+    //pdf
+
+        $name="variance.pdf";
+    $path=public_path('reports').'/'.$name;
+      $url=route('redirect_download',['name'=>$name]) ; 
+    $pdf=PDF::loadView('pdf.reports.variance',$data)->save($path);
+
+                  return response()->json([
+                    'path'=>$url,
+                    
+                  ]); 
+     
+}
+
+public function labVariance(Request $request){
+    $lab_id=auth()->user()->laboratory_id;
+   $columns = array(
+            0 =>'id',
+            1=>'stock_date',
+            2=>'lab_name',
+            4=>'supervised_by',
+            5=>'approved_by',
+            6=>'action'
+           
+          
+        );
+    $totalData =DB::table('stock_takes as t')
+                  ->join('laboratories as i','i.id','=','t.lab_id')
+                  ->join('users as u','u.id','=','t.supervisor_id')
+                   ->where([['t.is_approved','=','yes']])
+                  ->where('t.lab_id',$lab_id)
+                   ->count();
+
+           // ->where('t.expiry_date', '>', date('Y-m-d') )
+         
+
+            $totalRec = $totalData;
+          // $totalData = DB::table('appointments')->count();
+
+          $limit = $request->input('length');
+          $start = $request->input('start');
+          $order = $columns[$request->input('order.0.column')];
+          $dir = $request->input('order.0.dir');
+
+           $search = $request->input('search.value');
+
+            $terms = DB::table('stock_takes as t')
+            ->join('laboratories as i','i.id','=','t.lab_id')
+                  ->join('users as u','u.id','=','t.supervisor_id')
+                   ->where([['t.is_approved','=','yes']])
+                    ->where('t.lab_id',$lab_id)
+                  ->select(
+                    't.id as id',  
+                      't.approved_by',
+                    't.stock_date',
+                    'i.lab_name',
+                    'u.name',
+                     'u.last_name'
+                   )
+                
+                  // ->where([['r.status','=','approved']])
+          //->where('t.expiry_date', '>', date('Y-m-d') )
+                ->where(function ($query) use ($search){
+                  return  $query->where('i.lab_name', 'LIKE', "%{$search}%");
+                 
+                      
+                     
+            })
+            ->offset($start)
+            ->limit($limit)
+
+            ->get();
+
+          $totalFiltered =  $totalRec ;
+
+ $data = array();
+          if (!empty($terms)) {
+$x=1;
+
+
+ 
+           
+            foreach ($terms as $term) {
+         $nestedData['id']=$x;
+               $nestedData['item_id']=$term->id;
+                $nestedData['stock_date']=$term->stock_date;
+                $nestedData['lab_name']=$term->lab_name;
+
+                        $nestedData['supervised_by']=$term->name.' '.$term->last_name;
+                 if($term->approved_by !=NULL){
+                    $user=User::where('id',$term->approved_by)->select('name','last_name')->first();
+                     $nestedData['approved_by']=$user->name.' '.$user->last_name;
+                }
+
+    else{
+                 $nestedData['approved_by']= "";
+             }
+             
+               
+                $nestedData['status']="";
+      $nestedData['action']=" <a class='btn btn-primary btn-sm' id='$term->id' onclick='downloadVariance(this.id)'><i class='fa fa-download' aria-hidden='true'></i></a>";
+                
+               
+                   $x++;
+             
+                $data[] = $nestedData;
+           }
+      }
+
+      $json_data = array(
+        "draw" => intval($request->input('draw')),
+        "recordsTotal" => intval($totalData),
+        "recordsFiltered" => intval($totalFiltered),
+        "data" => $data,
+    );
+
+      echo json_encode($json_data);  
+}
 }
