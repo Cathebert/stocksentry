@@ -87,6 +87,7 @@ toastr.options = {
     hideEasing: "linear",
     showMethod: "fadeIn",
     hideMethod: "fadeOut",
+
 };
 toastr["success"](data.message);
 
